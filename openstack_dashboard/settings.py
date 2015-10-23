@@ -262,7 +262,7 @@ ADD_INSTALLED_APPS = []
 
 # directory for custom theme, set as default.
 # It can be overridden in local_settings.py
-DEFAULT_THEME_PATH = 'themes/default'
+DEFAULT_THEME_PATH = 'themes/ubuntu'
 CUSTOM_THEME_PATH = DEFAULT_THEME_PATH
 
 try:
