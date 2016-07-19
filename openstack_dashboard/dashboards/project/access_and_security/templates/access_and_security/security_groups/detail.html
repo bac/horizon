@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% load i18n %}
+
 {% block title %}{% trans "Manage Security Group Rules" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_detail_header.html" %}
+{% endblock %}
 
 {% block main %}
 <div class="row">

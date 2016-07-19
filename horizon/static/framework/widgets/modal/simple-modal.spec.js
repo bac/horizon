@@ -1,11 +1,12 @@
-/*
- *    (c) Copyright 2015 Hewlett-Packard Development Company, L.P.
+/**
+ * Copyright 2015 IBM Corp.
+ * (c) Copyright 2015 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 (function() {
   "use strict";
 
@@ -68,7 +70,9 @@
       var service, modal;
 
       beforeEach(module(function($provide) {
-        modal = { open: function() {return 'val';} };
+        modal = { open: function() {
+          return 'val';
+        }};
         $provide.value('$modal', modal);
       }));
 
@@ -91,19 +95,19 @@
 
       describe('Maximal Values Passed to the Modal', function() {
 
-        var returned, passed, passedContext;
+        var passed, passedContext;
 
         beforeEach(function() {
           var opts = { title: 'my title', body: 'my body', submit: 'Yes',
                        cancel: 'No' };
           spyOn(modal, 'open');
-          returned = service.modal(opts);
+          service.modal(opts);
           passed = modal.open.calls.argsFor(0)[0];
           passedContext = passed.resolve.context();
         });
 
         it('sets the controller', function() {
-          expect(passed.controller).toBe('SimpleModalController');
+          expect(passed.controller).toBe('SimpleModalController as modalCtrl');
         });
 
         it('sets the template URL', function() {
@@ -130,12 +134,12 @@
 
       describe('Minimal Values Passed to the Modal', function() {
 
-        var returned, passed, passedContext;
+        var passed, passedContext;
 
         beforeEach(function() {
           var opts = { title: 'my title', body: 'my body' };
           spyOn(modal, 'open');
-          returned = service.modal(opts);
+          service.modal(opts);
           passed = modal.open.calls.argsFor(0)[0];
           passedContext = passed.resolve.context();
         });

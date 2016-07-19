@@ -59,12 +59,15 @@ class AdminIndexView(tables.DataTableView):
             marker = self.request.GET.get(
                 admin_tables.AdminNamespacesTable._meta.pagination_param, None)
 
+        filters = self.get_filters()
+
         try:
             namespaces, self._more, self._prev =\
                 glance.metadefs_namespace_list(self.request,
                                                marker=marker,
                                                paginate=True,
-                                               sort_dir=sort_dir)
+                                               sort_dir=sort_dir,
+                                               filters=filters)
 
             if prev_marker is not None:
                 namespaces = sorted(namespaces,
@@ -77,6 +80,17 @@ class AdminIndexView(tables.DataTableView):
             exceptions.handle(self.request, msg)
         return namespaces
 
+    def get_filters(self, filters=None):
+        if not filters:
+            filters = {}
+        filter_field = self.table.get_filter_field()
+        filter_action = self.table._meta._filter_action
+        if filter_action.is_api_filter(filter_field):
+            filter_string = self.table.get_filter_string().strip()
+            if filter_field and filter_string:
+                filters[filter_field] = filter_string
+        return filters
+
 
 class CreateView(forms.ModalFormView):
     form_class = admin_forms.CreateNamespaceForm
@@ -84,13 +98,14 @@ class CreateView(forms.ModalFormView):
     context_object_name = 'namespace'
     success_url = reverse_lazy(constants.METADATA_INDEX_URL)
     page_title = _("Create a Metadata Namespace")
+    submit_label = _("Import Namespace")
 
 
 class DetailView(tabs.TabView):
     redirect_url = constants.METADATA_INDEX_URL
     tab_group_class = admin_tabs.NamespaceDetailTabs
     template_name = constants.METADATA_DETAIL_TEMPLATE
-    page_title = _("Namespace Details: {{ namespace.namespace }}")
+    page_title = "{{ namespace.namespace }}"
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)

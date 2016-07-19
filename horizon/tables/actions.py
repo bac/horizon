@@ -13,6 +13,8 @@
 #    under the License.
 
 from collections import defaultdict
+from collections import OrderedDict
+import copy
 import logging
 import types
 import warnings
@@ -21,7 +23,6 @@ from django.conf import settings
 from django.core import urlresolvers
 from django import shortcuts
 from django.template.loader import render_to_string  # noqa
-from django.utils.datastructures import SortedDict
 from django.utils.functional import Promise  # noqa
 from django.utils.http import urlencode  # noqa
 from django.utils.translation import pgettext_lazy
@@ -37,7 +38,7 @@ from horizon.utils import html
 LOG = logging.getLogger(__name__)
 
 # For Bootstrap integration; can be overridden in settings.
-ACTION_CSS_CLASSES = ("btn", "btn-default", "btn-sm")
+ACTION_CSS_CLASSES = ()
 STRING_SEPARATOR = "__"
 
 
@@ -95,6 +96,7 @@ class BaseAction(html.HTMLElement):
         self.requires_input = kwargs.get('requires_input', False)
         self.preempt = kwargs.get('preempt', False)
         self.policy_rules = kwargs.get('policy_rules', None)
+        self.action_type = kwargs.get('action_type', 'default')
 
     def data_type_matched(self, datum):
         """Method to see if the action is allowed for a certain type of data.
@@ -351,6 +353,7 @@ class LinkAction(BaseAction):
         self.allowed_data_types = kwargs.get('allowed_data_types', [])
         self.icon = kwargs.get('icon', None)
         self.kwargs = kwargs
+        self.action_type = kwargs.get('action_type', 'default')
 
         if not kwargs.get('verbose_name', None):
             raise NotImplementedError('A LinkAction object must have a '
@@ -363,13 +366,15 @@ class LinkAction(BaseAction):
     def get_ajax_update_url(self):
         table_url = self.table.get_absolute_url()
         params = urlencode(
-            SortedDict([("action", self.name), ("table", self.table.name)])
+            OrderedDict([("action", self.name), ("table", self.table.name)])
         )
         return "%s?%s" % (table_url, params)
 
-    def render(self):
-        return render_to_string("horizon/common/_data_table_table_action.html",
-                                {"action": self})
+    def render(self, **kwargs):
+        action_dict = copy.copy(kwargs)
+        action_dict.update({"action": self, "is_single": True})
+        return render_to_string("horizon/common/_data_table_action.html",
+                                action_dict)
 
     def associate_with_table(self, table):
         super(LinkAction, self).associate_with_table(table)
@@ -491,9 +496,13 @@ class FilterAction(BaseAction):
                 # in the __init__. However, the current workflow of DataTable
                 # and actions won't allow it. Need to be fixed in the future.
                 cls_name = self.__class__.__name__
-                raise NotImplementedError("You must define a %s method "
-                                          "for %s data type in %s." %
-                                          (func_name, data_type, cls_name))
+                raise NotImplementedError(
+                    "You must define a %(func_name)s method for %(data_type)s"
+                    " data type in %(cls_name)s."
+                    % {'func_name': func_name,
+                       'data_type': data_type,
+                       'cls_name': cls_name})
+
             _data = filter_func(table, data, filter_string)
             self.assign_type_string(table, _data, data_type)
             filtered_data.extend(_data)
@@ -517,6 +526,13 @@ class FilterAction(BaseAction):
                         choice[2] is True):
                     return True
         return False
+
+    def get_select_options(self):
+        """Provide the value, string, and help_text (if applicable)
+        for the template to render.
+        """
+        if self.filter_choices:
+            return [x[:4] for x in self.filter_choices]
 
 
 class NameFilterAction(FilterAction):
@@ -587,7 +603,7 @@ class BatchAction(Action):
        forms of the name properly pluralised (depending on the integer) and
        translated in a string or tuple/list.
 
-    .. attribute:: action_present (PendingDeprecation)
+    .. attribute:: action_present (Deprecated)
 
        String or tuple/list. The display forms of the name.
        Should be a transitive verb, capitalized and translated. ("Delete",
@@ -612,7 +628,7 @@ class BatchAction(Action):
        forms of the name properly pluralised (depending on the integer) and
        translated in a string or tuple/list.
 
-    .. attribute:: action_past (PendingDeprecation)
+    .. attribute:: action_past (Deprecated)
 
        String or tuple/list. The past tense of action_present. ("Deleted",
        "Rotated", etc.) If tuple or list - then
@@ -623,12 +639,12 @@ class BatchAction(Action):
        avoided. Please use the action_past method instead.
        This form is kept for legacy.
 
-    .. attribute:: data_type_singular
+    .. attribute:: data_type_singular (Deprecated)
 
        Optional display name (if the data_type method is not defined) for the
        type of data that receives the action. ("Key Pair", "Floating IP", etc.)
 
-    .. attribute:: data_type_plural
+    .. attribute:: data_type_plural (Deprecated)
 
        Optional plural word (if the data_type method is not defined) for the
        type of data being acted on. Defaults to appending 's'. Relying on the
@@ -637,8 +653,9 @@ class BatchAction(Action):
        legacy code.
 
        NOTE: data_type_singular and data_type_plural attributes are bad for
-       translations and should be avoided. Please use the action_present and
-       action_past methods. This form is kept for legacy.
+       translations and should not be used. Please use the action_present and
+       action_past methods. This form is kept temporarily for legacy code but
+       will be removed.
 
     .. attribute:: success_url
 
@@ -661,7 +678,7 @@ class BatchAction(Action):
             if callable(self.action_present):
                 action_present_method = True
             else:
-                warnings.warn(PendingDeprecationWarning(
+                warnings.warn(DeprecationWarning(
                     'The %s BatchAction class must have an action_present '
                     'method instead of attribute.' % self.__class__.__name__
                 ))
@@ -671,7 +688,7 @@ class BatchAction(Action):
             if callable(self.action_past):
                 action_past_method = True
             else:
-                warnings.warn(PendingDeprecationWarning(
+                warnings.warn(DeprecationWarning(
                     'The %s BatchAction class must have an action_past '
                     'method instead of attribute.' % self.__class__.__name__
                 ))
@@ -753,7 +770,7 @@ class BatchAction(Action):
         action_attr = getattr(self, "action_%s" % action_type)
         if self.use_action_method:
             action_attr = action_attr(count)
-        if isinstance(action_attr, (basestring, Promise)):
+        if isinstance(action_attr, (six.string_types, Promise)):
             action = action_attr
         else:
             toggle_selection = getattr(self, "current_%s_action" % action_type)
@@ -812,9 +829,10 @@ class BatchAction(Action):
             datum_display = table.get_object_display(datum) or datum_id
             if not table._filter_action(self, request, datum):
                 action_not_allowed.append(datum_display)
-                LOG.warning('Permission denied to %s: "%s"' %
-                            (self._get_action_name(past=True).lower(),
-                             datum_display))
+                LOG.warning(u'Permission denied to %(name)s: "%(dis)s"', {
+                    'name': self._get_action_name(past=True).lower(),
+                    'dis': datum_display
+                })
                 continue
             try:
                 self.action(request, datum_id)
@@ -822,7 +840,7 @@ class BatchAction(Action):
                 self.update(request, datum)
                 action_success.append(datum_display)
                 self.success_ids.append(datum_id)
-                LOG.info('%s: "%s"' %
+                LOG.info(u'%s: "%s"' %
                          (self._get_action_name(past=True), datum_display))
             except Exception as ex:
                 # Handle the exception but silence it since we'll display
@@ -874,7 +892,7 @@ class DeleteAction(BatchAction):
         forms of the name properly pluralised (depending on the integer) and
         translated in a string or tuple/list.
 
-    .. attribute:: action_present (PendingDeprecation)
+    .. attribute:: action_present (Deprecated)
 
         A string containing the transitive verb describing the delete action.
         Defaults to 'Delete'
@@ -889,7 +907,7 @@ class DeleteAction(BatchAction):
         forms of the name properly pluralised (depending on the integer) and
         translated in a string or tuple/list.
 
-    .. attribute:: action_past (PendingDeprecation)
+    .. attribute:: action_past (Deprecated)
 
         A string set to the past tense of action_present.
         Defaults to 'Deleted'
@@ -898,11 +916,11 @@ class DeleteAction(BatchAction):
         avoided. Please use the action_past method instead.
         This form is kept for legacy.
 
-    .. attribute:: data_type_singular (PendingDeprecation)
+    .. attribute:: data_type_singular (Deprecated)
 
         A string used to name the data to be deleted.
 
-    .. attribute:: data_type_plural (PendingDeprecation)
+    .. attribute:: data_type_plural (Deprecated)
 
         Optional. Plural of ``data_type_singular``.
         Defaults to ``data_type_singular`` appended with an 's'.  Relying on
@@ -911,8 +929,9 @@ class DeleteAction(BatchAction):
         optional for legacy code.
 
         NOTE: data_type_singular and data_type_plural attributes are bad for
-        translations and should be avoided. Please use the action_present and
-        action_past methods. This form is kept for legacy.
+        translations and should not be used. Please use the action_present and
+        action_past methods. This form is kept temporarily for legacy code but
+        will be removed.
     """
 
     name = "delete"
@@ -924,7 +943,8 @@ class DeleteAction(BatchAction):
             self.action_present = kwargs.get('action_present', _("Delete"))
         if not hasattr(self, "action_past"):
             self.action_past = kwargs.get('action_past', _("Deleted"))
-        self.icon = "remove"
+        self.icon = "trash"
+        self.action_type = "danger"
 
     def action(self, request, obj_id):
         """Action entry point. Overrides base class' action method.
@@ -940,26 +960,29 @@ class DeleteAction(BatchAction):
         Override to provide delete functionality specific to your data.
         """
 
-    def get_default_classes(self):
-        """Appends ``btn-danger`` to the action's default css classes.
-
-        This method ensures the corresponding button is highlighted
-        as a trigger for a potentially dangerous action.
-        """
-        classes = super(DeleteAction, self).get_default_classes()
-        classes += ("btn-danger",)
-        return classes
-
 
 class UpdateAction(object):
     """A table action for cell updates by inline editing."""
     name = "update"
-    action_present = _("Update")
-    action_past = _("Updated")
-    data_type_singular = "update"
 
     def action(self, request, datum, obj_id, cell_name, new_cell_value):
         self.update_cell(request, datum, obj_id, cell_name, new_cell_value)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Update Item",
+            u"Update Items",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Updated Item",
+            u"Updated Items",
+            count
+        )
 
     def update_cell(self, request, datum, obj_id, cell_name, new_cell_value):
         """Method for saving data of the cell.

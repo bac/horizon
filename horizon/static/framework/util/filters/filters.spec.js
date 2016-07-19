@@ -2,8 +2,7 @@
   'use strict';
 
   describe('horizon.framework.util.filters', function () {
-    beforeEach(module('horizon.framework.util.i18n'));
-    beforeEach(module('horizon.framework.util.filters'));
+    beforeEach(module('horizon.framework'));
 
     describe('yesno', function () {
       var yesnoFilter;
@@ -47,6 +46,7 @@
 
       it('returns given numeric value properly', function () {
         expect(gbFilter(12)).toBe('12 GB');
+        expect(gbFilter(1200)).toBe('1.17 TB');
         expect(gbFilter(-12)).toBe('-12 GB');
         expect(gbFilter(12.12)).toBe('12.12 GB');
       });
@@ -68,6 +68,7 @@
 
       it('returns given numeric value properly', function () {
         expect(mbFilter(12)).toBe('12 MB');
+        expect(mbFilter(1200)).toBe('1.17 GB');
         expect(mbFilter(-12)).toBe('-12 MB');
         expect(mbFilter(12.12)).toBe('12.12 MB');
       });
@@ -124,6 +125,66 @@
         expect(noUnderscoreFilter(true)).toBe(true);
         expect(noUnderscoreFilter('')).toBe('');
         expect(noUnderscoreFilter(21)).toBe(21);
+      });
+    });
+
+    describe('noValue', function () {
+      var noValueFilter;
+      beforeEach(inject(function (_noValueFilter_) {
+        noValueFilter = _noValueFilter_;
+      }));
+
+      it('returns value if there is a value', function () {
+        expect(noValueFilter('foo')).toBe('foo');
+        expect(noValueFilter('   foo   ')).toBe('   foo   ');
+        expect(noValueFilter(true)).toBe(true);
+        expect(noValueFilter(false)).toBe(false);
+        var object = {};
+        expect(noValueFilter(object)).toBe(object);
+        var array = [];
+        expect(noValueFilter(array)).toBe(array);
+      });
+
+      it('replaces undefined, null, blank with -', function () {
+        expect(noValueFilter(null)).toBe('-');
+        expect(noValueFilter()).toBe('-');
+        expect(noValueFilter('')).toBe('-');
+        expect(noValueFilter('     ')).toBe('-');
+      });
+
+      it('replaces undefined, null, blank with provided value', function () {
+        expect(noValueFilter(null, 'default')).toBe('default');
+        expect(noValueFilter(undefined, 'default')).toBe('default');
+        expect(noValueFilter('', 'default')).toBe('default');
+        expect(noValueFilter('     ', 'default')).toBe('default');
+        expect(noValueFilter('value', 'default')).toBe('value');
+        expect(noValueFilter(false, 'default')).toBe(false);
+      });
+    });
+
+    describe('noName', function () {
+      var noNameFilter;
+      beforeEach(inject(function (_noNameFilter_) {
+        noNameFilter = _noNameFilter_;
+      }));
+
+      it('returns value if there is a value', function () {
+        expect(noNameFilter('foo')).toBe('foo');
+        expect(noNameFilter('   foo   ')).toBe('   foo   ');
+        expect(noNameFilter('     ')).toBe('     ');
+      });
+
+      it('replaces undefined, null, blank with None', function () {
+        expect(noNameFilter(true)).toBe('None');
+        expect(noNameFilter(false)).toBe('None');
+        expect(noNameFilter(1)).toBe('None');
+        var object = {};
+        expect(noNameFilter(object)).toBe('None');
+        var array = [];
+        expect(noNameFilter(array)).toBe('None');
+        expect(noNameFilter(null)).toBe('None');
+        expect(noNameFilter()).toBe('None');
+        expect(noNameFilter('')).toBe('None');
       });
     });
 
@@ -200,6 +261,68 @@
           expect(itemCountFilter(-1.2)).toBe('Displaying 0 items');
         })
       );
+
+      it('should return translated text with item count and total',
+        inject(function (itemCountFilter) {
+          var expectZero = [null, false, 'a', '0', 0, -1, -1.2];
+          expectZero.forEach(function(x) {
+            expect(itemCountFilter(0, x)).toBe('Displaying 0 of 0 items');
+          });
+
+          var expectOne = [true, '1', 0.8, 1, 1.2];
+          expectOne.forEach(function(x) {
+            expect(itemCountFilter(0, x)).toBe('Displaying 0 of 1 items');
+          });
+
+          expect(itemCountFilter(5, 20)).toBe('Displaying 5 of 20 items');
+        })
+      );
+    });
+
+    describe('toISO8610DateFormat', function() {
+      var toIsoDateFilter;
+
+      beforeEach(inject(function(_toIsoDateFilter_) {
+        toIsoDateFilter = _toIsoDateFilter_;
+      }));
+
+      it('should convert to ISO-8610 from a date string', function() {
+        var actual = toIsoDateFilter('2015-09-22T11:00:00.000Z');
+        expect(actual).toBe('2015-09-22T11:00:00.000Z');
+      });
+
+      it('should convert to ISO-8610 from milliseconds', function() {
+        var actual = toIsoDateFilter(1442919600000);
+        expect(actual).toBe('2015-09-22T11:00:00.000Z');
+      });
+    });
+
+    describe('limit', function() {
+      var limitFilter;
+
+      beforeEach(inject(function(_limitFilter_) {
+        limitFilter = _limitFilter_;
+      }));
+
+      it('should return valid number as is', function() {
+        var limit = limitFilter(0);
+        expect(limit).toBe(0);
+      });
+
+      it('should return non-numeric value as "Unlimited"', function() {
+        var limit = limitFilter('foo');
+        expect(limit).toBe('Unlimited');
+      });
+
+      it('should return negative number as "Unlimited"', function() {
+        var limit = limitFilter(-1);
+        expect(limit).toBe('Unlimited');
+      });
+
+      it('should return negative number as custom value', function() {
+        var limit = limitFilter(-1, 'foo');
+        expect(limit).toBe('foo');
+      });
     });
 
   }); // end of horizon.framework.util.filters

@@ -25,28 +25,15 @@
 
   /**
    * @ngdoc controller
-   * @name horizon.dashboard.project.workflow.launch-instance.LaunchInstanceSecurityGroupsController
+   * @name LaunchInstanceSecurityGroupsController
+   * @param {Object} launchInstanceModel
+   * @param {string} basePath
    * @description
    * Allows selection of security groups.
+   * @returns {undefined} No return value
    */
   function LaunchInstanceSecurityGroupsController(launchInstanceModel, basePath) {
     var ctrl = this;
-
-    ctrl.label = {
-      title: gettext('Security Groups'),
-      subtitle: gettext('Select the security groups.'),
-      name: gettext('Name'),
-      description: gettext('Description')
-    };
-
-    ctrl.tableLabels = {
-      direction: gettext('Direction'),
-      ethertype: gettext('Ether Type'),
-      protocol: gettext('Protocol'),
-      port_range_min: gettext('Min Port'),
-      port_range_max: gettext('Max Port'),
-      remote_ip_prefix: gettext('Remote')
-    };
 
     ctrl.tableData = {
       available: launchInstanceModel.securityGroups,
@@ -67,5 +54,18 @@
     ctrl.tableLimits = {
       maxAllocation: -1
     };
+
+    ctrl.filterFacets = [
+      {
+        label: gettext('Name'),
+        name: 'name',
+        singleton: true
+      },
+      {
+        label: gettext('Description'),
+        name: 'description',
+        singleton: true
+      }
+    ];
   }
 })();

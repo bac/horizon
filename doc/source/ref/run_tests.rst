@@ -143,7 +143,7 @@ such features as code coverage.  Karma allows developer to run tests live,
 as it can watch source and test files for changes.
 
 The default configuration also performs coverage reports, which are saved
-to ``horizon/.coverage-karma/`` and ``openstack_dashboard/.coverage-karma/``.
+to ``horizon/coverage-karma/`` and ``openstack_dashboard/coverage-karma/``.
 
 To run the Karma tests for Horizon and Dashboard using the `run_tests.sh`
 script::
@@ -187,7 +187,7 @@ You can generate various reports and metrics using command line arguments
 to ``run_tests.sh``.
 
 ESLint
-----
+------
 
 To run ESLint, a JavaScript code style checker::
 

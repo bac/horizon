@@ -21,6 +21,7 @@ from openstack_dashboard.api import lbaas
 from openstack_dashboard.api import neutron
 from openstack_dashboard.api import vpn
 from openstack_dashboard.test.test_data import utils
+from openstack_dashboard.usage import quotas as usage_quotas
 
 
 def data(TEST):
@@ -42,6 +43,7 @@ def data(TEST):
     TEST.members = utils.TestDataContainer()
     TEST.monitors = utils.TestDataContainer()
     TEST.neutron_quotas = utils.TestDataContainer()
+    TEST.neutron_quota_usages = utils.TestDataContainer()
     TEST.net_profiles = utils.TestDataContainer()
     TEST.policy_profiles = utils.TestDataContainer()
     TEST.network_profile_binding = utils.TestDataContainer()
@@ -53,6 +55,7 @@ def data(TEST):
     TEST.firewalls = utils.TestDataContainer()
     TEST.fw_policies = utils.TestDataContainer()
     TEST.fw_rules = utils.TestDataContainer()
+    TEST.ip_availability = utils.TestDataContainer()
 
     # Data return by neutronclient.
     TEST.api_agents = utils.TestDataContainer()
@@ -81,6 +84,7 @@ def data(TEST):
     TEST.api_firewalls = utils.TestDataContainer()
     TEST.api_fw_policies = utils.TestDataContainer()
     TEST.api_fw_rules = utils.TestDataContainer()
+    TEST.api_ip_availability = utils.TestDataContainer()
 
     # 1st network.
     network_dict = {'admin_state_up': True,
@@ -167,7 +171,10 @@ def data(TEST):
                  'status': 'ACTIVE',
                  'tenant_id': network_dict['tenant_id'],
                  'binding:vnic_type': 'normal',
-                 'binding:host_id': 'host'}
+                 'binding:host_id': 'host',
+                 'allowed_address_pairs': [{'ip_address': '174.0.0.201',
+                                           'mac_address': 'fa:16:3e:7a:7b:18'}]
+                 }
 
     TEST.api_ports.add(port_dict)
     TEST.ports.add(neutron.Port(port_dict))
@@ -666,6 +673,87 @@ def data(TEST):
     TEST.api_members.add(member_dict)
     TEST.members.add(lbaas.Member(member_dict))
 
+    # 1st v6 pool.
+    pool_dict = {'id': 'c2983d70-8ac7-11e4-b116-123b93f75cba',
+                 'tenant_id': '1',
+                 'vip_id': 'b6598a5e-8ab4-11e4-b116-123b93f75cba',
+                 'name': 'v6_pool1',
+                 'description': 'pool description',
+                 'subnet_id': TEST.subnets.get(name='v6_subnet1').id,
+                 'protocol': 'HTTP',
+                 'lb_method': 'ROUND_ROBIN',
+                 'health_monitors': TEST.monitors.list(),
+                 'members': ['78a46e5e-eb1a-418a-88c7-0e3f5968b08'],
+                 'admin_state_up': True,
+                 'status': 'ACTIVE',
+                 'provider': 'haproxy'}
+    TEST.api_pools.add(pool_dict)
+    TEST.pools.add(lbaas.Pool(pool_dict))
+
+    # 1st v6 vip.
+    vip_dict = {'id': 'b6598a5e-8ab4-11e4-b116-123b93f75cba',
+                'name': 'v6_vip1',
+                'address': 'ff09::03',
+                'description': 'vip description',
+                'subnet_id': TEST.subnets.get(name="v6_subnet1").id,
+                'port_id': TEST.ports.first().id,
+                'subnet': TEST.subnets.get(name="v6_subnet1").cidr,
+                'protocol_port': 80,
+                'protocol': pool_dict['protocol'],
+                'pool_id': pool_dict['id'],
+                'session_persistence': {'type': 'APP_COOKIE',
+                                        'cookie_name': 'jssessionid'},
+                'connection_limit': 10,
+                'admin_state_up': True}
+    TEST.api_vips.add(vip_dict)
+    TEST.vips.add(lbaas.Vip(vip_dict))
+
+    # 2nd v6 vip.
+    vip_dict = {'id': 'b6598cc0-8ab4-11e4-b116-123b93f75cba',
+                'name': 'ff09::04',
+                'address': '10.0.0.110',
+                'description': 'vip description',
+                'subnet_id': TEST.subnets.get(name="v6_subnet2").id,
+                'port_id': TEST.ports.list()[0].id,
+                'subnet': TEST.subnets.get(name="v6_subnet2").cidr,
+                'protocol_port': 80,
+                'protocol': pool_dict['protocol'],
+                'pool_id': pool_dict['id'],
+                'session_persistence': {'type': 'APP_COOKIE',
+                                        'cookie_name': 'jssessionid'},
+                'connection_limit': 10,
+                'admin_state_up': True}
+    TEST.api_vips.add(vip_dict)
+    TEST.vips.add(lbaas.Vip(vip_dict))
+
+    # 1st v6 monitor.
+    monitor_dict = {'id': '0dc936f8-8aca-11e4-b116-123b93f75cba',
+                    'type': 'http',
+                    'delay': 10,
+                    'timeout': 10,
+                    'max_retries': 10,
+                    'http_method': 'GET',
+                    'url_path': '/',
+                    'expected_codes': '200',
+                    'admin_state_up': True,
+                    "pools": [{"pool_id": TEST.pools.get(name='v6_pool1').id}],
+                    }
+    TEST.api_monitors.add(monitor_dict)
+    TEST.monitors.add(lbaas.PoolMonitor(monitor_dict))
+
+    # v6 member.
+    member_dict = {'id': '6bc03d1e-8ad0-11e4-b116-123b93f75cba',
+                   'tenant_id': '1',
+                   'pool_id': TEST.pools.get(name='v6_pool1').id,
+                   'address': 'ff09::03',
+                   'protocol_port': 80,
+                   'weight': 10,
+                   'status': 'ACTIVE',
+                   'member_type': 'server_list',
+                   'admin_state_up': True}
+    TEST.api_members.add(member_dict)
+    TEST.members.add(lbaas.Member(member_dict))
+
     # 1st monitor.
     monitor_dict = {'id': 'd4a0500f-db2b-4cc4-afcf-ec026febff96',
                     'type': 'http',
@@ -704,6 +792,18 @@ def data(TEST):
                   'security_group_rule': '100',
                   }
     TEST.neutron_quotas.add(base.QuotaSet(quota_data))
+
+    # Quota Usages
+    quota_usage_data = {'networks': {'used': 0, 'quota': 5},
+                        'subnets': {'used': 0, 'quota': 5},
+                        'routers': {'used': 0, 'quota': 5},
+                        }
+    quota_usage = usage_quotas.QuotaUsage()
+    for k, v in quota_usage_data.items():
+        quota_usage.add_quota(base.Quota(k, v['quota']))
+        quota_usage.tally(k, v['used'])
+
+    TEST.neutron_quota_usages.add(quota_usage)
 
     # Extensions.
     extension_1 = {"name": "security-group",
@@ -789,7 +889,8 @@ def data(TEST):
                        'ipsecsiteconnections': [],
                        'admin_state_up': True,
                        'status': 'Active',
-                       'ipsecsiteconns': TEST.ipsecsiteconnections.list()}
+                       'ipsecsiteconns': TEST.ipsecsiteconnections.list()
+                       }
     TEST.api_vpnservices.add(vpnservice_dict)
     TEST.vpnservices.add(vpn.VPNService(vpnservice_dict))
 
@@ -804,7 +905,10 @@ def data(TEST):
                        'ipsecsiteconnections': [],
                        'admin_state_up': True,
                        'status': 'Active',
-                       'ipsecsiteconns': []}
+                       'ipsecsiteconns': [],
+                       'external_v4_ip': '10.0.0.0/24',
+                       'external_v6_ip': 'fd4c:a535:831c::/64'
+                       }
     TEST.api_vpnservices.add(vpnservice_dict)
     TEST.vpnservices.add(vpn.VPNService(vpnservice_dict))
 
@@ -932,7 +1036,8 @@ def data(TEST):
                   'firewall_policy_id': 'abcdef-c3eb-4fee-9763-12de3338041e',
                   'position': 1,
                   'shared': True,
-                  'enabled': True}
+                  'enabled': True,
+                  'ip_version': '4'}
     TEST.api_fw_rules.add(rule1_dict)
 
     rule1 = fwaas.Rule(copy.deepcopy(rule1_dict))
@@ -953,7 +1058,8 @@ def data(TEST):
                   'firewall_policy_id': 'abcdef-c3eb-4fee-9763-12de3338041e',
                   'position': 2,
                   'shared': True,
-                  'enabled': True}
+                  'enabled': True,
+                  'ip_version': '6'}
     TEST.api_fw_rules.add(rule2_dict)
 
     rule2 = fwaas.Rule(copy.deepcopy(rule2_dict))
@@ -974,7 +1080,8 @@ def data(TEST):
                   'firewall_policy_id': None,
                   'position': None,
                   'shared': True,
-                  'enabled': True}
+                  'enabled': True,
+                  'ip_version': '4'}
     TEST.api_fw_rules.add(rule3_dict)
 
     rule3 = fwaas.Rule(copy.deepcopy(rule3_dict))
@@ -1037,14 +1144,15 @@ def data(TEST):
                 'firewall_policy_id':
                     'abcdef-c3eb-4fee-9763-12de3338041e',
                 'name': '',
+                'router_ids': [],
                 'description': '',
                 'status': 'PENDING_CREATE',
                 'admin_state_up': True}
-    TEST.api_firewalls.add(fw1_dict)
+    TEST.api_firewalls.add(fw2_dict)
 
     fw2 = fwaas.Firewall(copy.deepcopy(fw2_dict))
     fw2._apidict['policy'] = policy1
-    TEST.firewalls.add(fw1)
+    TEST.firewalls.add(fw2)
 
     # Additional Cisco N1K profiles.
 
@@ -1211,3 +1319,27 @@ def data(TEST):
                  'binding:host_id': 'host'}
     TEST.api_ports.add(port_dict)
     TEST.ports.add(neutron.Port(port_dict))
+
+    availability = {'network_ip_availability': {
+        'used_ips': 2,
+        'subnet_ip_availability': [{
+            'used_ips': 1,
+            'subnet_id': '2c90f321-9cc7-41b4-a3cf-88110f120a94',
+            'subnet_name': 'ipv6-public-subnet',
+            'ip_version': 6,
+            'cidr': '2001:db8::/64',
+            'total_ips': 18446744073709551614},
+            {'used_ips': 1,
+             'subnet_id': '4d77d5fb-c26c-4ac5-b2ca-fca2f89b0fc1',
+             'subnet_name': 'public-subnet',
+             'ip_version': 4,
+             'cidr': '172.24.4.0/24',
+             'total_ips': 253}],
+        'network_id': 'd87d5be5-cfca-486f-8db5-a446330e4513',
+        'tenant_id': 'd564b2a4fc0544fb89f8a0434dd96863',
+        'network_name': 'public',
+        'total_ips': 18446744073709551867}
+    }
+
+    TEST.ip_availability.add(availability)
+    TEST.api_ip_availability.add(availability)

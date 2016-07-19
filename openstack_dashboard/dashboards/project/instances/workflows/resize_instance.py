@@ -61,7 +61,8 @@ class SetFlavorChoiceAction(workflows.Action):
     def get_help_text(self, extra_context=None):
         extra = {} if extra_context is None else dict(extra_context)
         try:
-            extra['usages'] = api.nova.tenant_absolute_limits(self.request)
+            extra['usages'] = api.nova.tenant_absolute_limits(self.request,
+                                                              reserved=True)
             extra['usages_json'] = json.dumps(extra['usages'])
             flavors = json.dumps([f._info for f in
                                   instance_utils.flavor_list(self.request)])
@@ -83,7 +84,8 @@ class ResizeInstance(workflows.Workflow):
     slug = "resize_instance"
     name = _("Resize Instance")
     finalize_button_name = _("Resize")
-    success_message = _('Scheduled resize of instance "%s".')
+    success_message = _('Request for resizing of instance "%s" '
+                        'has been submitted.')
     failure_message = _('Unable to resize instance "%s".')
     success_url = "horizon:project:instances:index"
     default_steps = (SetFlavorChoice, create_instance.SetAdvanced)

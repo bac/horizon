@@ -10,13 +10,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from django.utils.datastructures import SortedDict
+from collections import OrderedDict
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
 from horizon import tabs
 
-from openstack_dashboard import api
 from openstack_dashboard.api import cinder
 from openstack_dashboard.api import keystone
 
@@ -30,7 +29,8 @@ from openstack_dashboard.dashboards.project.volumes \
     import tabs as volumes_tabs
 
 
-class VolumeTab(tabs.TableTab, volumes_tabs.VolumeTableMixIn):
+class VolumeTab(volumes_tabs.PagedTableMixin, tabs.TableTab,
+                volumes_tabs.VolumeTableMixIn):
     table_classes = (volumes_tables.VolumesTable,)
     name = _("Volumes")
     slug = "volumes_tab"
@@ -39,7 +39,9 @@ class VolumeTab(tabs.TableTab, volumes_tabs.VolumeTableMixIn):
 
     def get_volumes_data(self):
         volumes = self._get_volumes(search_opts={'all_tenants': True})
-        instances = self._get_instances(search_opts={'all_tenants': True})
+        attached_instance_ids = self._get_attached_instance_ids(volumes)
+        instances = self._get_instances(search_opts={'all_tenants': True},
+                                        instance_ids=attached_instance_ids)
         volume_ids_with_snapshots = self._get_volumes_ids_with_snapshots(
             search_opts={'all_tenants': True})
         self._set_volume_attributes(
@@ -53,7 +55,7 @@ class VolumeTab(tabs.TableTab, volumes_tabs.VolumeTableMixIn):
             msg = _('Unable to retrieve volume project information.')
             exceptions.handle(self.request, msg)
 
-        tenant_dict = SortedDict([(t.id, t) for t in tenants])
+        tenant_dict = OrderedDict([(t.id, t) for t in tenants])
         for volume in volumes:
             tenant_id = getattr(volume, "os-vol-tenant-attr:tenant_id", None)
             tenant = tenant_dict.get(tenant_id, None)
@@ -88,7 +90,7 @@ class VolumeTypesTab(tabs.TableTab, volumes_tabs.VolumeTableMixIn):
             msg = _('Unable to retrieve volume type encryption information.')
             exceptions.handle(self.request, msg)
 
-        vol_type_enc_dict = SortedDict([(e.volume_type_id, e) for e in
+        vol_type_enc_dict = OrderedDict([(e.volume_type_id, e) for e in
                                         vol_type_enc_list])
         for volume_type in volume_types:
             vol_type_enc = vol_type_enc_dict.get(volume_type.id, None)
@@ -110,7 +112,7 @@ class VolumeTypesTab(tabs.TableTab, volumes_tabs.VolumeTableMixIn):
         return qos_specs
 
 
-class SnapshotTab(tabs.TableTab):
+class SnapshotTab(volumes_tabs.PagedTableMixin, tabs.TableTab):
     table_classes = (snapshots_tables.VolumeSnapshotsTable,)
     name = _("Volume Snapshots")
     slug = "snapshots_tab"
@@ -118,11 +120,13 @@ class SnapshotTab(tabs.TableTab):
     preload = False
 
     def get_volume_snapshots_data(self):
-        if api.base.is_service_enabled(self.request, 'volume'):
+        if cinder.is_volume_service_enabled(self.request):
             try:
-                snapshots = cinder.volume_snapshot_list(
-                    self.request,
-                    search_opts={'all_tenants': True})
+                marker, sort_dir = self._get_marker()
+                snapshots, self._has_more_data, self._has_prev_data = \
+                    cinder.volume_snapshot_list_paged(
+                        self.request, paginate=True, marker=marker,
+                        sort_dir=sort_dir, search_opts={'all_tenants': True})
                 volumes = cinder.volume_list(
                     self.request,
                     search_opts={'all_tenants': True})
@@ -154,7 +158,8 @@ class SnapshotTab(tabs.TableTab):
 
         else:
             snapshots = []
-        return sorted(snapshots, key=lambda snapshot: snapshot.tenant_name)
+        return sorted(snapshots,
+                      key=lambda snapshot: snapshot.tenant_name or '')
 
 
 class VolumesGroupTabs(tabs.TabGroup):

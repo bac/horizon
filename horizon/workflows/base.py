@@ -13,6 +13,7 @@
 #    under the License.
 
 import copy
+from importlib import import_module  # noqa
 import inspect
 import logging
 
@@ -24,8 +25,8 @@ from django.template.defaultfilters import linebreaks  # noqa
 from django.template.defaultfilters import safe  # noqa
 from django.template.defaultfilters import slugify  # noqa
 from django.utils.encoding import force_text
-from django.utils.importlib import import_module  # noqa
 from django.utils.translation import ugettext_lazy as _
+from openstack_auth import policy
 import six
 
 from horizon import base
@@ -66,6 +67,7 @@ class ActionMetaclass(forms.forms.DeclarativeFieldsMetaclass):
         cls.name = getattr(opts, "name", name)
         cls.slug = getattr(opts, "slug", slugify(name))
         cls.permissions = getattr(opts, "permissions", ())
+        cls.policy_rules = getattr(opts, "policy_rules", ())
         cls.progress_message = getattr(opts,
                                        "progress_message",
                                        _("Processing..."))
@@ -74,6 +76,7 @@ class ActionMetaclass(forms.forms.DeclarativeFieldsMetaclass):
         return cls
 
 
+@six.python_2_unicode_compatible
 @six.add_metaclass(ActionMetaclass)
 class Action(forms.Form):
     """An ``Action`` represents an atomic logical interaction you can have with
@@ -112,6 +115,23 @@ class Action(forms.Form):
         A list of permission names which this action requires in order to be
         completed. Defaults to an empty list (``[]``).
 
+    .. attribute:: policy_rules
+
+        list of scope and rule tuples to do policy checks on, the
+        composition of which is (scope, rule)
+
+            scope: service type managing the policy for action
+            rule: string representing the action to be checked
+
+            for a policy that requires a single rule check:
+                policy_rules should look like
+                    "(("compute", "compute:create_instance"),)"
+            for a policy that requires multiple rule checks:
+                rules should look like
+                    "(("identity", "identity:list_users"),
+                      ("identity", "identity:list_roles"))"
+                where two service-rule clauses are OR-ed.
+
     .. attribute:: help_text
 
         A string of simple help text to be displayed alongside the Action's
@@ -138,7 +158,7 @@ class Action(forms.Form):
         self._populate_choices(request, context)
         self.required_css_class = 'required'
 
-    def __unicode__(self):
+    def __str__(self):
         return force_text(self.name)
 
     def __repr__(self):
@@ -189,6 +209,7 @@ class MembershipAction(Action):
         return self.slug + "_role_" + role_id
 
 
+@six.python_2_unicode_compatible
 class Step(object):
     """A step is a wrapper around an action which defines its context in a
     workflow. It knows about details such as:
@@ -284,7 +305,7 @@ class Step(object):
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.slug)
 
-    def __unicode__(self):
+    def __str__(self):
         return force_text(self.name)
 
     def __init__(self, workflow):
@@ -298,6 +319,7 @@ class Step(object):
         self.slug = self.action_class.slug
         self.name = self.action_class.name
         self.permissions = self.action_class.permissions
+        self.policy_rules = self.action_class.policy_rules
         self.has_errors = False
         self._handlers = {}
 
@@ -318,7 +340,7 @@ class Step(object):
                     # If it's callable we know the function exists and is valid
                     self._handlers[key].append(possible_handler)
                     continue
-                elif not isinstance(possible_handler, basestring):
+                elif not isinstance(possible_handler, six.string_types):
                     raise TypeError("Connection handlers must be either "
                                     "callables or strings.")
                 bits = possible_handler.split(".")
@@ -484,6 +506,7 @@ class UpdateMembersStep(Step):
             return self.slug + "_role_" + role_id
 
 
+@six.python_2_unicode_compatible
 @six.add_metaclass(WorkflowMetaclass)
 class Workflow(html.HTMLElement):
     """A Workflow is a collection of Steps. Its interface is very
@@ -580,13 +603,6 @@ class Workflow(html.HTMLElement):
         Whether to present the workflow as a wizard, with "prev" and "next"
         buttons and validation after every step.
 
-    .. attribute:: fullscreen
-
-        If the workflow is presented in a modal, and this attribute is
-        set to True, then the ``fullscreen`` css class will be added so
-        the modal can take advantage of the available screen estate.
-        Defaults to ``False``.
-
     """
     slug = None
     default_steps = ()
@@ -597,10 +613,9 @@ class Workflow(html.HTMLElement):
     redirect_param_name = "next"
     multipart = False
     wizard = False
-    fullscreen = False
     _registerable_class = Step
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def __repr__(self):
@@ -670,10 +685,12 @@ class Workflow(html.HTMLElement):
         for default_step in self.default_steps:
             self.register(default_step)
             self._registry[default_step] = default_step(self)
-        self._ordered_steps = [self._registry[step_class]
-                               for step_class in ordered_step_classes
-                               if has_permissions(self.request.user,
-                                                  self._registry[step_class])]
+        self._ordered_steps = []
+        for step_class in ordered_step_classes:
+            cls = self._registry[step_class]
+            if (has_permissions(self.request.user, cls) and
+                    policy.check(cls.policy_rules, self.request)):
+                self._ordered_steps.append(cls)
 
     def _order_steps(self):
         steps = list(copy.copy(self.default_steps))
@@ -831,6 +848,13 @@ class Workflow(html.HTMLElement):
             return message % self.name
         else:
             return message
+
+    def verify_integrity(self):
+        provided_keys = self.contributions | set(self.context_seed.keys())
+        if len(self.depends_on - provided_keys):
+            raise exceptions.NotAvailable(
+                _("The current user has insufficient permission to complete "
+                  "the requested task."))
 
     def render(self):
         """Renders the workflow."""

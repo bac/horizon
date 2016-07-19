@@ -50,6 +50,8 @@ class CreateView(forms.ModalFormView):
         "horizon:project:access_and_security:keypairs:create")
     success_url = 'horizon:project:access_and_security:keypairs:download'
     page_title = _("Create Key Pair")
+    cancel_url = reverse_lazy(
+        "horizon:project:access_and_security:index")
 
     def get_success_url(self):
         return reverse(self.success_url,
@@ -104,6 +106,8 @@ class DownloadView(views.HorizonTemplateView):
 
 
 class GenerateView(View):
+    # TODO(Itxaka): Remove cache_control in django >= 1.9
+    # https://code.djangoproject.com/ticket/13008
     @method_decorator(cache_control(max_age=0, no_cache=True,
                                     no_store=True, must_revalidate=True))
     @method_decorator(never_cache)

@@ -103,9 +103,6 @@
 
       beforeEach(module('templates'));
       beforeEach(module('horizon.framework'));
-      beforeEach(module('horizon.framework.widgets'));
-      beforeEach(module('horizon.framework.widgets.metadata'));
-      beforeEach(module('horizon.framework.widgets.metadata.tree'));
 
       describe('metadataTree directive', function () {
 
@@ -114,7 +111,8 @@
           $scope = $injector.get('$rootScope').$new();
 
           $scope.available = namespaces;
-          $scope.existing = { 'test:B:A:1':'foo' };
+          // Purposely use different case to ensure it still matches.
+          $scope.existing = { 'test:B:a:1':'foo' };
 
           var markup = '<metadata-tree' +
                        '  available="available"' +
@@ -175,6 +173,29 @@
           var lastActive = $element.find('ul.list-group:last li[ng-repeat].active');
           expect(lastActive.scope().item.leaf.name).toBe('custom');
         });
+
+        it('should filter available items based on string', function () {
+          var input = $element.find('.panel-heading:first input');
+          $element.find('ul.list-group:first li[ng-repeat]:first').trigger('click');
+          $element.find('ul.list-group:first li[ng-repeat]:last').trigger('click');
+
+          // With no quick filter there are 10 items
+          input.val('').trigger('input');
+          expect($element.find('ul.list-group:first li[ng-repeat]').length).toBe(10);
+
+          // With filter set to 'Test A.5' there are 2 items
+          // - Test Namespace A
+          // -- Test A.5 - boolean
+          input.val('Test A.5').trigger('input');
+          expect($element.find('ul.list-group:first li[ng-repeat]').length).toBe(2);
+
+          // With filter set to 'test:B' there are 3 items
+          // - Test Namespace B
+          // -- Test Object A
+          // -- Test Object B
+          input.val('test:B').trigger('input');
+          expect($element.find('ul.list-group:first li[ng-repeat]').length).toBe(3);
+        });
       });
 
       describe('metadataTreeItem directive', function () {
@@ -185,7 +206,7 @@
           $scope = $injector.get('$rootScope').$new();
 
           var serviceName = 'horizon.framework.widgets.metadata.tree.service';
-          item = new ($injector.get(serviceName).Item)();
+          item = new ($injector.get(serviceName)).Item();
           $scope.item = item.fromProperty('test', namespaces[0].properties['test:A:6']);
 
           var markup = '<metadata-tree-item' +

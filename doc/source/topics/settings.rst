@@ -64,7 +64,7 @@ Horizon Dashboards are automatically discovered in the following way:
   directory (for more information see :ref:`pluggable-settings-label`).
   This is the default way in OpenStack Dashboard.
 * By traversing Django's list of
-  `INSTALLED_APPS <https://docs.djangoproject.com/en/1.4/ref/settings/#std:setting-INSTALLED_APPS>`_
+  `INSTALLED_APPS <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-INSTALLED_APPS>`_
   and importing any files that have the name ``"dashboard.py"`` and include
   code to register themselves as a Horizon dashboard.
 
@@ -144,8 +144,20 @@ expressed in milliseconds.
 Defaults: ``{'delay': [3000], 'fade_duration': [1500], 'types': []}``
 
 If provided, will auto-fade the alert types specified. Valid alert types
-include: ['alert-success', 'alert-info', 'alert-warning', 'alert-error']
-Can also define the delay before the alert fades and the fade out duration.
+include: ['alert-default', 'alert-success', 'alert-info', 'alert-warning',
+'alert-danger']  Can also define the delay before the alert fades and the fade
+out duration.
+
+``bug_url``
+-----------
+
+.. versionadded:: 9.0.0(Mitaka)
+
+Default: ``None``
+
+If provided, a "Report Bug" link will be displayed in the site header which
+links to the value of this setting (ideally a URL containing information on
+how to report issues).
 
 ``help_url``
 ------------
@@ -155,7 +167,7 @@ Can also define the delay before the alert fades and the fade out duration.
 Default: ``None``
 
 If provided, a "Help" link will be displayed in the site header which links
-to the value of this settings (ideally a URL containing help information).
+to the value of this setting (ideally a URL containing help information).
 
 ``exceptions``
 --------------
@@ -248,7 +260,7 @@ when associating one with an instance.
 Default: ``[]``
 
 A list of AngularJS modules to be loaded when Angular bootstraps. These modules
-are added as dependencies on the root Horizon application ``hz``.
+are added as dependencies on the root Horizon application ``horizon``.
 
 ``js_files``
 -------------------------
@@ -279,6 +291,23 @@ of specific dashboards, panels, API calls, etc.
 Most of the following settings are defined in
  ``openstack_dashboard/local/local_settings.py``, which should be copied from
  ``openstack_dashboard/local/local_settings.py.example``.
+
+Since Mitaka, there is also a way to drop file snippets into
+``openstack_dashboard/local/local_settings.d/``. These snippets must end with
+``.py`` and must contain valid Python code. The snippets are loaded after
+``local_settings.py`` is evaluated so you are able to override settings from
+``local_settings.py`` without the need to change this file.
+Snippets are evaluated in alphabetical order by file name.
+It's good style to name the files in ``local_settings.d/`` like
+``_ZZ_another_setting.py`` where ``ZZ`` is a number. The file must start with
+an underscore (``_``) because Python can not load files starting with a number.
+So given that you have 3 files, ``local_settings.py``,
+``local_settings.d/_10_setting_one.py`` and ``local_settings.d/_20_settings_two.py``,
+the settings from ``local_settings.py`` are evaluated first. Settings from
+``local_settings.d/_10_settings_one.py`` override settings from ``local_settings.py``
+and settings from ``local_settings.d/_20_settings_two.py`` override all other settings
+because that's the file which is evaluated last.
+
 
 ``AUTHENTICATION_URLS``
 -----------------------
@@ -393,34 +422,127 @@ This example sorts flavors by vcpus in descending order::
          'reverse': True,
     }
 
+.. _available_themes:
+
+``AVAILABLE_THEMES``
+--------------------
+
+.. versionadded:: 9.0.0(Mitaka)
+
+Default::
+
+   AVAILABLE_THEMES = [
+        ('default', 'Default', 'themes/default'),
+        ('material', 'Material', 'themes/material'),
+   ]
+
+This setting tells Horizon which themes to use.
+
+A list of tuples which define multiple themes. The tuple format is
+``('{{ theme_name }}', '{{ theme_label }}', '{{ theme_path }}')``.
+
+The ``theme_name`` is the name used to define the directory which
+the theme is collected into, under ``/{{ THEME_COLLECTION_DIR }}``.
+It also specifies the key by which the selected theme is stored in
+the browser's cookie.
+
+The ``theme_label`` is the user-facing label that is shown in the
+theme picker.  The theme picker is only visible if more than one
+theme is configured, and shows under the topnav's user menu.
+
+By default, the ``theme path`` is the directory that will serve as
+the static root of the theme and the entire contents of the directory
+is served up at ``/{{ THEME_COLLECTION_DIR }}/{{ theme_name }}``.
+If you wish to include content other than static files in a theme
+directory, but do not wish that content to be served up, then you
+can create a sub directory named ``static``. If the theme folder
+contains a sub-directory with the name ``static``, then
+``static/custom/static`` will be used as the root for the content
+served at ``/static/custom``.
+
+The static root of the theme folder must always contain a _variables.scss
+file and a _styles.scss file.  These must contain or import all the
+bootstrap and horizon specific variables and styles which are used to style
+the GUI. For example themes, see: /horizon/openstack_dashboard/themes/
+
+Horizon ships with two themes configured. 'default' is the default theme,
+and 'material' is based on Google's Material Design.
+
+``DEFAULT_THEME``
+-----------------
+
+.. versionadded:: 9.0.0(Mitaka)
+
+Default: ``"default"``
+
+This setting tells Horizon which theme to use if the user has not
+yet selected a theme through the theme picker and therefore set the
+cookie value. This value represents the ``theme_name`` key that is
+used from ``AVAILABLE_THEMES``.  To use this setting, the theme must
+also be configured inside of ``AVAILABLE_THEMES``.
+
+``THEME_COLLECTION_DIR``
+------------------------
+
+.. versionadded:: 9.0.0(Mitaka)
+
+Default: ``"themes"``
+
+This setting tells Horizon which static directory to collect the
+available themes into, and therefore which URL points to the theme
+collection root.  For example, the default theme would be accessible
+via ``/{{ STATIC_URL }}/themes/default``.
+
+``THEME_COOKIE_NAME``
+---------------------
+
+.. versionadded:: 9.0.0(Mitaka)
+
+Default: ``"theme"``
+
+This setting tells Horizon in which cookie key to store the currently
+set theme.  The cookie expiration is currently set to a year.
+
+.. _custom_theme_path:
+
 ``CUSTOM_THEME_PATH``
 ---------------------
 
 .. versionadded:: 2015.1(Kilo)
 
+(Deprecated)
+
 Default: ``"themes/default"``
 
-This setting allows Horizon to use a custom theme. The theme folder
-should contain one _variables.scss file and one _styles.scss file.
-_variables.scss contains or must import all the bootstrap and horizon
-specific variables which are used to style the GUI. Whereas _styles.scss
-contains extra styling. For example themes, see:
-/horizon/openstack_dashboard/themes/
+This setting tells Horizon to use a directory as a custom theme.
 
-If the static theme folder also contains a sub-folder 'templates', then
-the path to that sub-folder will be prepended to TEMPLATE_DIRS tuple
-to allow for theme specific template customizations.
+By default, this directory will serve as the static root of the theme
+and the entire contents of the directory will be served up at
+``/static/custom``.  If you wish to include content other than static
+files in a theme directory, but do not wish that content to be served up,
+then you can create a sub directory named ``static``. If the theme folder
+contains a sub-directory with the name ``static``, then
+``static/custom/static``` will be used as the root for the content
+served at ``/static/custom``.
 
-If the theme folder (or its static folder) contain an 'img' directory,
-then all images contained within dashboard/img can be overridden by providing
-a file with the same name.  This makes it very easy to customize logo.png,
-logo-splash.png and favicon.ico.
+The static root of the theme folder must always contain a _variables.scss
+file and a _styles.scss file.  These must contain or import all the
+bootstrap and horizon specific variables and styles which are used to style
+the GUI. For example themes, see: /horizon/openstack_dashboard/themes/
 
+Horizon ships with one alternate theme based on Google's Material Design.  To
+use the alternate theme, set your CUSTOM_THEME_PATH to ``themes/material``.
+
+This option is now marked as "deprecated" and will be removed in Newton or
+a later release. Themes are now controlled by AVAILABLE_THEMES. We suggest
+changing your custom theme settings to use this option instead.
 
 ``DEFAULT_THEME_PATH``
 ----------------------
 
 .. versionadded:: 8.0.0(Liberty)
+
+(Deprecated)
 
 Default: ``"themes/default"``
 
@@ -431,6 +553,8 @@ if CUSTOM_THEME_PATH inherits from another theme (like 'default').
 If DEFAULT_THEME_PATH is the same as CUSTOM_THEME_PATH, then collection
 is skipped and /static/themes will not exist.
 
+This option is now marked as "deprecated" and will be removed in Newton or
+a later release. Themes are now controlled by AVAILABLE_THEMES.
 
 ``DROPDOWN_MAX_ITEMS``
 ----------------------
@@ -442,6 +566,16 @@ Default: ``30``
 This setting sets the maximum number of items displayed in a dropdown.
 Dropdowns that limit based on this value need to support a way to observe
 the entire list.
+
+``ENABLE_CLIENT_TOKEN``
+--------------------------
+
+.. versionadded:: 10.0.0(Newton)
+
+Default: ``True``
+
+This setting will Enable/Disable access to the Keystone Token to the
+browser.
 
 ``ENFORCE_PASSWORD_CHECK``
 --------------------------
@@ -491,6 +625,85 @@ This setting can be used in the case where a separate panel is used for
 managing a custom property or if a certain custom property should never be
 edited.
 
+``LAUNCH_INSTANCE_DEFAULTS``
+----------------------------
+
+.. versionadded:: 9.0.0(Mitaka)
+
+Default::
+
+    {
+        "config_drive": False,
+        "enable_scheduler_hints": True
+    }
+
+A dictionary of settings which can be used to provide the default values for
+properties found in the Launch Instance modal.
+
+The ``config_drive`` setting specifies the default value for the Configuration
+Drive property.
+
+The ``enable_scheduler_hints`` setting specifies whether or not Scheduler Hints
+can be provided when launching an instance.
+
+``LAUNCH_INSTANCE_NG_ENABLED``
+------------------------------
+
+.. versionadded:: 8.0.0(Liberty)
+
+Default: ``True``
+
+This setting enables the AngularJS Launch Instance workflow.
+
+.. note::
+
+    The default value for this has been changed to ``True`` in 9.0.0 (Mitaka)
+
+.. note::
+
+    It is possible to run both the AngularJS and Python workflows simultaneously,
+    so the other may be need to be toggled with ``LAUNCH_INSTANCE_LEGACY_ENABLED``
+
+
+``LAUNCH_INSTANCE_LEGACY_ENABLED``
+----------------------------------
+
+.. versionadded:: 8.0.0(Liberty)
+
+Default: ``False``
+
+This setting enables the Python Launch Instance workflow.
+
+.. note::
+
+    The default value for this has been changed to ``False`` in 9.0.0 (Mitaka)
+
+.. note::
+
+    It is possible to run both the AngularJS and Python workflows simultaneously,
+    so the other may be need to be toggled with ``LAUNCH_INSTANCE_NG_ENABLED``
+
+
+``MESSAGES_PATH``
+-----------------
+
+.. versionadded:: 9.0.0(Mitaka)
+
+Default: ``None``
+
+The absolute path to the directory where message files are collected.
+
+When the user logins to horizon, the message files collected are processed
+and displayed to the user. Each message file should contain a JSON formatted
+data and must have a .json file extension. For example::
+
+    {
+        "level": "info",
+        "message": "message of the day here"
+    }
+
+Possible values for level are: success, info, warning and error.
+
 ``OPENSTACK_API_VERSIONS``
 --------------------------
 
@@ -501,7 +714,8 @@ Default::
     {
         "data-processing": 1.1,
         "identity": 2.0,
-        "volume": 2
+        "volume": 2,
+        "compute": 2
     }
 
 Overrides for OpenStack API versions. Use this setting to force the
@@ -512,12 +726,14 @@ OpenStack dashboard to use a specific API version for a given service API.
     The version should be formatted as it appears in the URL for the
     service API. For example, the identity service APIs have inconsistent
     use of the decimal point, so valid options would be "2.0" or "3".
-    For example,
-    OPENSTACK_API_VERSIONS = {
-        "data-processing": 1.1,
-        "identity": 3,
-        "volume": 2
-    }
+    For example::
+
+        OPENSTACK_API_VERSIONS = {
+            "data-processing": 1.1,
+            "identity": 3,
+            "volume": 2,
+            "compute": 2
+        }
 
 ``OPENSTACK_ENABLE_PASSWORD_RETRIEVE``
 --------------------------------------
@@ -563,7 +779,8 @@ Default::
 
     {
         'can_set_mount_point': False,
-        'can_set_password': False
+        'can_set_password': False,
+        'requires_keypair': False,
     }
 
 A dictionary containing settings which can be used to identify the
@@ -576,6 +793,9 @@ from the UI.
 
 Setting ``can_set_password`` to ``True`` will enable the option to set
 an administrator password when launching or rebuilding an instance.
+
+Setting ``requires_keypair`` to ``True`` will require users to select
+a key pair when launching an instance.
 
 
 ``OPENSTACK_IMAGE_BACKEND``
@@ -603,6 +823,22 @@ Default::
 
 Used to customize features related to the image service, such as the list of
 supported image formats.
+
+
+``OVERVIEW_DAYS_RANGE``
+-----------------------
+
+.. versionadded:: 10.0.0(Newton)
+
+Default:: ``1``
+
+When set to an integer N (as by default), the start date in the Overview panel
+meters will be today minus N days. This setting is used to limit the amount of
+data fetched by default when rendering the Overview panel. If set to ``None``
+(which corresponds to the behavior in past Horizon versions), the start date
+will be from the beginning of the current month until the current date. The
+legacy behaviour is not recommended for large deployments as Horizon suffers
+significant lags in this case.
 
 
 ``IMAGE_CUSTOM_PROPERTY_TITLES``
@@ -680,6 +916,24 @@ This value must correspond to an existing role name in Keystone. In general,
 the value should match the ``member_role_name`` defined in ``keystone.conf``.
 
 
+``OPENSTACK_KEYSTONE_ADMIN_ROLES``
+----------------------------------
+
+.. versionadded:: 2015.1(Kilo)
+
+Default: ``["admin"]``
+
+The list of roles that have administrator privileges in this OpenStack
+installation. This check is very basic and essentially only works with
+keystone v2.0 and v3 with the default policy file. The setting assumes there
+is a common ``admin`` like role(s) across services. Example uses of this
+setting are:
+
+    * to rename the ``admin`` role to ``cloud-admin``
+    * allowing multiple roles to have administrative privileges, like
+      ``["admin", "cloud-admin", "net-op"]``
+
+
 ``OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT``
 ------------------------------------------
 
@@ -701,6 +955,19 @@ Default: ``"http://%s:5000/v2.0" % OPENSTACK_HOST``
 The full URL for the Keystone endpoint used for authentication. Unless you
 are using HTTPS, running your Keystone server on a nonstandard port, or using
 a nonstandard URL scheme you shouldn't need to touch this setting.
+
+
+``OPENSTACK_KEYSTONE_FEDERATION_MANAGEMENT``
+--------------------------------------------
+
+.. versionadded:: 9.0.0(Mitaka)
+
+Default: ``False``
+
+Set this to True to enable panels that provide the ability for users to manage
+Identity Providers (IdPs) and establish a set of rules to map federation protocol
+attributes to Identity API attributes. This extension requires v3.0+ of the
+Identity API.
 
 
 ``WEBSSO_ENABLED``
@@ -739,11 +1006,46 @@ Default::
           ("saml2", _("Security Assertion Markup Language"))
         )
 
-This is the list of authentication mechanisms available to the user. It includes
-Keystone federation protocols such as OpenID Connect and SAML. The list of
-choices is completely configurable, so as long as the id remains intact. Do not
-remove the credentials mechanism unless you are sure. Once removed, even admins
-will have no way to log into the system via the dashboard.
+This is the list of authentication mechanisms available to the user. It
+includes Keystone federation protocols such as OpenID Connect and SAML, and
+also keys that map to specific identity provider and federation protocol
+combinations (as defined in ``WEBSSO_IDP_MAPPING``). The list of choices is
+completely configurable, so as long as the id remains intact. Do not remove
+the credentials mechanism unless you are sure. Once removed, even admins will
+have no way to log into the system via the dashboard.
+
+
+``WEBSSO_IDP_MAPPING``
+----------------------
+
+.. versionadded:: 8.0.0(Liberty)
+
+Default: ``{}``
+
+A dictionary of specific identity provider and federation protocol combinations.
+From the selected authentication mechanism, the value will be looked up as keys
+in the dictionary. If a match is found, it will redirect the user to a identity
+provider and federation protocol specific WebSSO endpoint in keystone, otherwise
+it will use the value as the protocol_id when redirecting to the WebSSO by
+protocol endpoint.
+
+Example::
+
+        WEBSSO_CHOICES =  (
+            ("credentials", _("Keystone Credentials")),
+            ("oidc", _("OpenID Connect")),
+            ("saml2", _("Security Assertion Markup Language")),
+            ("acme_oidc", "ACME - OpenID Connect"),
+            ("acme_saml2", "ACME - SAML2")
+        )
+
+        WEBSSO_IDP_MAPPING = {
+            "acme_oidc": ("acme", "oidc"),
+            "acme_saml2": ("acme", "saml2")
+        }
+
+.. note::
+  The value is expected to be a tuple formatted as: (<idp_id>, <protocol_id>).
 
 
 ``OPENSTACK_CINDER_FEATURES``
@@ -755,6 +1057,21 @@ Default: ``{'enable_backup': False}``
 
 A dictionary of settings which can be used to enable optional services provided
 by cinder.  Currently only the backup service is available.
+
+
+``OPENSTACK_HEAT_STACK``
+-----------------------------
+
+.. versionadded:: 9.0.0(Mitaka)
+
+Default: ``{'enable_user_pass': True}``
+
+A dictionary of settings to use with heat stacks. Currently, the only setting
+available is "enable_user_pass", which can be used to disable the password
+field while launching the stack. Currently HEAT API needs user password to
+perform all the heat operations because in HEAT API trusts is not enabled by
+default. So, this setting can be set as "False" in-case HEAT uses trusts by
+default otherwise it needs to be set as "True".
 
 
 ``OPENSTACK_NEUTRON_NETWORK``
@@ -773,9 +1090,10 @@ Default::
             'enable_firewall': True,
             'enable_vpn': True,
             'profile_support': None,
-            'supported_provider_types': ["*"],
             'supported_vnic_types': ["*"],
+            'supported_provider_types': ["*"],
             'segmentation_id_range': {},
+            'extra_provider_types': {},
             'enable_fip_topology_check': True,
         }
 
@@ -783,7 +1101,8 @@ A dictionary of settings which can be used to enable optional services provided
 by Neutron and configure Neutron specific features.  The following options are
 available.
 
-``enable_router``:
+``enable_router``
+~~~~~~~~~~~~~~~~~
 
 .. versionadded:: 2014.2(Juno)
 
@@ -795,7 +1114,8 @@ when Neutron is enabled. If your Neutron deployment has no support for
 Layer-3 features, or you do not wish to provide the Layer-3
 features through the Dashboard, this should be set to ``False``.
 
-``enable_distributed_router``:
+``enable_distributed_router``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. versionadded:: 2014.2(Juno)
 
@@ -808,7 +1128,8 @@ when your Neutron plugin (like ML2 plugin) supports DVR feature, DVR
 feature depends on l3-agent configuration, so deployers should set this
 option appropriately depending on your deployment.
 
-``enable_ha_router``:
+``enable_ha_router``
+~~~~~~~~~~~~~~~~~~~~
 
 .. versionadded:: 2014.2(Juno)
 
@@ -821,7 +1142,8 @@ Even when your Neutron plugin (like ML2 plugin) supports HA router mode,
 the feature depends on l3-agent configuration, so deployers should set this
 option appropriately depending on your deployment.
 
-``enable_lb``:
+``enable_lb``
+~~~~~~~~~~~~~
 
 .. versionadded:: 2013.1(Grizzly)
 
@@ -838,7 +1160,8 @@ The load balancer panel is now enabled only when LBaaS feature is available in N
 and this option is no longer needed. We suggest not to use this option to disable the
 load balancer panel from now on.
 
-``enable_quotas``:
+``enable_quotas``
+~~~~~~~~~~~~~~~~~
 
 Default: ``False``
 
@@ -846,7 +1169,8 @@ Enable support for Neutron quotas feature. To make this feature work
 appropriately, you need to use Neutron plugins with quotas extension support
 and quota_driver should be DbQuotaDriver (default config).
 
-``enable_firewall``:
+``enable_firewall``
+~~~~~~~~~~~~~~~~~~~
 
 (Deprecated)
 
@@ -863,7 +1187,8 @@ when FWaaS feature is available in Neutron and this option is no
 longer needed. We suggest not to use this option to disable the
 firewall panel from now on.
 
-``enable_vpn``:
+``enable_vpn``
+~~~~~~~~~~~~~~
 
 (Deprecated)
 
@@ -879,7 +1204,8 @@ when VPNaaS feature is available in Neutron and this option is no
 longer needed. We suggest not to use this option to disable the
 VPN panel from now on.
 
-``profile_support``:
+``profile_support``
+~~~~~~~~~~~~~~~~~~~
 
 Default: ``None``
 
@@ -887,7 +1213,8 @@ This option specifies a type of network port profile support. Currently the
 available value is either ``None`` or ``"cisco"``. ``None`` means to disable
 port profile support. ``cisco`` can be used with Neutron Cisco plugins.
 
-``supported_provider_types``:
+``supported_provider_types``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. versionadded:: 2014.2(Juno)
 
@@ -895,13 +1222,20 @@ Default: ``["*"]``
 
 For use with the provider network extension. Use this to explicitly set which
 provider network types are supported. Only the network types in this list will
-be available to choose from when creating a network. Network types include
-local, flat, vlan, gre, and vxlan. By default all provider network types will
-be available to choose from.
+be available to choose from when creating a network.
+Network types defined in Horizon or defined in ``extra_provider_types``
+settings can be specified in this list.
+As of the Newton release, the network types defined in Horizon include
+network types supported by Neutron ML2 plugin with Open vSwitch driver
+(``local``, ``flat``, ``vlan``, ``gre``, ``vxlan`` and ``geneve``)
+and supported by Midonet plugin (``midonet`` and ``uplink``).
+``["*"]`` means that all provider network types supported by Neutron
+ML2 plugin will be available to choose from.
 
 Example: ``['local', 'flat', 'gre']``
 
-``supported_vnic_types``:
+``supported_vnic_types``
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. versionadded:: 2015.1(Kilo)
 
@@ -916,7 +1250,8 @@ Example ``['normal', 'direct']``
 
 To disable VNIC type selection, set an empty list or None.
 
-``segmentation_id_range``:
+``segmentation_id_range``
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. versionadded:: 2014.2(Juno)
 
@@ -929,9 +1264,51 @@ number is the maximum segmentation ID. Pertains only to the vlan, gre, and
 vxlan network types. By default this option is not provided and each minimum
 and maximum value will be the default for the provider network type.
 
-Example: ``{'vlan': [1024, 2048], 'gre': [4094, 65536]}``
+Example::
 
-``enable_fip_topology_check``:
+    {
+        'vlan': [1024, 2048],
+        'gre': [4094, 65536]
+    }
+
+``extra_provider_types``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 10.0.0(Newton)
+
+Default: ``{}``
+
+For use with the provider network extension.
+This is a dictionary to define extra provider network definitions.
+Network types supported by Neutron depend on the configured plugin.
+Horizon has predefined provider network types but horizon cannot cover
+all of them. If you are using a provider network type not defined
+in advance, you can add a definition through this setting.
+
+The **key** name of each item in this must be a network type used
+in the Neutron API. * **value** should be a dictionary which contains
+the following items:
+
+* ``display_name``: string displayed in the network creation form.
+* ``require_physical_network``: a boolean parameter which indicates
+  this network type requires a physical network.
+* ``require_segmentation_id``: a boolean parameter which indicates
+  this network type requires a segmentation ID.
+  If True, a valid segmentation ID range must be configureed
+  in ``segmentation_id_range`` settings above.
+
+Example::
+
+    {
+        'awesome': {
+            'display_name': 'Awesome',
+            'require_physical_network': False,
+            'require_segmentation_id': True,
+        },
+    }
+
+``enable_fip_topology_check``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Default: ``True``
 
@@ -945,7 +1322,19 @@ Some Neutron vendors do not require it. Some can even attach a FIP to any port
 Set to False if you want to be able to associate a FIP to an instance on a
 subnet with no router if your Neutron backend allows it.
 
-.. versionadded:: 2015.2(Liberty)
+.. versionadded:: 8.0.0(Liberty)
+
+``default_dns_nameservers``:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 10.0.0(Newton)
+
+Default: ``None`` (Empty)
+
+Default DNS servers you would like to use when a subnet is created. This is
+only a default. Users can still choose a different list of dns servers.
+
+Example: ``["8.8.8.8", "8.8.4.4", "208.67.222.222"]``
 
 ``OPENSTACK_SSL_CACERT``
 ------------------------
@@ -991,12 +1380,18 @@ library.
 
 .. versionadded:: 8.0.0(Liberty)
 
+(Deprecated)
+
 Default: ``True``
 
 Hashing tokens from Keystone keeps the Horizon session data smaller, but it
 doesn't work in some cases when using PKI tokens.  Uncomment this value and
 set it to False if using PKI tokens and there are 401 errors due to token
 hashing.
+
+This option is now marked as "deprecated" and will be removed in Ocata or a
+later release. PKI tokens currently work with hashing, and Keystone will soon
+deprecate usage of PKI tokens.
 
 
 ``POLICY_FILES``
@@ -1026,10 +1421,12 @@ define the policy rules actions are verified against.
 
 .. versionadded:: 2013.2(Havana)
 
-Default: ``"1800"``
+Default: ``"3600"``
 
-Specifies the timespan in seconds inactivity, until a user is considered as
- logged out.
+This SESSION_TIMEOUT is a method to supercede the token timeout with a shorter
+horizon session timeout (in seconds).  So if your token expires in 60 minutes,
+a value of 1800 will log users out after 30 minutes.
+
 
 ``SAHARA_AUTO_IP_ALLOCATION_ENABLED``
 -------------------------------------
@@ -1067,18 +1464,6 @@ the web server.
 For example, if you're accessing the Dashboard via
 https://<your server>/dashboard, you would set this to ``"/dashboard/"``.
 
-Additionally, setting the ``"$webroot"`` SCSS variable is required. You
-can change this directly in
-``"openstack_dashboard/static/dashboard/scss/_variables.scss"`` or in the
-``"_variables.scss"`` file in your custom theme. For more information on
-custom themes, see: ``"CUSTOM_THEME_PATH"``.
-
-Make sure you run ``python manage.py collectstatic`` and
-``python manage.py compress`` after you change the ``_variables.scss`` file.
-
-For your convenience, a custom theme for only setting the web root has been
-provided see: ``"/horizon/openstack_dashboard/themes/webroot"``
-
 .. note::
 
     Additional settings may be required in the config files of your webserver
@@ -1095,7 +1480,7 @@ provided see: ``"/horizon/openstack_dashboard/themes/webroot"``
     alias.
 
 ``STATIC_ROOT``
---------------
+---------------
 
 .. versionadded:: 8.0.0(Liberty)
 
@@ -1105,7 +1490,7 @@ The absolute path to the directory where static files are collected when
 collectstatic is run.
 
 For more information see:
-https://docs.djangoproject.com/en/1.7/ref/settings/#static-root
+https://docs.djangoproject.com/en/dev/ref/settings/#static-root
 
 ``STATIC_URL``
 --------------
@@ -1125,9 +1510,12 @@ webserver configuration should be updated to match.
 
     The value for STATIC_URL must end in '/'.
 
-For more information see:
-https://docs.djangoproject.com/en/1.7/ref/settings/#static-url
+This value is also available in the scss namespace with the variable name
+$static_url.  Make sure you run ``python manage.py collectstatic`` and
+``python manage.py compress`` after any changes to this value in settings.py.
 
+For more information see:
+https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 
 ``DISALLOW_IFRAME_EMBED``
 -------------------------
@@ -1164,6 +1552,77 @@ Can be used to selectively disable certain costly extensions for performance
 reasons.
 
 
+``ADMIN_FILTER_DATA_FIRST``
+---------------------------
+
+.. versionadded:: 10.0.0(Newton)
+
+Default: ``False``
+
+If True, when admin views load, an empty table will be rendered and the
+user will be asked to provide a search criteria first (in case no search
+criteria was provided) before loading any data.
+
+``OPERATION_LOG_ENABLED``
+-------------------------
+
+.. versionadded:: 10.0.0(Newton)
+
+Default: ``False``
+
+This setting can be used to log operations of all of users on Horizon.
+In this log, it can include date and time of an operation, an operation URL,
+user information such as domain, project and user, and so on.
+And this log format is configurable. In detail, you can see OPERATION_LOG_OPTIONS.
+
+.. note::
+
+  If you use this feature, you need to configure the logger setting like
+  a outputting path for operation log in ``local_settings.py``.
+
+
+``OPERATION_LOG_OPTIONS``
+------------------------
+
+.. versionadded:: 10.0.0(Newton)
+
+Default::
+
+        {
+         'mask_fields': ['password'],
+         'target_methods': ['POST'],
+         'format': ("[%(domain_name)s] [%(domain_id)s] [%(project_name)s]"
+             " [%(project_id)s] [%(user_name)s] [%(user_id)s] [%(request_scheme)s]"
+             " [%(referer_url)s] [%(request_url)s] [%(message)s] [%(method)s]"
+             " [%(http_status)s] [%(param)s]"),
+        }
+
+This setting controls the behavior of the operation log.
+
+* ``mask_fields`` is a list of keys of post data which should be masked from the
+  point of view of security. Fields like ``password`` should be included.
+  The fields specified in ``mask_fields`` are logged as ``********``.
+* ``target_methods`` is a request method which is logged to a operation log.
+  The valid methods are ``POST``, ``GET``, ``PUT``, ``DELETE``.
+* ``format`` defines the operation log format.
+  Currently you can use the following keywords.
+  The default value contains all keywords.
+
+  * %(domain_name)s
+  * %(domain_id)s
+  * %(project_name)s
+  * %(project_id)s
+  * %(user_name)s
+  * %(user_id)s
+  * %(request_scheme)s
+  * %(referer_url)s
+  * %(request_url)s
+  * %(message)s
+  * %(method)s
+  * %(http_status)s
+  * %(param)s
+
+
 Django Settings (Partial)
 =========================
 
@@ -1191,11 +1650,12 @@ IP address, that should be added. The setting may contain more than one entry.
 
 .. note::
 
-    ALLOWED_HOSTS is required for versions of Django 1.5 and newer.
-    If Horizon is running in production (DEBUG is False), set this
-    with the list of host/domain names that the application can serve.
+    ALLOWED_HOSTS is required. If Horizon is running in production (DEBUG is False),
+    set this with the list of host/domain names that the application can serve.
     For more information see:
     https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+
+.. _debug_setting:
 
 ``DEBUG`` and ``TEMPLATE_DEBUG``
 --------------------------------
@@ -1207,9 +1667,49 @@ Default: ``True``
 Controls whether unhandled exceptions should generate a generic 500 response
 or present the user with a pretty-formatted debug information page.
 
+When set, CACHED_TEMPLATE_LOADERS will not be cached.
+
 This setting should **always** be set to ``False`` for production deployments
 as the debug page can display sensitive information to users and attackers
 alike.
+
+``TEMPLATE_LOADERS``
+---------------------------
+
+.. versionadded:: 10.0.0(Newton)
+
+These template loaders will be the first loaders and get loaded before the
+CACHED_TEMPLATE_LOADERS. Use ADD_TEMPLATE_LOADERS if you want to add loaders at
+the end and not cache loaded templates.
+After the whole settings process has gone through, TEMPLATE_LOADERS will be:
+
+    TEMPLATE_LOADERS += (
+            ('django.template.loaders.cached.Loader', CACHED_TEMPLATE_LOADERS),
+        ) + tuple(ADD_TEMPLATE_LOADERS)
+
+``CACHED_TEMPLATE_LOADERS``
+---------------------------
+
+.. versionadded:: 10.0.0(Newton)
+
+Template loaders defined here will have their output cached if DEBUG
+is set to False.
+
+``ADD_TEMPLATE_LOADERS``
+------------------------
+
+.. versionadded:: 10.0.0(Newton)
+
+Template loaders defined here will be be loaded at the end of TEMPLATE_LOADERS,
+after the CACHED_TEMPLATE_LOADERS and will never have a cached output.
+
+``NG_TEMPLATE_CACHE_AGE``
+-------------------------
+
+.. versionadded:: 10.0.0(Newton)
+
+Angular Templates are cached using this duration (in seconds) if DEBUG
+is set to False.  Default value is ``2592000`` (or 30 days).
 
 ``SECRET_KEY``
 --------------
@@ -1307,7 +1807,7 @@ This is needed to expose static files from a plugin.
 .. versionadded:: 2014.2(Juno)
 
 A list of AngularJS modules to be loaded when Angular bootstraps. These modules
-are added as dependencies on the root Horizon application ``hz``.
+are added as dependencies on the root Horizon application ``horizon``.
 
 ``ADD_JS_FILES``
 ----------------------
@@ -1329,7 +1829,7 @@ Jasmine is a behavior-driven development framework for testing JavaScript code.
 ``ADD_SCSS_FILES``
 ----------------------
 
-.. versionadded:: 2015.2(Liberty)
+.. versionadded:: 8.0.0(Liberty)
 
 A list of scss files to be included in the compressed set of files that are
 loaded on every page. We recommend one scss file per dashboard, use @import if
@@ -1340,7 +1840,7 @@ you need to include additional scss files for panels.
 ``AUTO_DISCOVER_STATIC_FILES``
 ------------------------------
 
-.. versionadded:: 2015.2(Liberty)
+.. versionadded:: 8.0.0(Liberty)
 
 If set to ``True``, JavaScript files and static angular html template files will be
 automatically discovered from the `static` folder in each apps listed in ADD_INSTALLED_APPS.
@@ -1395,11 +1895,11 @@ If set to ``True``, this dashboard will be set as the default dashboard.
 Examples
 --------
 
-To disable the Router dashboard locally, create a file
-``openstack_dashboard/local/enabled/_40_router.py`` with the following
+To disable a dashboard locally, create a file
+``openstack_dashboard/local/enabled/_40_dashboard-name.py`` with the following
 content::
 
-    DASHBOARD = 'router'
+    DASHBOARD = '<dashboard-name>'
     DISABLED = True
 
 To add a Tuskar-UI (Infrastructure) dashboard, you have to install it, and then
@@ -1541,4 +2041,3 @@ following content::
     PANEL_GROUP = 'plugin_panel_group'
     PANEL_GROUP_NAME = 'Plugin Panel Group'
     PANEL_GROUP_DASHBOARD = 'admin'
-

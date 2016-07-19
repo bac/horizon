@@ -18,7 +18,6 @@
 
 import re
 
-from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -54,7 +53,8 @@ class CreateKeypair(forms.SelfHandlingForm):
             exceptions.handle(self.request, ignore=True)
             keypairs = []
         if name in [keypair.name for keypair in keypairs]:
-            raise ValidationError(_('The name is already in use.'))
+            error_msg = _("The name is already in use.")
+            self._errors['name'] = self.error_class([error_msg])
         return cleaned_data
 
 
@@ -63,8 +63,8 @@ class ImportKeypair(forms.SelfHandlingForm):
                             label=_("Key Pair Name"),
                             regex=KEYPAIR_NAME_REGEX,
                             error_messages=KEYPAIR_ERROR_MESSAGES)
-    public_key = forms.CharField(label=_("Public Key"), widget=forms.Textarea(
-        attrs={'class': 'modal-body-fixed-width'}))
+    public_key = forms.CharField(label=_("Public Key"),
+                                 widget=forms.Textarea())
 
     def handle(self, request, data):
         try:

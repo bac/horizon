@@ -11,6 +11,7 @@
 # under the License.
 
 from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -65,6 +66,7 @@ class CreateView(ExtraSpecMixin, forms.ModalFormView):
     submit_url = "horizon:admin:volumes:volume_types:extras:create"
     template_name = 'admin/volumes/volume_types/extras/create.html'
     success_url = 'horizon:admin:volumes:volume_types:extras:index'
+    cancel_url = reverse_lazy('horizon:admin:volumes:volume_types_tab')
 
     def get_initial(self):
         return {'type_id': self.kwargs['type_id']}
@@ -89,6 +91,7 @@ class EditView(ExtraSpecMixin, forms.ModalFormView):
     submit_url = "horizon:admin:volumes:volume_types:extras:edit"
     template_name = 'admin/volumes/volume_types/extras/edit.html'
     success_url = 'horizon:admin:volumes:volume_types:extras:index'
+    cancel_url = reverse_lazy('horizon:admin:volumes:volume_types_tab')
 
     def get_success_url(self):
         return reverse(self.success_url,
@@ -116,3 +119,10 @@ class EditView(ExtraSpecMixin, forms.ModalFormView):
         context['submit_url'] = reverse(self.submit_url, args=args)
         context['modal_header'] = self.modal_header % self.kwargs['key']
         return context
+
+    def form_invalid(self, form):
+        context = super(EditView, self).get_context_data()
+        context = self._populate_context(context)
+        context['form'] = form
+        context['modal_header'] = self.modal_header % self.kwargs['key']
+        return self.render_to_response(context)

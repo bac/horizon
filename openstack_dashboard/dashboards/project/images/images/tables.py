@@ -26,7 +26,6 @@ from horizon import tables
 from horizon.utils.memoized import memoized  # noqa
 
 from openstack_dashboard import api
-from openstack_dashboard.api import base
 
 NOT_LAUNCHABLE_FORMATS = ['aki', 'ari']
 
@@ -61,7 +60,7 @@ class LaunchImageNG(LaunchImage):
     name = "launch_image_ng"
     verbose_name = _("Launch")
     url = "horizon:project:images:index"
-    classes = ("btn-launch")
+    classes = ("btn-launch", )
     ajax = False
 
     def __init__(self, attrs=None, **kwargs):
@@ -71,9 +70,12 @@ class LaunchImageNG(LaunchImage):
     def get_link_url(self, datum):
         imageId = self.table.get_object_id(datum)
         url = reverse(self.url)
-        ngclick = "openLaunchInstanceWizard({successUrl: '%s', imageId: '%s'})"
-        self.attrs.update({"ng-controller": "LaunchInstanceModalController",
-                           "ng-click": ngclick % (url, imageId)})
+        ngclick = "modal.openLaunchInstanceWizard(" \
+            "{successUrl: '%s', imageId: '%s'})" % (url, imageId)
+        self.attrs.update({
+            "ng-controller": "LaunchInstanceModalController as modal",
+            "ng-click": ngclick
+        })
         return "javascript:void(0);"
 
 
@@ -154,9 +156,33 @@ class CreateVolumeFromImage(tables.LinkAction):
 
     def allowed(self, request, image=None):
         if (image and image.container_format not in NOT_LAUNCHABLE_FORMATS
-                and base.is_service_enabled(request, 'volume')):
+                and api.cinder.is_volume_service_enabled(request)):
             return image.status == "active"
         return False
+
+
+class UpdateMetadata(tables.LinkAction):
+    name = "update_metadata"
+    verbose_name = _("Update Metadata")
+    ajax = False
+    icon = "pencil"
+    attrs = {"ng-controller": "MetadataModalHelperController as modal"}
+
+    def __init__(self, attrs=None, **kwargs):
+        kwargs['preempt'] = True
+        super(UpdateMetadata, self).__init__(attrs, **kwargs)
+
+    def get_link_url(self, datum):
+        image_id = self.table.get_object_id(datum)
+        self.attrs['ng-click'] = (
+            "modal.openMetadataModal('image', '%s', true)" % image_id)
+        return "javascript:void(0);"
+
+    def allowed(self, request, image=None):
+        return (api.glance.VERSIONS.active >= 2 and
+                image and
+                image.status == "active" and
+                image.owner == request.user.project_id)
 
 
 def filter_tenants():
@@ -165,7 +191,7 @@ def filter_tenants():
 
 @memoized
 def filter_tenant_ids():
-    return map(lambda ft: ft['tenant'], filter_tenants())
+    return [ft['tenant'] for ft in filter_tenants()]
 
 
 class OwnerFilter(tables.FixedFilterAction):
@@ -178,7 +204,7 @@ class OwnerFilter(tables.FixedFilterAction):
             new_dict = button_dict.copy()
             new_dict['value'] = new_dict['tenant']
             buttons.append(new_dict)
-        buttons.append(make_dict(_('Shared with Me'), 'shared',
+        buttons.append(make_dict(_('Shared with Project'), 'shared',
                                  'fa-share-square-o'))
         buttons.append(make_dict(_('Public'), 'public', 'fa-group'))
         return buttons
@@ -195,13 +221,13 @@ class OwnerFilter(tables.FixedFilterAction):
 
 def get_image_categories(im, user_tenant_id):
     categories = []
-    if im.is_public:
+    if api.glance.is_image_public(im):
         categories.append('public')
     if im.owner == user_tenant_id:
         categories.append('project')
     elif im.owner in filter_tenant_ids():
         categories.append(im.owner)
-    elif not im.is_public:
+    elif not api.glance.is_image_public(im):
         categories.append('shared')
     return categories
 
@@ -255,6 +281,7 @@ class ImagesTable(tables.DataTable):
         ("pending_delete", None),
         ("killed", False),
         ("deleted", False),
+        ("deactivated", False),
     )
     STATUS_DISPLAY_CHOICES = (
         ("active", pgettext_lazy("Current status of an Image", u"Active")),
@@ -264,6 +291,8 @@ class ImagesTable(tables.DataTable):
                                          u"Pending Delete")),
         ("killed", pgettext_lazy("Current status of an Image", u"Killed")),
         ("deleted", pgettext_lazy("Current status of an Image", u"Deleted")),
+        ("deactivated", pgettext_lazy("Current status of an Image",
+                                      u"Deactivated")),
     )
     TYPE_CHOICES = (
         ("image", pgettext_lazy("Type of an image", u"Image")),
@@ -271,7 +300,8 @@ class ImagesTable(tables.DataTable):
     )
     name = tables.Column(get_image_name,
                          link="horizon:project:images:images:detail",
-                         verbose_name=_("Image Name"))
+                         truncate=40,
+                         verbose_name=_("Image Name"),)
     image_type = tables.Column(get_image_type,
                                verbose_name=_("Type"),
                                display_choices=TYPE_CHOICES)
@@ -301,10 +331,10 @@ class ImagesTable(tables.DataTable):
         verbose_name = _("Images")
         table_actions = (OwnerFilter, CreateImage, DeleteImage,)
         launch_actions = ()
-        if getattr(settings, 'LAUNCH_INSTANCE_LEGACY_ENABLED', True):
+        if getattr(settings, 'LAUNCH_INSTANCE_LEGACY_ENABLED', False):
             launch_actions = (LaunchImage,) + launch_actions
-        if getattr(settings, 'LAUNCH_INSTANCE_NG_ENABLED', False):
+        if getattr(settings, 'LAUNCH_INSTANCE_NG_ENABLED', True):
             launch_actions = (LaunchImageNG,) + launch_actions
         row_actions = launch_actions + (CreateVolumeFromImage,
-                                        EditImage, DeleteImage,)
-        pagination_param = "image_marker"
+                                        EditImage, UpdateMetadata,
+                                        DeleteImage,)

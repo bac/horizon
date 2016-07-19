@@ -16,6 +16,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import operator
 
 from django.core.urlresolvers import reverse
@@ -39,6 +40,8 @@ from openstack_dashboard.dashboards.identity.users \
 from openstack_dashboard.dashboards.identity.users \
     import tables as project_tables
 
+LOG = logging.getLogger(__name__)
+
 
 class IndexView(tables.DataTableView):
     table_class = project_tables.UsersTable
@@ -47,9 +50,10 @@ class IndexView(tables.DataTableView):
 
     def get_data(self):
         users = []
-        domain_context = self.request.session.get('domain_context', None)
+
         if policy.check((("identity", "identity:list_users"),),
                         self.request):
+            domain_context = api.keystone.get_effective_domain_id(self.request)
             try:
                 users = api.keystone.user_list(self.request,
                                                domain=domain_context)
@@ -68,6 +72,11 @@ class IndexView(tables.DataTableView):
         else:
             msg = _("Insufficient privilege level to view user information.")
             messages.info(self.request, msg)
+
+        if api.keystone.VERSIONS.active >= 3:
+            domain_lookup = api.keystone.domain_lookup(self.request)
+            for u in users:
+                u.domain_name = domain_lookup.get(u.domain_id)
         return users
 
 
@@ -105,12 +114,18 @@ class UpdateView(forms.ModalFormView):
         user = self.get_object()
         domain_id = getattr(user, "domain_id", None)
         domain_name = ''
-        # Retrieve the domain name where the project belong
+        # Retrieve the domain name where the project belongs
         if api.keystone.VERSIONS.active >= 3:
             try:
-                domain = api.keystone.domain_get(self.request,
-                                                 domain_id)
-                domain_name = domain.name
+                if policy.check((("identity", "identity:get_domain"),),
+                                self.request):
+                    domain = api.keystone.domain_get(self.request, domain_id)
+                    domain_name = domain.name
+
+                else:
+                    domain = api.keystone.get_default_domain(self.request)
+                    domain_name = domain.get('name')
+
             except Exception:
                 exceptions.handle(self.request,
                                   _('Unable to retrieve project domain.'))
@@ -119,7 +134,8 @@ class UpdateView(forms.ModalFormView):
                 'id': user.id,
                 'name': user.name,
                 'project': user.project_id,
-                'email': getattr(user, 'email', None)}
+                'email': getattr(user, 'email', None),
+                'description': getattr(user, 'description', None)}
 
 
 class CreateView(forms.ModalFormView):
@@ -161,28 +177,50 @@ class CreateView(forms.ModalFormView):
 
 class DetailView(views.HorizonTemplateView):
     template_name = 'identity/users/detail.html'
-    page_title = _("User Details: {{ user.name }}")
+    page_title = "{{ user.name }}"
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
         user = self.get_data()
+        tenant = self.get_tenant(user.project_id)
         table = project_tables.UsersTable(self.request)
         domain_id = getattr(user, "domain_id", None)
         domain_name = ''
         if api.keystone.VERSIONS.active >= 3:
             try:
-                domain = api.keystone.domain_get(self.request, domain_id)
-                domain_name = domain.name
+                if policy.check((("identity", "identity:get_domain"),),
+                                self.request):
+                    domain = api.keystone.domain_get(
+                        self.request, domain_id)
+                    domain_name = domain.name
+                else:
+                    domain = api.keystone.get_default_domain(self.request)
+                    domain_name = domain.get('name')
             except Exception:
                 exceptions.handle(self.request,
                                   _('Unable to retrieve project domain.'))
+            context["description"] = getattr(user, "description", _("None"))
 
         context["user"] = user
+        if tenant:
+            context["tenant_name"] = tenant.name
         context["domain_id"] = domain_id
         context["domain_name"] = domain_name
         context["url"] = self.get_redirect_url()
         context["actions"] = table.render_row_actions(user)
         return context
+
+    @memoized.memoized_method
+    def get_tenant(self, project_id):
+        tenant = None
+        if project_id:
+            try:
+                tenant = api.keystone.tenant_get(self.request, project_id)
+            except Exception as e:
+                msg = ('Failed to get tenant %(project_id)s: %(reason)s' %
+                       {'project_id': project_id, 'reason': e})
+                LOG.error(msg)
+        return tenant
 
     @memoized.memoized_method
     def get_data(self):

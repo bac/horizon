@@ -79,6 +79,7 @@ module.exports = function (config) {
       xstaticPath + 'rickshaw/data/rickshaw.js',
       xstaticPath + 'angular_smart_table/data/smart-table.js',
       xstaticPath + 'angular_lrdragndrop/data/lrdragndrop.js',
+      xstaticPath + 'angular_fileupload/data/ng-file-upload-all.js',
       xstaticPath + 'spin/data/spin.js',
       xstaticPath + 'spin/data/spin.jquery.js',
 
@@ -99,9 +100,6 @@ module.exports = function (config) {
        * significant.
        */
       '!(horizon)/**/!(*.spec|*.mock).js',
-
-      // Magic search requires late ordering due to overriding.
-      xstaticPath + 'magic_search/data/magic_search.js',
 
       /**
        * Then, list files for mocks with `mock.js` extension. The order
@@ -125,26 +123,31 @@ module.exports = function (config) {
 
     frameworks: ['jasmine'],
 
-    browsers: ['PhantomJS'],
+    browsers: ['Chrome'],
 
-    phantomjsLauncher: {
-      // Have phantomjs exit if a ResourceError is encountered
-      // (useful if karma exits without killing phantom)
-      exitOnResourceError: true
-    },
+    browserNoActivityTimeout: 60000,
 
-    reporters: ['progress', 'coverage'],
+    reporters: ['progress', 'coverage', 'threshold'],
 
     plugins: [
-      'karma-phantomjs-launcher',
+      'karma-chrome-launcher',
       'karma-jasmine',
       'karma-ng-html2js-preprocessor',
-      'karma-coverage'
+      'karma-coverage',
+      'karma-threshold-reporter'
     ],
 
     coverageReporter: {
       type: 'html',
-      dir: '../.coverage-karma/'
+      dir: '../../cover/horizon'
+    },
+
+    // Coverage threshold values.
+    thresholdReporter: {
+      statements: 93, // target 100
+      branches: 84, // target 100
+      functions: 91, // target 100
+      lines: 93 // target 100
     }
   });
 };

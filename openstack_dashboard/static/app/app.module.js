@@ -23,8 +23,11 @@
    */
   var libraryModules = [
     'gettext',
+    'lrDragNDrop',
     'ngCookies',
     'ngSanitize',
+    'smart-table',
+    'ngFileUpload',
     'ui.bootstrap'
   ];
 
@@ -34,9 +37,9 @@
    */
   var horizonBuiltInModules = [
     'horizon.app.core',
+    'horizon.app.resources',
     'horizon.app.tech-debt',
     'horizon.auth',
-    'hz.dashboard',
     'horizon.framework'
   ];
 
@@ -55,13 +58,39 @@
    * 3) Horizon's plug-in modules.
    */
   angular
-    .module('horizon.app', []
-      .concat(libraryModules)
-      .concat(horizonBuiltInModules)
-      .concat(horizonPlugInModules)
-    )
-
+    .module('horizon.app', ['ngRoute']
+            .concat(libraryModules)
+            .concat(horizonBuiltInModules)
+            .concat(horizonPlugInModules)
+           )
+    .config(configHorizon)
     .run(updateHorizon);
+
+  configHorizon.$inject = [
+    '$locationProvider',
+    '$routeProvider'
+  ];
+
+  /**
+   * Configure the Horizon Angular Application.
+   * This sets up the $locationProvider Service to use HTML5 Mode and
+   * the Hash Prefix to use when it is not supported.
+   *
+   * It also sets the default Angular route which will apply if
+   * a link is clicked that doesn't match any current Angular route.
+   *
+   */
+  function configHorizon($locationProvider, $routeProvider) {
+    if (angular.element('base').length === 1) {
+      $locationProvider.html5Mode(true).hashPrefix('!');
+
+      $routeProvider
+        .otherwise({
+          template: '',
+          controller: 'RedirectController'
+        });
+    }
+  }
 
   updateHorizon.$inject = [
     'gettextCatalog',
@@ -69,7 +98,8 @@
     'horizon.framework.util.tech-debt.helper-functions',
     '$cookieStore',
     '$http',
-    '$cookies'
+    '$cookies',
+    '$route'
   ];
 
   function updateHorizon(
@@ -78,23 +108,36 @@
     hzUtils,
     $cookieStore,
     $http,
-    $cookies) {
+    $cookies,
+    $route
+  ) {
 
     $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
 
-    //expose the configuration for horizon legacy variable
+    // expose the legacy utils module
     horizon.utils = hzUtils;
 
     horizon.conf.spinner_options = spinnerOptions;
 
-    horizon.cookies = angular.extend({}, $cookieStore, {
-      put: put,
-      getRaw: getRaw
-    });
+    if (angular.version.major === 1 && angular.version.minor < 4) {
+      horizon.cookies = angular.extend({}, $cookieStore, {
+        getObject: $cookieStore.get,
+        put: put,
+        putObject: put,
+        getRaw: getRaw
+      });
+    } else {
+      horizon.cookies = $cookies;
+    }
 
     // rewire the angular-gettext catalog to use django catalog
     gettextCatalog.setCurrentLanguage(horizon.languageCode);
     gettextCatalog.setStrings(horizon.languageCode, django.catalog);
+
+    // because of angular startup, and our use of ng-include with
+    // embedded ng-view, we need to re-kick ngRoute after everything's
+    // resolved
+    $route.reload();
 
     /*
      * cookies are updated at the end of current $eval, so for the horizon

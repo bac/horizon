@@ -13,6 +13,8 @@
 import json
 import logging
 
+import django
+from django.conf import settings
 from django.utils import html
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_variables  # noqa
@@ -124,6 +126,13 @@ class TemplateForm(forms.SelfHandlingForm):
         widget=forms.widgets.Textarea(attrs=attributes),
         required=False)
 
+    if django.VERSION >= (1, 9):
+        # Note(Itxaka): On django>=1.9 Charfield has an strip option that
+        # we need to set to False as to not hit
+        # https://bugs.launchpad.net/python-heatclient/+bug/1546166
+        environment_data.strip = False
+        template_data.strip = False
+
     def __init__(self, *args, **kwargs):
         self.next_view = kwargs.pop('next_view')
         super(TemplateForm, self).__init__(*args, **kwargs)
@@ -138,19 +147,20 @@ class TemplateForm(forms.SelfHandlingForm):
 
         # Validate the template and get back the params.
         kwargs = {}
-        if cleaned['template_data']:
-            kwargs['template'] = cleaned['template_data']
-        else:
-            kwargs['template_url'] = cleaned['template_url']
-
         if cleaned['environment_data']:
             kwargs['environment'] = cleaned['environment_data']
-
         try:
+            files, tpl =\
+                api.heat.get_template_files(cleaned.get('template_data'),
+                                            cleaned.get('template_url'))
+            kwargs['files'] = files
+            kwargs['template'] = tpl
             validated = api.heat.template_validate(self.request, **kwargs)
             cleaned['template_validate'] = validated
+            cleaned['template_validate']['files'] = files
+            cleaned['template_validate']['template'] = tpl
         except Exception as e:
-            raise forms.ValidationError(unicode(e))
+            raise forms.ValidationError(six.text_type(e))
 
         return cleaned
 
@@ -189,7 +199,7 @@ class TemplateForm(forms.SelfHandlingForm):
                 except Exception as e:
                     msg = _('There was a problem parsing the'
                             ' %(prefix)s: %(error)s')
-                    msg = msg % {'prefix': prefix, 'error': e}
+                    msg = msg % {'prefix': prefix, 'error': six.text_type(e)}
                     raise forms.ValidationError(msg)
             cleaned[data_str] = tpl
 
@@ -208,9 +218,7 @@ class TemplateForm(forms.SelfHandlingForm):
 
     def create_kwargs(self, data):
         kwargs = {'parameters': data['template_validate'],
-                  'environment_data': data['environment_data'],
-                  'template_data': data['template_data'],
-                  'template_url': data['template_url']}
+                  'environment_data': data['environment_data']}
         if data.get('stack_id'):
             kwargs['stack_id'] = data['stack_id']
         return kwargs
@@ -249,15 +257,15 @@ class CreateStackForm(forms.SelfHandlingForm):
     class Meta(object):
         name = _('Create Stack')
 
-    template_data = forms.CharField(
-        widget=forms.widgets.HiddenInput,
-        required=False)
-    template_url = forms.CharField(
-        widget=forms.widgets.HiddenInput,
-        required=False)
     environment_data = forms.CharField(
         widget=forms.widgets.HiddenInput,
         required=False)
+    if django.VERSION >= (1, 9):
+        # Note(Itxaka): On django>=1.9 Charfield has an strip option that
+        # we need to set to False as to not hit
+        # https://bugs.launchpad.net/python-heatclient/+bug/1546166
+        environment_data.strip = False
+
     parameters = forms.CharField(
         widget=forms.widgets.HiddenInput)
     stack_name = forms.RegexField(
@@ -281,18 +289,24 @@ class CreateStackForm(forms.SelfHandlingForm):
     def __init__(self, *args, **kwargs):
         parameters = kwargs.pop('parameters')
         # special case: load template data from API, not passed in params
-        if(kwargs.get('validate_me')):
+        if kwargs.get('validate_me'):
             parameters = kwargs.pop('validate_me')
         super(CreateStackForm, self).__init__(*args, **kwargs)
+
+        if self._stack_password_enabled():
+            self.fields['password'] = forms.CharField(
+                label=_('Password for user "%s"') % self.request.user.username,
+                help_text=_('This is required for operations to be performed '
+                            'throughout the lifecycle of the stack'),
+                widget=forms.PasswordInput())
+
         self._build_parameter_fields(parameters)
 
-    def _build_parameter_fields(self, template_validate):
-        self.fields['password'] = forms.CharField(
-            label=_('Password for user "%s"') % self.request.user.username,
-            help_text=_('This is required for operations to be performed '
-                        'throughout the lifecycle of the stack'),
-            widget=forms.PasswordInput())
+    def _stack_password_enabled(self):
+        stack_settings = getattr(settings, 'OPENSTACK_HEAT_STACK', {})
+        return stack_settings.get('enable_user_pass', True)
 
+    def _build_parameter_fields(self, template_validate):
         self.help_text = template_validate['Description']
 
         params = template_validate.get('Parameters', {})
@@ -335,11 +349,12 @@ class CreateStackForm(forms.SelfHandlingForm):
             elif param_type in ('CommaDelimitedList', 'String', 'Json'):
                 if 'MinLength' in param:
                     field_args['min_length'] = int(param['MinLength'])
-                    field_args['required'] = param.get('MinLength', 0) > 0
+                    field_args['required'] = field_args['min_length'] > 0
                 if 'MaxLength' in param:
                     field_args['max_length'] = int(param['MaxLength'])
                 if hidden:
-                    field_args['widget'] = forms.PasswordInput()
+                    field_args['widget'] = forms.PasswordInput(
+                        render_value=True)
                 field = forms.CharField(**field_args)
 
             elif param_type == 'Number':
@@ -353,6 +368,7 @@ class CreateStackForm(forms.SelfHandlingForm):
             # (see https://bugs.launchpad.net/heat/+bug/1361448)
             # so for better compatibility both are checked here
             elif param_type in ('Boolean', 'boolean'):
+                field_args['required'] = False
                 field = forms.BooleanField(**field_args)
 
             if field:
@@ -368,20 +384,18 @@ class CreateStackForm(forms.SelfHandlingForm):
             'timeout_mins': data.get('timeout_mins'),
             'disable_rollback': not(data.get('enable_rollback')),
             'parameters': dict(params_list),
-            'password': data.get('password')
+            'files': json.loads(data.get('parameters')).get('files'),
+            'template': json.loads(data.get('parameters')).get('template')
         }
-
-        if data.get('template_data'):
-            fields['template'] = data.get('template_data')
-        else:
-            fields['template_url'] = data.get('template_url')
+        if data.get('password'):
+            fields['password'] = data.get('password')
 
         if data.get('environment_data'):
             fields['environment'] = data.get('environment_data')
 
         try:
             api.heat.stack_create(self.request, **fields)
-            messages.success(request, _("Stack creation started."))
+            messages.info(request, _("Stack creation started."))
             return True
         except Exception:
             exceptions.handle(request)
@@ -422,21 +436,18 @@ class EditStackForm(CreateStackForm):
             'timeout_mins': data.get('timeout_mins'),
             'disable_rollback': not(data.get('enable_rollback')),
             'parameters': dict(params_list),
-            'password': data.get('password')
+            'files': json.loads(data.get('parameters')).get('files'),
+            'template': json.loads(data.get('parameters')).get('template')
         }
+        if data.get('password'):
+            fields['password'] = data.get('password')
 
-        # if the user went directly to this form, resubmit the existing
-        # template data. otherwise, submit what they had from the first form
-        if data.get('template_data'):
-            fields['template'] = data.get('template_data')
-        elif data.get('template_url'):
-            fields['template_url'] = data.get('template_url')
-        elif data.get('parameters'):
-            fields['template'] = data.get('parameters')
+        if data.get('environment_data'):
+            fields['environment'] = data.get('environment_data')
 
         try:
             api.heat.stack_update(self.request, stack_id=stack_id, **fields)
-            messages.success(request, _("Stack update started."))
+            messages.info(request, _("Stack update started."))
             return True
         except Exception:
             exceptions.handle(request)
@@ -460,12 +471,9 @@ class PreviewStackForm(CreateStackForm):
             'timeout_mins': data.get('timeout_mins'),
             'disable_rollback': not(data.get('enable_rollback')),
             'parameters': dict(params_list),
+            'files': json.loads(data.get('parameters')).get('files'),
+            'template': json.loads(data.get('parameters')).get('template')
         }
-
-        if data.get('template_data'):
-            fields['template'] = data.get('template_data')
-        else:
-            fields['template_url'] = data.get('template_url')
 
         if data.get('environment_data'):
             fields['environment'] = data.get('environment_data')

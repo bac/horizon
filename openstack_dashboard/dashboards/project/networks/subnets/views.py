@@ -15,6 +15,7 @@
 """
 Views for managing Neutron Subnets.
 """
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
@@ -48,10 +49,17 @@ class CreateView(workflows.WorkflowView):
             msg = _("Unable to retrieve network.")
             exceptions.handle(self.request, msg, redirect=redirect)
 
+    def get_default_dns_servers(self):
+        # this returns the default dns servers to be used for new subnets
+        dns_default = "\n".join(getattr(settings, 'OPENSTACK_NEUTRON_NETWORK',
+                                        {}).get('default_dns_nameservers', ''))
+        return dns_default
+
     def get_initial(self):
         network = self.get_object()
         return {"network_id": self.kwargs['network_id'],
-                "network_name": network.name_or_id}
+                "network_name": network.name_or_id,
+                "dns_nameservers": self.get_default_dns_servers()}
 
 
 class UpdateView(workflows.WorkflowView):
@@ -99,8 +107,8 @@ class UpdateView(workflows.WorkflowView):
 
 class DetailView(tabs.TabView):
     tab_group_class = project_tabs.SubnetDetailTabs
-    template_name = 'project/networks/subnets/detail.html'
-    page_title = _("Subnet Details")
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ subnet.name|default:subnet.id }}"
 
     @memoized.memoized_method
     def get_data(self):
@@ -118,13 +126,41 @@ class DetailView(tabs.TabView):
                     subnet.ipv6_ra_mode, subnet.ipv6_address_mode)
                 subnet.ipv6_modes_desc = utils.IPV6_MODE_MAP.get(ipv6_modes)
 
+            if ('subnetpool_id' in subnet and
+                subnet.subnetpool_id and
+                api.neutron.is_extension_supported(self.request,
+                                                   'subnet_allocation')):
+                subnetpool = api.neutron.subnetpool_get(self.request,
+                                                        subnet.subnetpool_id)
+                subnet.subnetpool_name = subnetpool.name
+
         return subnet
+
+    @memoized.memoized_method
+    def get_network(self, network_id):
+        try:
+            network = api.neutron.network_get(self.request, network_id)
+        except Exception:
+            network = {}
+            msg = _('Unable to retrieve network details.')
+            exceptions.handle(self.request, msg)
+
+        return network
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
         subnet = self.get_data()
+        network = self.get_network(subnet.network_id)
+        subnet.network_name = network.get('name')
+        subnet.network_url = self.get_network_detail_url(subnet.network_id)
+        network_nav = subnet.network_name or subnet.network_id
         table = project_tables.SubnetsTable(self.request,
                                             network_id=subnet.network_id)
+        # TODO(robcresswell) Add URL for "Subnets" crumb after bug/1416838
+        breadcrumb = [
+            (network_nav, subnet.network_url),
+            (_("Subnets"),), ]
+        context["custom_breadcrumb"] = breadcrumb
         context["subnet"] = subnet
         context["url"] = self.get_redirect_url()
         context["actions"] = table.render_row_actions(subnet)
@@ -133,6 +169,11 @@ class DetailView(tabs.TabView):
     def get_tabs(self, request, *args, **kwargs):
         subnet = self.get_data()
         return self.tab_group_class(request, subnet=subnet, **kwargs)
+
+    @staticmethod
+    def get_network_detail_url(network_id):
+        return reverse('horizon:project:networks:detail',
+                       args=(network_id,))
 
     @staticmethod
     def get_redirect_url():

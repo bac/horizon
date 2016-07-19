@@ -21,12 +21,12 @@
   var $httpBackend;
   var responseMockOpts = {succeed: true};
   var testData = {
-      isTrue: true,
-      isFalse: false,
-      versions: {one: 1, two: 2},
-      deep: {nest: {foo: 'bar'}},
-      isNull: null
-    };
+    isTrue: true,
+    isFalse: false,
+    versions: {one: 1, two: 2},
+    deep: {nest: {foo: 'bar'}},
+    isNull: null
+  };
 
   function responseMockReturn() {
     return responseMockOpts.succeed ? [200, testData, {}] : [500, 'Fail', {}];
@@ -36,7 +36,9 @@
     var settingsService;
 
     beforeEach(module('horizon.app.core.openstack-service-api'));
+
     beforeEach(module('horizon.framework.util.http'));
+
     beforeEach(inject(function (_$httpBackend_, $injector) {
       responseMockOpts.succeed = true;
       settingsService = $injector.get('horizon.app.core.openstack-service-api.settings');

@@ -17,7 +17,6 @@
 #    under the License.
 
 from django.core.urlresolvers import reverse
-from django.forms import ValidationError  # noqa
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -26,8 +25,24 @@ from horizon import messages
 from horizon.utils import validators as utils_validators
 
 from openstack_dashboard.api import cinder
+from openstack_dashboard.dashboards.admin.volumes.snapshots.forms \
+    import populate_status_choices
 from openstack_dashboard.dashboards.project.volumes.volumes \
     import forms as project_forms
+
+
+# This set of states was pulled from cinder's admin_actions.py
+STATUS_CHOICES = (
+    ('attaching', _('Attaching')),
+    ('available', _('Available')),
+    ('creating', _('Creating')),
+    ('deleting', _('Deleting')),
+    ('detaching', _('Detaching')),
+    ('error', _('Error')),
+    ('error_deleting', _('Error Deleting')),
+    ('in-use', _('In Use')),
+    ('maintenance', _('Maintenance')),
+)
 
 
 class ManageVolume(forms.SelfHandlingForm):
@@ -35,7 +50,7 @@ class ManageVolume(forms.SelfHandlingForm):
         max_length=255,
         label=_("Identifier"),
         help_text=_("Name or other identifier for existing volume"))
-    id_type = forms.ChoiceField(
+    id_type = forms.ThemableChoiceField(
         label=_("Identifier Type"),
         help_text=_("Type of backend device identifier provided"))
     host = forms.CharField(
@@ -49,17 +64,17 @@ class ManageVolume(forms.SelfHandlingForm):
         required=False,
         help_text=_("Volume name to be assigned"))
     description = forms.CharField(max_length=255, widget=forms.Textarea(
-        attrs={'class': 'modal-body-fixed-width', 'rows': 4}),
+        attrs={'rows': 4}),
         label=_("Description"), required=False)
     metadata = forms.CharField(max_length=255, widget=forms.Textarea(
-        attrs={'class': 'modal-body-fixed-width', 'rows': 2}),
+        attrs={'rows': 2}),
         label=_("Metadata"), required=False,
         help_text=_("Comma-separated key=value pairs"),
         validators=[utils_validators.validate_metadata])
-    volume_type = forms.ChoiceField(
+    volume_type = forms.ThemableChoiceField(
         label=_("Volume Type"),
         required=False)
-    availability_zone = forms.ChoiceField(
+    availability_zone = forms.ThemableChoiceField(
         label=_("Availability Zone"),
         required=False)
 
@@ -150,48 +165,65 @@ class UnmanageVolume(forms.SelfHandlingForm):
                               redirect=redirect)
 
 
-class CreateVolumeType(forms.SelfHandlingForm):
-    name = forms.CharField(max_length=255, label=_("Name"))
+class MigrateVolume(forms.SelfHandlingForm):
+    name = forms.CharField(label=_("Volume Name"),
+                           required=False,
+                           widget=forms.TextInput(
+                           attrs={'readonly': 'readonly'}))
+    current_host = forms.CharField(label=_("Current Host"),
+                                   required=False,
+                                   widget=forms.TextInput(
+                                   attrs={'readonly': 'readonly'}))
+    host = forms.ThemableChoiceField(
+        label=_("Destination Host"),
+        help_text=_("Choose a Host to migrate to."))
+    force_host_copy = forms.BooleanField(label=_("Force Host Copy"),
+                                         initial=False, required=False)
 
-    def clean_name(self):
-        cleaned_name = self.cleaned_data['name']
-        if len(cleaned_name.strip()) == 0:
-            raise ValidationError(_('Volume type name can not be empty.'))
+    def __init__(self, request, *args, **kwargs):
+        super(MigrateVolume, self).__init__(request, *args, **kwargs)
+        initial = kwargs.get('initial', {})
+        self.fields['host'].choices = self.populate_host_choices(request,
+                                                                 initial)
 
-        return cleaned_name
+    def populate_host_choices(self, request, initial):
+        hosts = initial.get('hosts')
+        current_host = initial.get('current_host')
+        host_list = [(host.name, host.name)
+                     for host in hosts
+                     if host.name != current_host]
+        if host_list:
+            host_list.insert(0, ("", _("Select a new host")))
+        else:
+            host_list.insert(0, ("", _("No other hosts available")))
+        return sorted(host_list)
 
     def handle(self, request, data):
         try:
-            # Remove any new lines in the public key
-            volume_type = cinder.volume_type_create(request,
-                                                    data['name'])
-            messages.success(request, _('Successfully created volume type: %s')
-                             % data['name'])
-            return volume_type
+            cinder.volume_migrate(request,
+                                  self.initial['volume_id'],
+                                  data['host'],
+                                  data['force_host_copy'])
+            messages.success(
+                request,
+                _('Successfully sent the request to migrate volume: %s')
+                % data['name'])
+            return True
         except Exception:
-            redirect = reverse("horizon:admin:volumes:index")
-            exceptions.handle(request,
-                              _('Unable to create volume type.'),
+            redirect = reverse("horizon:admin:volumes:volumes_tab")
+            exceptions.handle(request, _("Failed to migrate volume."),
                               redirect=redirect)
 
 
 class UpdateStatus(forms.SelfHandlingForm):
-    status = forms.ChoiceField(label=_("Status"))
+    status = forms.ThemableChoiceField(label=_("Status"))
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateStatus, self).__init__(request, *args, **kwargs)
 
-        # This set of states was culled from cinder's admin_actions.py
+        initial = kwargs.get('initial', {})
         self.fields['status'].choices = (
-            ('attaching', _('Attaching')),
-            ('available', _('Available')),
-            ('creating', _('Creating')),
-            ('deleting', _('Deleting')),
-            ('detaching', _('Detaching')),
-            ('error', _('Error')),
-            ('error_deleting', _('Error Deleting')),
-            ('in-use', _('In Use')),
-        )
+            populate_status_choices(initial, STATUS_CHOICES))
 
     def handle(self, request, data):
         # Obtain the localized status for including in the message
@@ -215,24 +247,3 @@ class UpdateStatus(forms.SelfHandlingForm):
             exceptions.handle(request,
                               _('Unable to update volume status to "%s".') %
                               new_status, redirect=redirect)
-
-
-class CreateQosSpec(forms.SelfHandlingForm):
-    name = forms.CharField(max_length=255, label=_("Name"))
-    consumer = forms.ChoiceField(label=_("Consumer"),
-                                 choices=cinder.CONSUMER_CHOICES)
-
-    def handle(self, request, data):
-        try:
-            qos_spec = cinder.qos_spec_create(request,
-                                              data['name'],
-                                              {'consumer': data['consumer']})
-            messages.success(request,
-                             _('Successfully created QoS Spec: %s')
-                             % data['name'])
-            return qos_spec
-        except Exception:
-            redirect = reverse("horizon:admin:volumes:index")
-            exceptions.handle(request,
-                              _('Unable to create QoS Spec.'),
-                              redirect=redirect)

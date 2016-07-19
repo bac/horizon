@@ -1,54 +1,110 @@
-/*
-Copyright 2014, Rackspace, US, Inc.
+/**
+ * Copyright 2014, Rackspace, US, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function () {
   'use strict';
 
   angular
     .module('horizon.app.core.openstack-service-api')
-    .service('horizon.app.core.openstack-service-api.nova', NovaAPI);
+    .factory('horizon.app.core.openstack-service-api.nova', novaAPI);
 
-  NovaAPI.$inject = ['horizon.framework.util.http.service',
-                     'horizon.framework.widgets.toast.service'];
+  novaAPI.$inject = [
+    'horizon.framework.util.http.service',
+    'horizon.framework.widgets.toast.service',
+    '$window'
+  ];
 
   /**
    * @ngdoc service
-   * @name horizon.app.core.openstack-service-api.nova
+   * @param {Object} apiService
+   * @param {Object} toastService
+   * @param {Object} $window
+   * @name novaApi
    * @description Provides access to Nova APIs.
+   * @returns {Object} The service
    */
-  function NovaAPI(apiService, toastService) {
+  function novaAPI(apiService, toastService, $window) {
+
+    var service = {
+      getKeypairs: getKeypairs,
+      createKeypair: createKeypair,
+      getAvailabilityZones: getAvailabilityZones,
+      getLimits: getLimits,
+      createServer: createServer,
+      getServer: getServer,
+      getServers: getServers,
+      getExtensions: getExtensions,
+      getFlavors: getFlavors,
+      getFlavor: getFlavor,
+      getFlavorExtraSpecs: getFlavorExtraSpecs,
+      editFlavorExtraSpecs: editFlavorExtraSpecs,
+      getAggregateExtraSpecs: getAggregateExtraSpecs,
+      editAggregateExtraSpecs: editAggregateExtraSpecs,
+      getServices: getServices,
+      getInstanceMetadata: getInstanceMetadata,
+      editInstanceMetadata: editInstanceMetadata,
+      getCreateKeypairUrl: getCreateKeypairUrl,
+      getRegenerateKeypairUrl: getRegenerateKeypairUrl,
+      createFlavor: createFlavor,
+      updateFlavor: updateFlavor,
+      deleteFlavor: deleteFlavor,
+      getDefaultQuotaSets: getDefaultQuotaSets,
+      setDefaultQuotaSets: setDefaultQuotaSets,
+      getEditableQuotas: getEditableQuotas,
+      updateProjectQuota: updateProjectQuota
+    };
+
+    return service;
+
+    ///////////
+
+    // Nova Services
+
+    /**
+     * @name getServices
+     * @description Get the list of Nova services.
+     *
+     * @returns {Object} The listing result is an object with property "services." Each item is
+     * a service.
+     */
+    function getServices() {
+      return apiService.get('/api/nova/services/')
+        .error(function () {
+          toastService.add('error', gettext('Unable to retrieve the nova services.'));
+        });
+    }
 
     // Keypairs
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.getKeypairs
+     * @name getKeypairs
      * @description
      * Get a list of keypairs.
      *
-     * The listing result is an object with property "items". Each item is
-     * a keypair.
+     * @returns {Object} An object with property "items". Each item is a keypair.
      */
-    this.getKeypairs = function() {
+    function getKeypairs() {
       return apiService.get('/api/nova/keypairs/')
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the keypairs.'));
         });
-    };
+    }
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.createKeypair
+     * @name createKeypair
      * @description
      * Create a new keypair.  This returns the new keypair object on success.
      *
@@ -60,8 +116,9 @@ limitations under the License.
      *
      * @param {string} newKeypair.public_key
      * The public key.  Optional.
+     * @returns {Object} The result of the API call
      */
-    this.createKeypair = function(newKeypair) {
+    function createKeypair(newKeypair) {
       return apiService.post('/api/nova/keypairs/', newKeypair)
         .error(function () {
           if (angular.isDefined(newKeypair.public_key)) {
@@ -70,30 +127,31 @@ limitations under the License.
             toastService.add('error', gettext('Unable to create the keypair.'));
           }
         });
-    };
+    }
 
     // Availability Zones
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.getAvailabilityZones
+     * @name getAvailabilityZones
      * @description
      * Get a list of Availability Zones.
      *
      * The listing result is an object with property "items". Each item is
      * an availability zone.
+     * @returns {Object} The result of the API call
      */
-    this.getAvailabilityZones = function() {
+    function getAvailabilityZones() {
       return apiService.get('/api/nova/availzones/')
         .error(function () {
           toastService.add('error',
                         gettext('Unable to retrieve the availability zones.'));
         });
-    };
+    }
 
     // Limits
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.getLimits
+     * @name getLimits
      * @description
      * Returns current limits.
      *
@@ -120,18 +178,20 @@ limitations under the License.
      *   "totalSecurityGroupsUsed": 1,
      *   "totalServerGroupsUsed": 0
      * }
+     * @returns {Object} The result of the API call
      */
-    this.getLimits = function() {
+    function getLimits() {
       return apiService.get('/api/nova/limits/')
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the limits.'));
         });
-    };
+    }
 
     // Servers
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.createServer
+     * @name createServer
+     * @param {Object} newServer - The new server
      * @description
      * Create a server using the parameters supplied in the
      * newServer. The required parameters:
@@ -146,31 +206,49 @@ limitations under the License.
      * "availability_zone", "instance_count", "admin_pass", "disk_config",
      * "config_drive"
      *
-     * This returns the new server object on success.
+     * @returns {Object} The result of the API call
      */
-    this.createServer = function(newServer) {
+    function createServer(newServer) {
       return apiService.post('/api/nova/servers/', newServer)
         .error(function () {
           toastService.add('error', gettext('Unable to create the server.'));
         });
-    };
+    }
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.getServer
+     * @name getServer
      * @description
      * Get a single server by ID
      * @param {string} id
      * Specifies the id of the server to request.
+     * @returns {Object} The result of the API call
      */
-    this.getServer = function(id) {
+    function getServer(id) {
       return apiService.get('/api/nova/servers/' + id)
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the server.'));
         });
-    };
+    }
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.getExtensions
+     * @name getServers
+     * @description
+     * Get a list of servers.
+     *
+     * The listing result is an object with property "items". Each item is
+     * a server.
+     * @returns {Object} The result of the API call
+     */
+    function getServers() {
+      return apiService.get('/api/nova/servers/')
+        .error(function () {
+          toastService.add('error', gettext('Unable to retrieve instances.'));
+        });
+    }
+
+    /**
+     * @name getExtensions
+     * @param {Object} config - A configuration object
      * @description
      * Returns a list of enabled extensions.
      *
@@ -191,16 +269,17 @@ limitations under the License.
      *      }
      *    ]
      *  }
+     * @returns {Object} The list of enable extensions
      */
-    this.getExtensions = function(config) {
+    function getExtensions(config) {
       return apiService.get('/api/nova/extensions/', config)
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the extensions.'));
         });
-    };
+    }
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.getFlavors
+     * @name getFlavors
      * @description
      * Returns a list of flavors.
      *
@@ -214,11 +293,16 @@ limitations under the License.
      * @param {boolean} getExtras (optional)
      * Also retrieve the extra specs. This is expensive (one extra underlying
      * call per flavor).
+     * @returns {Object} The result of the API call
      */
-    this.getFlavors = function(isPublic, getExtras) {
+    function getFlavors(isPublic, getExtras) {
       var config = {'params': {}};
-      if (isPublic) { config.params.is_public = 'true'; }
-      if (getExtras) { config.params.get_extras = 'true'; }
+      if (isPublic) {
+        config.params.is_public = 'true';
+      }
+      if (getExtras) {
+        config.params.get_extras = 'true';
+      }
       return apiService.get('/api/nova/flavors/', config)
         .success(function (data) {
           // The colon character ':' in the flavor data causes problems when used
@@ -242,109 +326,297 @@ limitations under the License.
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the flavors.'));
         });
-    };
+    }
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.getFlavor
+     * @name getFlavor
      * @description
      * Get a single flavor by ID.
      * @param {string} id
      * Specifies the id of the flavor to request.
      * @param {boolean} getExtras (optional)
      * Also retrieve the extra specs for the flavor.
+     * @param {boolean} getAccessList - True if you want get the access list
+     * @returns {Object} The result of the API call
      */
-    this.getFlavor = function(id, getExtras) {
+    function getFlavor(id, getExtras, getAccessList) {
       var config = {'params': {}};
-      if (getExtras) { config.params.get_extras = 'true'; }
-      return apiService.get('/api/nova/flavors/' + id, config)
+      if (getExtras) {
+        config.params.get_extras = 'true';
+      }
+      if (getAccessList) {
+        config.params.get_access_list = 'true';
+      }
+      return apiService.get('/api/nova/flavors/' + id + '/' , config)
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the flavor.'));
         });
-    };
+    }
 
     /**
-     * @name horizon.app.core.openstack-service-api.nova.getFlavorExtraSpecs
+     * @name createFlavor
+     * @description
+     * Create a single flavor.
+     * @param {flavor} flavor
+     * Flavor to create
+     * @returns {Object} The result of the API call
+     */
+    function createFlavor(flavor) {
+      return apiService.post('/api/nova/flavors/', flavor)
+        .error(function () {
+          toastService.add('error', gettext('Unable to create the flavor.'));
+        });
+    }
+
+    /**
+     * @name updateFlavor
+     * @description
+     * Update a single flavor.
+     * @param {flavor} flavor
+     * Flavor to update
+     * @returns {Object} The result of the API call
+     */
+    function updateFlavor(flavor) {
+      return apiService.patch('/api/nova/flavors/' + flavor.id + '/', flavor)
+        .error(function () {
+          toastService.add('error', gettext('Unable to update the flavor.'));
+        });
+    }
+
+    /**
+     * @name deleteFlavor
+     * @description
+     * Delete a single flavor by ID.
+     *
+     * @param {String} flavorId
+     * Flavor to delete
+     *
+     * @param {boolean} suppressError
+     * If passed in, this will not show the default error handling
+     * (horizon alert). The glance API may not have metadata definitions
+     * enabled.
+     * @returns {Object} The result of the API call
+     */
+    function deleteFlavor(flavorId, suppressError) {
+      var promise = apiService.delete('/api/nova/flavors/' + flavorId + '/');
+
+      return suppressError ? promise : promise.error(function() {
+        var msg = gettext('Unable to delete the flavor with id: %(id)s');
+        toastService.add('error', interpolate(msg, { id: flavorId }, true));
+      });
+
+    }
+
+    /**
+     * @name getFlavorExtraSpecs
      * @description
      * Get a single flavor's extra specs by ID.
      * @param {string} id
      * Specifies the id of the flavor to request the extra specs.
+     * @returns {Object} The result of the API call
      */
-    this.getFlavorExtraSpecs = function(id) {
-      return apiService.get('/api/nova/flavors/' + id + '/extra-specs')
+    function getFlavorExtraSpecs(id) {
+      return apiService.get('/api/nova/flavors/' + id + '/extra-specs/')
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the flavor extra specs.'));
         });
-    };
-  }
-
-  /**
-   * @ngdoc service
-   * @name horizon.app.core.openstack-service-api.novaExtensions
-   * @description
-   * Provides cached access to Nova Extensions with utilities to help
-   * with asynchronous data loading. The cache may be reset at any time
-   * by accessing the cache and calling removeAll. The next call to any
-   * function will retrieve fresh results.
-   *
-   * The enabled extensions do not change often, so using cached data will
-   * speed up results. Even on a local devstack in informal testing,
-   * this saved between 30 - 100 ms per request.
-   */
-  angular
-    .module('horizon.app.core.openstack-service-api')
-    .factory('horizon.app.core.openstack-service-api.novaExtensions', NovaExtensionsAPI);
-
-  NovaExtensionsAPI.$inject = ['$cacheFactory',
-                               '$q',
-                               'horizon.app.core.openstack-service-api.nova'];
-
-  function NovaExtensionsAPI($cacheFactory, $q, novaAPI) {
-    var service = {};
-    service.cache = $cacheFactory('horizon.app.core.openstack-service-api.novaExtensions', {capacity: 1});
-
-    service.get = function () {
-      return novaAPI.getExtensions({cache: service.cache})
-        .then(function (data) {
-          return data.data.items;
-        });
-    };
-
-    service.ifNameEnabled = function(desired) {
-      var deferred = $q.defer();
-
-      service.get().then(onDataLoaded, onDataFailure);
-
-      function onDataLoaded(extensions) {
-        if (enabled(extensions, 'name', desired)) {
-          deferred.resolve();
-        } else {
-          deferred.reject(interpolate(
-            gettext('Extension is not enabled: %(extension)s.'),
-            {extension: desired},
-            true));
-        }
-      }
-
-      function onDataFailure() {
-        deferred.reject(gettext('Cannot get the Nova extension list.'));
-      }
-
-      return deferred.promise;
-    };
-
-    // This is an alias to support the extension directive default interface
-    service.ifEnabled = service.ifNameEnabled;
-
-    function enabled(resources, key, desired) {
-      if (resources) {
-        return resources.some(function (resource) {
-          return resource[key] === desired;
-        });
-      } else {
-        return false;
-      }
     }
 
-    return service;
+    /**
+     * @name editFlavorExtraSpecs
+     * @description
+     * Update a single flavor's extra specs by ID.
+     * @param {string} id
+     * @param {object} updated New extra specs.
+     * @param {[]} removed Names of removed extra specs.
+     * @returns {Object} The result of the API call
+     */
+    function editFlavorExtraSpecs(id, updated, removed) {
+      return apiService.patch(
+        '/api/nova/flavors/' + id + '/extra-specs/',
+        {
+          updated: updated,
+          removed: removed
+        }
+      ).error(function () {
+        toastService.add('error', gettext('Unable to edit the flavor extra specs.'));
+      });
+    }
+
+    /**
+     * @name getAggregateExtraSpecs
+     * @description
+     * Get a single aggregate's extra specs by ID.
+     * @param {string} id
+     * Specifies the id of the flavor to request the extra specs.
+     * @returns {Object} The result of the API call
+     */
+    function getAggregateExtraSpecs(id) {
+      return apiService.get('/api/nova/aggregates/' + id + '/extra-specs/')
+        .error(function () {
+          toastService.add('error', gettext('Unable to retrieve the aggregate extra specs.'));
+        });
+    }
+
+    /**
+     * @name editAggregateExtraSpecs
+     * @description
+     * Update a single aggregate's extra specs by ID.
+     * @param {string} id
+     * @param {object} updated New extra specs.
+     * @param {[]} removed Names of removed extra specs.
+     * @returns {Object} The result of the API call
+     */
+    function editAggregateExtraSpecs(id, updated, removed) {
+      return apiService.patch(
+        '/api/nova/aggregates/' + id + '/extra-specs/',
+        {
+          updated: updated,
+          removed: removed
+        }
+      ).error(function () {
+        toastService.add('error', gettext('Unable to edit the aggregate extra specs.'));
+      });
+    }
+
+    /**
+     * @name getInstanceMetadata
+     * @description
+     * Get a single instance's metadata by ID.
+     * @param {string} id
+     * Specifies the id of the instance to request the metadata.
+     * @returns {Object} The result of the API call
+     */
+    function getInstanceMetadata(id) {
+      return apiService.get('/api/nova/servers/' + id + '/metadata')
+        .error(function () {
+          toastService.add('error', gettext('Unable to retrieve instance metadata.'));
+        });
+    }
+
+    /**
+     * @name editInstanceMetadata
+     * @description
+     * Update a single instance's metadata by ID.
+     * @param {string} id
+     * @param {object} updated New metadata.
+     * @param {[]} removed Names of removed metadata items.
+     * @returns {Object} The result of the API call
+     */
+    function editInstanceMetadata(id, updated, removed) {
+      return apiService.patch(
+        '/api/nova/servers/' + id + '/metadata',
+        {
+          updated: updated,
+          removed: removed
+        }
+      ).error(function () {
+        toastService.add('error', gettext('Unable to edit instance metadata.'));
+      });
+    }
+
+    // Default Quota Sets
+
+    /**
+     * @name getDefaultQuotaSets
+     * @description
+     * Get default quotasets
+     *
+     * The listing result is an object with property "items." Each item is
+     * a quota.
+     *
+     */
+    function getDefaultQuotaSets() {
+      return apiService.get('/api/nova/quota-sets/defaults/')
+        .error(function () {
+          toastService.add('error', gettext('Unable to retrieve the default quotas.'));
+        });
+    }
+
+    /**
+     * @name setDefaultQuotaSets
+     * @description
+     * Set default quotasets
+     *
+     */
+    function setDefaultQuotaSets(quotas) {
+      return apiService.patch('/api/nova/quota-sets/defaults/', quotas)
+        .error(function () {
+          toastService.add('error', gettext('Unable to set the default quotas.'));
+        });
+    }
+
+    // Quota Sets
+
+    /**
+     * @name getEditableQuotas
+     * @description
+     * Get a list of editable quota fields.
+     * The listing result is an object with property "items." Each item is
+     * an editable quota field.
+     *
+     */
+    function getEditableQuotas() {
+      return apiService.get('/api/nova/quota-sets/editable/')
+        .error(function() {
+          toastService.add('error', gettext('Unable to retrieve the editable quotas.'));
+        });
+    }
+
+    /**
+     * @name updateProjectQuota
+     * @description
+     * Update a single project quota data.
+     * @param {application/json} quota
+     * A JSON object with the atributes to set to new quota values.
+     * @param {string} projectId
+     * Specifies the id of the project that'll have the quota data updated.
+     */
+    function updateProjectQuota(quota, projectId) {
+      var url = '/api/nova/quota-sets/' + projectId;
+      return apiService.patch(url, quota)
+        .error(function() {
+          toastService.add('error', gettext('Unable to update project quota data.'));
+        });
+    }
+
+    /**
+     * @ngdoc function
+     * @name getCreateKeypairUrl
+     *
+     * @description
+     * Returns a URL, respecting WEBROOT, that if called as a REST call
+     * would create and return a new key pair with the given name.  This
+     * function is provided because to perform a download of the key pair,
+     * an iframe must be given a URL to use (which is further explained in
+     * the key pair download service).
+     *
+     * @param {string} keyPairName
+     * @returns {Object} The result of the API call
+     */
+    function getCreateKeypairUrl(keyPairName) {
+      // NOTE: WEBROOT by definition must end with a slash (local_settings.py).
+      return $window.WEBROOT + "api/nova/keypairs/" +
+        encodeURIComponent(keyPairName) + "/";
+    }
+
+    /**
+     * @ngdoc function
+     * @name getRegenerateKeypairUrl
+     *
+     * @description
+     * Returns a URL, respecting WEBROOT, that if called as a REST call
+     * would regenereate an existing key pair with the given name and return
+     * the new key pair data.  This function is provided because to perform
+     * a download of the key pair, an iframe must be given a URL to use
+     * (which is further explained in the key pair download service).
+     *
+     * @param {string} keyPairName
+     * @returns {Object} The result of the API call
+     */
+    function getRegenerateKeypairUrl(keyPairName) {
+      return getCreateKeypairUrl(keyPairName) + "?regenerate=true";
+    }
+
   }
 }());

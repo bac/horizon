@@ -17,7 +17,6 @@
 Forms for managing metadata.
 """
 import json
-import logging
 
 from django.forms import ValidationError  # noqa
 from django.utils.translation import ugettext_lazy as _
@@ -30,8 +29,6 @@ from openstack_dashboard.api import glance
 from openstack_dashboard.dashboards.admin.metadata_defs \
     import constants
 
-LOG = logging.getLogger(__name__)
-
 
 class CreateNamespaceForm(forms.SelfHandlingForm):
     source_type = forms.ChoiceField(
@@ -39,7 +36,7 @@ class CreateNamespaceForm(forms.SelfHandlingForm):
         required=False,
         choices=[('file', _('Metadata Definition File')),
                  ('raw', _('Direct Input'))],
-        widget=forms.Select(
+        widget=forms.ThemableSelectWidget(
             attrs={'class': 'switchable', 'data-slug': 'source'}))
 
     metadef_file = forms.FileField(

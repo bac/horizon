@@ -90,7 +90,9 @@ class CreateRouter(tables.LinkAction):
 
     def allowed(self, request, datum=None):
         usages = quotas.tenant_quota_usages(request)
-        if usages['routers']['available'] <= 0:
+        # when Settings.OPENSTACK_NEUTRON_NETWORK['enable_quotas'] = False
+        # usages['routers'] is empty
+        if usages.get('routers', {}).get('available', 1) <= 0:
             if "disabled" not in self.classes:
                 self.classes = [c for c in self.classes] + ["disabled"]
                 self.verbose_name = _("Create Router (Quota exceeded)")
@@ -145,9 +147,10 @@ class ClearGateway(policy.PolicyTargetMixin, tables.BatchAction):
         )
 
     name = "cleargateway"
-    classes = ('btn-danger', 'btn-cleargateway')
+    classes = ('btn-cleargateway',)
     redirect_url = "horizon:project:routers:index"
     policy_rules = (("network", "update_router"),)
+    action_type = "danger"
 
     def action(self, request, obj_id):
         obj = self.table.get_object_by_id(obj_id)
@@ -195,16 +198,17 @@ class RoutersFilterAction(tables.FilterAction):
                 if query in router.name.lower()]
 
 
-class RoutersTable(tables.DataTable):
-    STATUS_DISPLAY_CHOICES = (
-        ("active", pgettext_lazy("current status of router", u"Active")),
-        ("error", pgettext_lazy("current status of router", u"Error")),
-    )
-    ADMIN_STATE_DISPLAY_CHOICES = (
-        ("UP", pgettext_lazy("Admin state of a Router", u"UP")),
-        ("DOWN", pgettext_lazy("Admin state of a Router", u"DOWN")),
-    )
+STATUS_DISPLAY_CHOICES = (
+    ("active", pgettext_lazy("current status of router", u"Active")),
+    ("error", pgettext_lazy("current status of router", u"Error")),
+)
+ADMIN_STATE_DISPLAY_CHOICES = (
+    ("up", pgettext_lazy("Admin state of a Router", u"UP")),
+    ("down", pgettext_lazy("Admin state of a Router", u"DOWN")),
+)
 
+
+class RoutersTable(tables.DataTable):
     name = tables.Column("name",
                          verbose_name=_("Name"),
                          link="horizon:project:routers:detail")
@@ -240,7 +244,7 @@ class RoutersTable(tables.DataTable):
         return obj.name
 
     class Meta(object):
-        name = "Routers"
+        name = "routers"
         verbose_name = _("Routers")
         status_columns = ["status"]
         row_class = UpdateRow

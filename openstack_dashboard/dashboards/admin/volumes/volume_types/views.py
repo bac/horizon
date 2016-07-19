@@ -17,34 +17,29 @@ Admin views for managing volumes.
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
-from django.views import generic
 
 from horizon import exceptions
 from horizon import forms
 from horizon.utils import memoized
+from horizon import views
 
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.admin.volumes.volume_types \
     import forms as volume_types_forms
-from openstack_dashboard.dashboards.admin.volumes.volumes \
-    import forms as volumes_forms
 
 
 class CreateVolumeTypeView(forms.ModalFormView):
-    form_class = volumes_forms.CreateVolumeType
+    form_class = volume_types_forms.CreateVolumeType
     modal_header = _("Create Volume Type")
     modal_id = "create_volume_type_modal"
     template_name = 'admin/volumes/volume_types/create_volume_type.html'
     submit_label = _("Create Volume Type")
     submit_url = reverse_lazy("horizon:admin:volumes:volume_types:create_type")
-    success_url = 'horizon:admin:volumes:volume_types_tab'
+    success_url = reverse_lazy('horizon:admin:volumes:volume_types_tab')
     page_title = _("Create a Volume Type")
 
-    def get_success_url(self):
-        return reverse(self.success_url)
 
-
-class VolumeTypeEncryptionDetailView(generic.TemplateView):
+class VolumeTypeEncryptionDetailView(views.HorizonTemplateView):
     template_name = ("admin/volumes/volume_types"
                      "/volume_encryption_type_detail.html")
     page_title = _("Volume Type Encryption Details")
@@ -91,15 +86,8 @@ class CreateVolumeTypeEncryptionView(forms.ModalFormView):
 
     @memoized.memoized_method
     def get_name(self):
-        try:
-            volume_type_list = api.cinder.volume_type_list(self.request)
-            for volume_type in volume_type_list:
-                if volume_type.id == self.kwargs['volume_type_id']:
-                    self.name = volume_type.name
-        except Exception:
-            msg = _('Unable to retrieve volume type name.')
-            url = reverse('horizon:admin:volumes:index')
-            exceptions.handle(self.request, msg, redirect=url)
+        if not hasattr(self, "name"):
+            self.name = _get_volume_type_name(self.request, self.kwargs)
         return self.name
 
     def get_context_data(self, **kwargs):
@@ -116,19 +104,114 @@ class CreateVolumeTypeEncryptionView(forms.ModalFormView):
                 'volume_type_id': self.kwargs['volume_type_id']}
 
 
+class EditVolumeTypeView(forms.ModalFormView):
+    form_class = volume_types_forms.EditVolumeType
+    template_name = 'admin/volumes/volume_types/update_volume_type.html'
+    success_url = reverse_lazy('horizon:admin:volumes:volume_types_tab')
+    cancel_url = reverse_lazy('horizon:admin:volumes:volume_types_tab')
+    submit_label = _('Edit')
+
+    @memoized.memoized_method
+    def get_data(self):
+        try:
+            volume_type_id = self.kwargs['type_id']
+            volume_type = api.cinder.volume_type_get(self.request,
+                                                     volume_type_id)
+        except Exception:
+            error_message = _(
+                'Unable to retrieve volume type for: "%s"') \
+                % volume_type_id
+            exceptions.handle(self.request,
+                              error_message,
+                              redirect=self.success_url)
+
+        return volume_type
+
+    def get_context_data(self, **kwargs):
+        context = super(EditVolumeTypeView, self).get_context_data(**kwargs)
+        context['volume_type'] = self.get_data()
+
+        return context
+
+    def get_initial(self):
+        volume_type = self.get_data()
+        return {'id': self.kwargs['type_id'],
+                'name': volume_type.name,
+                'is_public': getattr(volume_type, 'is_public', True),
+                'description': getattr(volume_type, 'description', "")}
+
+
+def _get_volume_type_name(request, kwargs):
+    try:
+        volume_type_list = api.cinder.volume_type_list(request)
+        for volume_type in volume_type_list:
+            if volume_type.id == kwargs['volume_type_id']:
+                return volume_type.name
+    except Exception:
+        msg = _('Unable to retrieve volume type name.')
+        url = reverse('horizon:admin:volumes:index')
+        exceptions.handle(request, msg, redirect=url)
+
+
+class UpdateVolumeTypeEncryptionView(forms.ModalFormView):
+    form_class = volume_types_forms.UpdateVolumeTypeEncryption
+    form_id = "update_volume_form"
+    modal_header = _("Update Volume Type Encryption")
+    modal_id = "update_volume_type_modal"
+    template_name = ("admin/volumes/volume_types/"
+                     "update_volume_type_encryption.html")
+    page_title = _("Update an Encrypted Volume Type")
+    submit_label = _("Update Volume Type Encryption")
+    submit_url = "horizon:admin:volumes:volume_types:update_type_encryption"
+    success_url = reverse_lazy('horizon:admin:volumes:index')
+
+    def get_object(self):
+        if not hasattr(self, "_object"):
+            try:
+                self._object = api.cinder.\
+                    volume_encryption_type_get(self.request,
+                                               self.kwargs['volume_type_id'])
+            except Exception:
+                msg = _('Unable to retrieve encryption type.')
+                url = reverse('horizon:admin:volumes:index')
+                exceptions.handle(self.request, msg, redirect=url)
+        return self._object
+
+    @memoized.memoized_method
+    def get_name(self):
+        if not hasattr(self, "name"):
+            self.name = _get_volume_type_name(self.request, self.kwargs)
+        return self.name
+
+    def get_context_data(self, **kwargs):
+        context = super(UpdateVolumeTypeEncryptionView, self).\
+            get_context_data(**kwargs)
+        context['volume_type_id'] = self.kwargs['volume_type_id']
+        args = (self.kwargs['volume_type_id'],)
+        context['submit_url'] = reverse(self.submit_url, args=args)
+        return context
+
+    def get_initial(self):
+        encryption_type = self.get_object()
+        name = self.get_name()
+        return {'volume_type_id': encryption_type.volume_type_id,
+                'control_location': encryption_type.control_location,
+                'key_size': encryption_type.key_size,
+                'provider': encryption_type.provider,
+                'cipher': encryption_type.cipher,
+                'name': name}
+
+
 class CreateQosSpecView(forms.ModalFormView):
-    form_class = volumes_forms.CreateQosSpec
+    form_class = volume_types_forms.CreateQosSpec
     modal_header = _("Create QoS Spec")
     modal_id = "create_volume_type_modal"
     template_name = 'admin/volumes/volume_types/create_qos_spec.html'
-    success_url = 'horizon:admin:volumes:volume_types_tab'
+    success_url = reverse_lazy('horizon:admin:volumes:volume_types_tab')
     page_title = _("Create a QoS Spec")
     submit_label = _("Create")
     submit_url = reverse_lazy(
         "horizon:admin:volumes:volume_types:create_qos_spec")
-
-    def get_success_url(self):
-        return reverse(self.success_url)
 
 
 class EditQosSpecConsumerView(forms.ModalFormView):
@@ -138,11 +221,8 @@ class EditQosSpecConsumerView(forms.ModalFormView):
     template_name = 'admin/volumes/volume_types/edit_qos_spec_consumer.html'
     submit_label = _("Modify Consumer")
     submit_url = "horizon:admin:volumes:volume_types:edit_qos_spec_consumer"
-    success_url = 'horizon:admin:volumes:volume_types_tab'
+    success_url = reverse_lazy('horizon:admin:volumes:volume_types_tab')
     page_title = _("Edit QoS Spec Consumer")
-
-    def get_success_url(self):
-        return reverse(self.success_url)
 
     def get_context_data(self, **kwargs):
         context = super(EditQosSpecConsumerView, self).\
@@ -178,11 +258,8 @@ class ManageQosSpecAssociationView(forms.ModalFormView):
     submit_label = _("Associate")
     submit_url = "horizon:admin:volumes:volume_types:"\
         "manage_qos_spec_association"
-    success_url = 'horizon:admin:volumes:volume_types_tab'
+    success_url = reverse_lazy('horizon:admin:volumes:volume_types_tab')
     page_title = _("Associate QoS Spec with Volume Type")
-
-    def get_success_url(self):
-        return reverse(self.success_url)
 
     def get_context_data(self, **kwargs):
         context = super(ManageQosSpecAssociationView, self).\

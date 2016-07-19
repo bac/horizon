@@ -1,3 +1,5 @@
+# encoding=utf-8
+#
 # Copyright 2012 Nebula, Inc.
 # Copyright 2014 IBM Corp.
 #
@@ -18,8 +20,10 @@ from django import forms
 from django import http
 from django import shortcuts
 from django.template import defaultfilters
+from django.utils.translation import ungettext_lazy
 
 from mox3.mox import IsA  # noqa
+import six
 
 from horizon import tables
 from horizon.tables import formset as table_formset
@@ -37,14 +41,16 @@ class FakeObject(object):
         self.excluded = excluded
         self.extra = "extra"
 
-    def __repr__(self):
-        return "<%s: %s>" % (self.__class__.__name__, self.name)
+    def __str__(self):
+        return u"%s: %s" % (self.__class__.__name__, self.name)
 
 
 TEST_DATA = (
     FakeObject('1', 'object_1', 'value_1', 'up', 'optional_1', 'excluded_1'),
     FakeObject('2', 'object_2', '<strong>evil</strong>', 'down', 'optional_2'),
     FakeObject('3', 'object_3', 'value_3', 'up'),
+    FakeObject('4', u'öbject_4', u'välue_1', u'üp', u'öptional_1',
+               u'exclüded_1'),
 )
 
 TEST_DATA_2 = (
@@ -123,28 +129,78 @@ class MyRow(tables.Row):
 
 class MyBatchAction(tables.BatchAction):
     name = "batch"
-    action_present = "Batch"
-    action_past = "Batched"
-    data_type_singular = "Item"
-    data_type_plural = "Items"
 
     def action(self, request, object_ids):
         pass
+
+    @staticmethod
+    def action_present(count):
+        # Translators: test code, don't really have to translate
+        return ungettext_lazy(
+            u"Batch Item",
+            u"Batch Items",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        # Translators: test code, don't really have to translate
+        return ungettext_lazy(
+            u"Batched Item",
+            u"Batched Items",
+            count
+        )
 
 
 class MyBatchActionWithHelpText(MyBatchAction):
     name = "batch_help"
     help_text = "this is help."
-    action_present = "BatchHelp"
-    action_past = "BatchedHelp"
+
+    @staticmethod
+    def action_present(count):
+        # No translation
+        return u"BatchHelp Item"
+
+    @staticmethod
+    def action_past(count):
+        # No translation
+        return u"BatchedHelp Item"
 
 
 class MyToggleAction(tables.BatchAction):
     name = "toggle"
-    action_present = ("Down", "Up")
-    action_past = ("Downed", "Upped")
-    data_type_singular = "Item"
-    data_type_plural = "Items"
+
+    def action_present(self, count):
+        if self.current_present_action:
+            # Translators: test code, don't really have to translate
+            return ungettext_lazy(
+                u"Up Item",
+                u"Up Items",
+                count
+            )
+        else:
+            # Translators: test code, don't really have to translate
+            return ungettext_lazy(
+                u"Down Item",
+                u"Down Items",
+                count
+            )
+
+    def action_past(self, count):
+        if self.current_past_action:
+            # Translators: test code, don't really have to translate
+            return ungettext_lazy(
+                u"Upped Item",
+                u"Upped Items",
+                count
+            )
+        else:
+            # Translators: test code, don't really have to translate
+            return ungettext_lazy(
+                u"Downed Item",
+                u"Downed Items",
+                count
+            )
 
     def allowed(self, request, obj=None):
         if not obj:
@@ -331,7 +387,7 @@ class DataTableTests(test.TestCase):
         self.assertTrue(self.table._meta.actions_column)
         self.assertTrue(self.table._meta.multi_select)
         # Test for verbose_name
-        self.assertEqual(u"My Table", unicode(self.table))
+        self.assertEqual(u"My Table", six.text_type(self.table))
         # Column ordering and exclusion.
         # This should include auto-columns for multi_select and actions,
         # but should not contain the excluded column.
@@ -475,7 +531,8 @@ class DataTableTests(test.TestCase):
         rows = self.table.get_rows()
         self.assertQuerysetEqual(rows, ['<MyRow: my_table__row__1>',
                                         '<MyRow: my_table__row__2>',
-                                        '<MyRow: my_table__row__3>'])
+                                        '<MyRow: my_table__row__3>',
+                                        '<MyRow: my_table__row__4>'])
         # Verify each row contains the right cells
         self.assertQuerysetEqual(rows[0].get_cells(),
                                  ['<Cell: multi_select, my_table__row__1>',
@@ -497,17 +554,17 @@ class DataTableTests(test.TestCase):
         self.assertEqual('1', row.cells['id'].data)  # Standard attr access
         self.assertEqual('custom object_1', row.cells['name'].data)  # Callable
         # name and verbose_name
-        self.assertEqual("Id", unicode(id_col))
-        self.assertEqual("Verbose Name", unicode(name_col))
+        self.assertEqual("Id", six.text_type(id_col))
+        self.assertEqual("Verbose Name", six.text_type(name_col))
         # sortable
-        self.assertEqual(False, id_col.sortable)
+        self.assertFalse(id_col.sortable)
         self.assertNotIn("sortable", id_col.get_final_attrs().get('class', ""))
-        self.assertEqual(True, name_col.sortable)
+        self.assertTrue(name_col.sortable)
         self.assertIn("sortable", name_col.get_final_attrs().get('class', ""))
         # hidden
-        self.assertEqual(True, id_col.hidden)
+        self.assertTrue(id_col.hidden)
         self.assertIn("hide", id_col.get_final_attrs().get('class', ""))
-        self.assertEqual(False, name_col.hidden)
+        self.assertFalse(name_col.hidden)
         self.assertNotIn("hide", name_col.get_final_attrs().get('class', ""))
         # link, link_classes, link_attrs, and get_link_url
         self.assertIn('href="http://example.com/"', row.cells['value'].value)
@@ -522,14 +579,14 @@ class DataTableTests(test.TestCase):
                          value_col.get_final_attrs().get('class', ""))
         # status
         cell_status = row.cells['status'].status
-        self.assertEqual(True, cell_status)
+        self.assertTrue(cell_status)
         self.assertEqual('status_up',
                          row.cells['status'].get_status_class(cell_status))
         # status_choices
         id_col.status = True
         id_col.status_choices = (('1', False), ('2', True), ('3', None))
         cell_status = row.cells['id'].status
-        self.assertEqual(False, cell_status)
+        self.assertFalse(cell_status)
         self.assertEqual('status_down',
                          row.cells['id'].get_status_class(cell_status))
         cell_status = row3.cells['id'].status
@@ -549,11 +606,11 @@ class DataTableTests(test.TestCase):
         self.assertEqual(TEST_DATA[0], row.datum)
         self.assertEqual('my_table__row__1', row.id)
         # Verify row status works even if status isn't set on the column
-        self.assertEqual(True, row.status)
+        self.assertTrue(row.status)
         self.assertEqual('status_up', row.status_class)
         # Check the cells as well
         cell_status = row.cells['status'].status
-        self.assertEqual(True, cell_status)
+        self.assertTrue(cell_status)
         self.assertEqual('status_up',
                          row.cells['status'].get_status_class(cell_status))
 
@@ -601,25 +658,21 @@ class DataTableTests(test.TestCase):
         # Whole table
         resp = http.HttpResponse(self.table.render())
         self.assertContains(resp, '<table id="my_table"', 1)
-        self.assertContains(resp, '<th ', 8)
+        self.assertContains(resp, '<th ', 7)
         self.assertContains(resp, 'id="my_table__row__1"', 1)
         self.assertContains(resp, 'id="my_table__row__2"', 1)
         self.assertContains(resp, 'id="my_table__row__3"', 1)
         update_string = "action=row_update&amp;table=my_table&amp;obj_id="
-        self.assertContains(resp, update_string, 3)
-        self.assertContains(resp, "data-update-interval", 3)
+        self.assertContains(resp, update_string, 4)
+        self.assertContains(resp, "data-update-interval", 4)
         # Verify no table heading
         self.assertNotContains(resp, "<h3 class='table_title'")
         # Verify our XSS protection
-        self.assertContains(resp, '<a href="http://example.com/" '
-                                  'data-tip="click for dialog" '
-                                  'data-type="modal dialog" '
-                                  'class="link-modal">'
-                                  '&lt;strong&gt;evil&lt;/strong&gt;</a>', 1)
+        self.assertContains(resp, '&lt;strong&gt;evil&lt;/strong&gt;', 1)
         # Hidden Title = False shows the table title
         self.table._meta.hidden_title = False
         resp = http.HttpResponse(self.table.render())
-        self.assertContains(resp, "<h3 class='table_title'", 1)
+        self.assertContains(resp, "<span class='table-title'>", 1)
 
         # Filter = False hides the search box
         self.table._meta.filter = False
@@ -654,10 +707,8 @@ class DataTableTests(test.TestCase):
 
         # Check if in-line edit is available in the cell,
         # but is not in inline_edit_mod.
-        self.assertEqual(True,
-                         name_cell.inline_edit_available)
-        self.assertEqual(False,
-                         name_cell.inline_edit_mod)
+        self.assertTrue(name_cell.inline_edit_available)
+        self.assertFalse(name_cell.inline_edit_mod)
 
         # Check if is cell is rendered correctly.
         name_cell_rendered = name_cell.render()
@@ -682,10 +733,8 @@ class DataTableTests(test.TestCase):
 
         # Check if in-line edit is available in the cell,
         # but is not in inline_edit_mod.
-        self.assertEqual(True,
-                         name_cell.inline_edit_available)
-        self.assertEqual(False,
-                         name_cell.inline_edit_mod)
+        self.assertTrue(name_cell.inline_edit_available)
+        self.assertFalse(name_cell.inline_edit_mod)
 
         # Check if is cell is rendered correctly.
         name_cell_rendered = name_cell.render()
@@ -714,10 +763,8 @@ class DataTableTests(test.TestCase):
         # Check if in-line edit is available in the cell,
         # and is in inline_edit_mod, also column auto must be
         # set as form_field.
-        self.assertEqual(True,
-                         name_cell.inline_edit_available)
-        self.assertEqual(True,
-                         name_cell.inline_edit_mod)
+        self.assertTrue(name_cell.inline_edit_available)
+        self.assertTrue(name_cell.inline_edit_mod)
         self.assertEqual('form_field',
                          name_col.auto)
 
@@ -795,7 +842,8 @@ class DataTableTests(test.TestCase):
         handled = self.table.maybe_handle()
         self.assertIsNone(handled)
         self.assertQuerysetEqual(self.table.filtered_data,
-                                 ['<FakeObject: object_2>'])
+                                 ['FakeObject: object_2'],
+                                 transform=six.text_type)
 
         # with empty filter string, it should return all data
         req = self.factory.post('/my_url/', {action_string: ''})
@@ -803,9 +851,11 @@ class DataTableTests(test.TestCase):
         handled = self.table.maybe_handle()
         self.assertIsNone(handled)
         self.assertQuerysetEqual(self.table.filtered_data,
-                                 ['<FakeObject: object_1>',
-                                  '<FakeObject: object_2>',
-                                  '<FakeObject: object_3>'])
+                                 ['FakeObject: object_1',
+                                  'FakeObject: object_2',
+                                  'FakeObject: object_3',
+                                  u'FakeObject: öbject_4'],
+                                 transform=six.text_type)
 
         # with unknown value it should return empty list
         req = self.factory.post('/my_url/', {action_string: 'horizon'})
@@ -862,13 +912,15 @@ class DataTableTests(test.TestCase):
         req = self.factory.get('/my_url/')
         self.table = MyTable(req, TEST_DATA_3)
         toggle_action = self.table.get_row_actions(TEST_DATA_3[0])[2]
-        self.assertEqual("Batch Item", unicode(toggle_action.verbose_name))
+        self.assertEqual("Batch Item",
+                         six.text_type(toggle_action.verbose_name))
 
         # Batch action with custom help text
         req = self.factory.get('/my_url/')
         self.table = MyTable(req, TEST_DATA_3)
         toggle_action = self.table.get_row_actions(TEST_DATA_3[0])[4]
-        self.assertEqual("BatchHelp Item", unicode(toggle_action.verbose_name))
+        self.assertEqual("BatchHelp Item",
+                         six.text_type(toggle_action.verbose_name))
 
         # Single object toggle action
         # GET page - 'up' to 'down'
@@ -876,7 +928,8 @@ class DataTableTests(test.TestCase):
         self.table = MyTable(req, TEST_DATA_3)
         self.assertEqual(5, len(self.table.get_row_actions(TEST_DATA_3[0])))
         toggle_action = self.table.get_row_actions(TEST_DATA_3[0])[3]
-        self.assertEqual("Down Item", unicode(toggle_action.verbose_name))
+        self.assertEqual("Down Item",
+                         six.text_type(toggle_action.verbose_name))
 
         # Toggle from status 'up' to 'down'
         # POST page
@@ -897,7 +950,7 @@ class DataTableTests(test.TestCase):
         self.table = MyTable(req, TEST_DATA_2)
         self.assertEqual(4, len(self.table.get_row_actions(TEST_DATA_2[0])))
         toggle_action = self.table.get_row_actions(TEST_DATA_2[0])[2]
-        self.assertEqual("Up Item", unicode(toggle_action.verbose_name))
+        self.assertEqual("Up Item", six.text_type(toggle_action.verbose_name))
 
         # POST page
         action_string = "my_table__toggle__2"
@@ -977,17 +1030,20 @@ class DataTableTests(test.TestCase):
         handled = self.table.maybe_handle()
         self.assertIsNone(handled)
         self.assertQuerysetEqual(self.table.filtered_data,
-                                 ['<FakeObject: object_2>'])
+                                 ['FakeObject: object_2'],
+                                 transform=six.text_type)
 
-        # Ensure fitering respects the request method, e.g. no filter here
+        # Ensure filtering respects the request method, e.g. no filter here
         req = self.factory.get('/my_url/', {action_string: '2'})
         self.table = MyTable(req, TEST_DATA)
         handled = self.table.maybe_handle()
         self.assertIsNone(handled)
         self.assertQuerysetEqual(self.table.filtered_data,
-                                 ['<FakeObject: object_1>',
-                                  '<FakeObject: object_2>',
-                                  '<FakeObject: object_3>'])
+                                 ['FakeObject: object_1',
+                                  'FakeObject: object_2',
+                                  'FakeObject: object_3',
+                                  u'FakeObject: öbject_4'],
+                                 transform=six.text_type)
 
         # Updating and preemptive actions
         params = {"table": "my_table", "action": "row_update", "obj_id": "1"}
@@ -1013,12 +1069,16 @@ class DataTableTests(test.TestCase):
 
         # Verbose names
         table_actions = self.table.get_table_actions()
-        self.assertEqual("Filter", unicode(table_actions[0].verbose_name))
-        self.assertEqual("Delete Me", unicode(table_actions[1].verbose_name))
+        self.assertEqual("Filter",
+                         six.text_type(table_actions[0].verbose_name))
+        self.assertEqual("Delete Me",
+                         six.text_type(table_actions[1].verbose_name))
 
         row_actions = self.table.get_row_actions(TEST_DATA[0])
-        self.assertEqual("Delete Me", unicode(row_actions[0].verbose_name))
-        self.assertEqual("Log In", unicode(row_actions[1].verbose_name))
+        self.assertEqual("Delete Me",
+                         six.text_type(row_actions[0].verbose_name))
+        self.assertEqual("Log In",
+                         six.text_type(row_actions[1].verbose_name))
 
     def test_server_filtering(self):
         filter_value_param = "my_table__filter__q"
@@ -1032,7 +1092,8 @@ class DataTableTests(test.TestCase):
         handled = self.table.maybe_handle()
         self.assertIsNone(handled)
         self.assertQuerysetEqual(self.table.filtered_data,
-                                 ['<FakeObject: object_2>'])
+                                 ['FakeObject: object_2'],
+                                 transform=six.text_type)
 
         # Ensure API filtering does not filter on server, e.g. no filter here
         req = self.factory.post('/my_url/')
@@ -1042,9 +1103,11 @@ class DataTableTests(test.TestCase):
         handled = self.table.maybe_handle()
         self.assertIsNone(handled)
         self.assertQuerysetEqual(self.table.filtered_data,
-                                 ['<FakeObject: object_1>',
-                                  '<FakeObject: object_2>',
-                                  '<FakeObject: object_3>'])
+                                 ['FakeObject: object_1',
+                                  'FakeObject: object_2',
+                                  'FakeObject: object_3',
+                                  u'FakeObject: öbject_4'],
+                                 transform=six.text_type)
 
     def test_inline_edit_update_action_get_non_ajax(self):
         # Non ajax inline edit request should return None.
@@ -1167,8 +1230,8 @@ class DataTableTests(test.TestCase):
         # Regression test for launchpad bug 964345.
         self.assertNotEqual(id(table1), id(table2))
         self.assertNotEqual(id(table1.columns), id(table2.columns))
-        t1cols = table1.columns.values()
-        t2cols = table2.columns.values()
+        t1cols = list(table1.columns.values())
+        t2cols = list(table2.columns.values())
         self.assertEqual(t1cols[0].name, t2cols[0].name)
         self.assertNotEqual(id(t1cols[0]), id(t2cols[0]))
         self.assertNotEqual(id(t1cols[0].table),
@@ -1266,13 +1329,13 @@ class DataTableTests(test.TestCase):
         self.assertEqual('1', row.cells['id'].data)  # Standard attr access
         self.assertEqual('custom object_1', row.cells['name'].data)  # Callable
         # name and verbose_name
-        self.assertEqual("Id", unicode(id_col))
-        self.assertEqual("Verbose Name", unicode(name_col))
+        self.assertEqual("Id", six.text_type(id_col))
+        self.assertEqual("Verbose Name", six.text_type(name_col))
         self.assertIn("sortable", name_col.get_final_attrs().get('class', ""))
         # hidden
-        self.assertEqual(True, id_col.hidden)
+        self.assertTrue(id_col.hidden)
         self.assertIn("hide", id_col.get_final_attrs().get('class', ""))
-        self.assertEqual(False, name_col.hidden)
+        self.assertFalse(name_col.hidden)
         self.assertNotIn("hide", name_col.get_final_attrs().get('class', ""))
         # link, link_classes, link_attrs and get_link_url
         self.assertIn('href="http://example.com/"', row.cells['value'].value)
@@ -1325,7 +1388,7 @@ class DataTableTests(test.TestCase):
         id_col.status = True
         id_col.status_choices = (('1', False), ('2', True))
         cell_status = row.cells['id'].status
-        self.assertEqual(False, cell_status)
+        self.assertFalse(cell_status)
         self.assertEqual('status_down',
                          row.cells['id'].get_status_class(cell_status))
         # Ensure data is not cached on the column across table instances
@@ -1445,9 +1508,11 @@ class DataTableViewTests(test.TestCase):
         context = view.get_context_data()
         self.assertEqual(context['table'].__class__, MyServerFilterTable)
         self.assertQuerysetEqual(data,
-                                 ['<FakeObject: object_1>',
-                                  '<FakeObject: object_2>',
-                                  '<FakeObject: object_3>'])
+                                 ['FakeObject: object_1',
+                                  'FakeObject: object_2',
+                                  'FakeObject: object_3',
+                                  u'FakeObject: öbject_4'],
+                                 transform=six.text_type)
         self.assertEqual(req.session.get(self.fil_value_param), 'up')
         self.assertEqual(req.session.get(self.fil_field_param), 'status')
 

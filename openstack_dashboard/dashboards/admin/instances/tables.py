@@ -40,9 +40,10 @@ class AdminLogLink(project_tables.LogLink):
 
 class MigrateInstance(policy.PolicyTargetMixin, tables.BatchAction):
     name = "migrate"
-    classes = ("btn-migrate", "btn-danger")
+    classes = ("btn-migrate",)
     policy_rules = (("compute", "compute_extension:admin_actions:migrate"),)
     help_text = _("Migrating instances may cause some unrecoverable results.")
+    action_type = "danger"
 
     @staticmethod
     def action_present(count):
@@ -74,9 +75,10 @@ class LiveMigrateInstance(policy.PolicyTargetMixin,
     name = "live_migrate"
     verbose_name = _("Live Migrate Instance")
     url = "horizon:admin:instances:live_migrate"
-    classes = ("ajax-modal", "btn-migrate", "btn-danger")
+    classes = ("ajax-modal", "btn-migrate")
     policy_rules = (
         ("compute", "compute_extension:admin_actions:migrateLive"),)
+    action_type = "danger"
 
     def allowed(self, request, instance):
         return ((instance.status in project_tables.ACTIVE_STATES)
@@ -101,7 +103,7 @@ class AdminInstanceFilterAction(tables.FilterAction):
     filter_type = "server"
     filter_choices = (('project', _("Project ="), True),
                       ('host', _("Host ="), True),
-                      ('name', _("Name"), True),
+                      ('name', _("Name ="), True),
                       ('ip', _("IPv4 Address ="), True),
                       ('ip6', _("IPv6 Address ="), True),
                       ('status', _("Status ="), True),
@@ -142,8 +144,8 @@ class AdminInstancesTable(tables.DataTable):
                        verbose_name=_("IP Address"),
                        attrs={'data-type': "ip"})
     size = tables.Column(project_tables.get_size,
-                         verbose_name=_("Size"),
-                         attrs={'data-type': 'size'})
+                         sortable=False,
+                         verbose_name=_("Size"))
     status = tables.Column(
         "status",
         filters=(title, filters.replace_underscores),
@@ -171,7 +173,7 @@ class AdminInstancesTable(tables.DataTable):
         name = "instances"
         verbose_name = _("Instances")
         status_columns = ["status", "task"]
-        table_actions = (project_tables.TerminateInstance,
+        table_actions = (project_tables.DeleteInstance,
                          AdminInstanceFilterAction)
         row_class = AdminUpdateRow
         row_actions = (project_tables.ConfirmResize,
@@ -182,8 +184,9 @@ class AdminInstancesTable(tables.DataTable):
                        project_tables.CreateSnapshot,
                        project_tables.TogglePause,
                        project_tables.ToggleSuspend,
+                       project_tables.ToggleShelve,
                        MigrateInstance,
                        LiveMigrateInstance,
                        project_tables.SoftRebootInstance,
                        project_tables.RebootInstance,
-                       project_tables.TerminateInstance)
+                       project_tables.DeleteInstance)

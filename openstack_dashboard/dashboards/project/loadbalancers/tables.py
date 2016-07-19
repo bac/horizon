@@ -79,30 +79,34 @@ class AddMonitorLink(tables.LinkAction):
     policy_rules = (("network", "create_health_monitor"),)
 
 
-class DeleteVipLink(policy.PolicyTargetMixin, tables.DeleteAction):
+class DeleteVipLink(policy.PolicyTargetMixin, tables.Action):
     name = "deletevip"
+    preempt = True
+    verbose_name = _("Delete VIP")
     policy_rules = (("network", "delete_vip"),)
-
-    @staticmethod
-    def action_present(count):
-        return ungettext_lazy(
-            u"Delete VIP",
-            u"Delete VIPs",
-            count
-        )
-
-    @staticmethod
-    def action_past(count):
-        return ungettext_lazy(
-            u"Scheduled deletion of VIP",
-            u"Scheduled deletion of VIPs",
-            count
-        )
+    action_type = "danger"
 
     def allowed(self, request, datum=None):
-        if datum and not datum.vip_id:
-            return False
-        return True
+        if datum and datum.vip_id:
+            self.help_text = _("Deleting VIP %s from this pool "
+                               "cannot be undone.") % datum.vip_id
+            return True
+        return False
+
+    def single(self, table, request, obj_id):
+        try:
+            vip_id = api.lbaas.pool_get(request, obj_id).vip_id
+        except Exception as e:
+            exceptions.handle(request,
+                              _('Unable to locate VIP to delete. %s')
+                              % e)
+        if vip_id is not None:
+            try:
+                api.lbaas.vip_delete(request, vip_id)
+                messages.success(request, _('Deleted VIP %s') % vip_id)
+            except Exception as e:
+                exceptions.handle(request,
+                                  _('Unable to delete VIP. %s') % e)
 
 
 class DeletePoolLink(policy.PolicyTargetMixin, tables.DeleteAction):
@@ -130,6 +134,13 @@ class DeletePoolLink(policy.PolicyTargetMixin, tables.DeleteAction):
             return False
         return True
 
+    def delete(self, request, obj_id):
+        try:
+            api.lbaas.pool_delete(request, obj_id)
+        except Exception as e:
+            exceptions.handle(request,
+                              _('Unable to delete pool. %s') % e)
+
 
 class DeleteMonitorLink(policy.PolicyTargetMixin,
                         tables.DeleteAction):
@@ -152,6 +163,13 @@ class DeleteMonitorLink(policy.PolicyTargetMixin,
             count
         )
 
+    def delete(self, request, obj_id):
+        try:
+            api.lbaas.pool_health_monitor_delete(request, obj_id)
+        except Exception as e:
+            exceptions.handle(request,
+                              _('Unable to delete monitor. %s') % e)
+
 
 class DeleteMemberLink(policy.PolicyTargetMixin, tables.DeleteAction):
     name = "deletemember"
@@ -172,6 +190,13 @@ class DeleteMemberLink(policy.PolicyTargetMixin, tables.DeleteAction):
             u"Scheduled deletion of Members",
             count
         )
+
+    def delete(self, request, obj_id):
+        try:
+            api.lbaas.member_delete(request, obj_id)
+        except Exception as e:
+            exceptions.handle(request,
+                              _('Unable to delete member. %s') % e)
 
 
 class UpdatePoolLink(policy.PolicyTargetMixin, tables.LinkAction):
@@ -255,9 +280,10 @@ class DeletePMAssociationLink(policy.PolicyTargetMixin,
     name = "deleteassociation"
     verbose_name = _("Disassociate Monitor")
     url = "horizon:project:loadbalancers:deleteassociation"
-    classes = ("ajax-modal", "btn-danger")
-    icon = "remove"
+    classes = ("ajax-modal",)
+    icon = "trash"
     policy_rules = (("network", "delete_pool_health_monitor"),)
+    action_type = "danger"
 
     def allowed(self, request, datum=None):
         if datum and not datum['health_monitors']:
@@ -286,7 +312,7 @@ class AddVIPFloatingIP(policy.PolicyTargetMixin, tables.LinkAction):
         if hasattr(pool, "vip") and pool.vip:
             vip = pool.vip
             return not (hasattr(vip, "fip") and vip.fip)
-        return True
+        return False
 
     def get_link_url(self, datum):
         base_url = reverse(self.url)
@@ -311,8 +337,9 @@ class RemoveVIPFloatingIP(policy.PolicyTargetMixin, tables.Action):
     preempt = True
     icon = "unlink"
     verbose_name = _("Disassociate Floating IP")
-    classes = ("btn-danger", "btn-disassociate",)
+    classes = ("btn-disassociate",)
     policy_rules = (("compute", "network:disassociate_floating_ip"),)
+    action_type = "danger"
 
     def allowed(self, request, pool):
         if not api.network.floating_ip_supported(request):
@@ -321,7 +348,9 @@ class RemoveVIPFloatingIP(policy.PolicyTargetMixin, tables.Action):
             return False
         if hasattr(pool, "vip") and pool.vip:
             vip = pool.vip
-            return (hasattr(vip, "fip") and vip.fip)
+            self.help_text = _('Floating IP will be removed '
+                               'from VIP "%s".') % vip.name
+            return hasattr(vip, "fip") and vip.fip
         return False
 
     def single(self, table, request, pool_id):
@@ -404,6 +433,15 @@ def get_vip_name(pool):
         return None
 
 
+def get_subnet(pool):
+    if hasattr(pool, "subnet") and pool.subnet:
+        template_name = 'project/loadbalancers/_pool_table_subnet_cell.html'
+        context = {"subnet": pool.subnet}
+        return template.loader.render_to_string(template_name, context)
+    else:
+        return None
+
+
 class PoolsTable(tables.DataTable):
     METHOD_DISPLAY_CHOICES = (
         ("round_robin", pgettext_lazy("load balancing method",
@@ -420,7 +458,7 @@ class PoolsTable(tables.DataTable):
     description = tables.Column('description', verbose_name=_("Description"))
     provider = tables.Column('provider', verbose_name=_("Provider"),
                              filters=(lambda v: filters.default(v, _('N/A')),))
-    subnet_name = tables.Column('subnet_name', verbose_name=_("Subnet"))
+    subnet_name = tables.Column(get_subnet, verbose_name=_("Subnet"))
     protocol = tables.Column('protocol', verbose_name=_("Protocol"))
     method = tables.Column('lb_method',
                            verbose_name=_("LB Method"),

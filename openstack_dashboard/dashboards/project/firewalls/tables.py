@@ -57,6 +57,7 @@ class AddFirewallLink(tables.LinkAction):
 
 class DeleteRuleLink(policy.PolicyTargetMixin, tables.DeleteAction):
     name = "deleterule"
+    policy_rules = (("network", "delete_firewall_rule"),)
 
     @staticmethod
     def action_present(count):
@@ -74,11 +75,21 @@ class DeleteRuleLink(policy.PolicyTargetMixin, tables.DeleteAction):
             count
         )
 
-    policy_rules = (("network", "delete_firewall_rule"),)
+    def allowed(self, request, datum=None):
+        if datum and datum.policy:
+            return False
+        return True
+
+    def delete(self, request, obj_id):
+        try:
+            api.fwaas.rule_delete(request, obj_id)
+        except Exception as e:
+            exceptions.handle(request, _('Unable to delete rule. %s') % e)
 
 
 class DeletePolicyLink(policy.PolicyTargetMixin, tables.DeleteAction):
     name = "deletepolicy"
+    policy_rules = (("network", "delete_firewall_policy"),)
 
     @staticmethod
     def action_present(count):
@@ -96,12 +107,17 @@ class DeletePolicyLink(policy.PolicyTargetMixin, tables.DeleteAction):
             count
         )
 
-    policy_rules = (("network", "delete_firewall_policy"),)
+    def delete(self, request, obj_id):
+        try:
+            api.fwaas.policy_delete(request, obj_id)
+        except Exception as e:
+            exceptions.handle(request, _('Unable to delete policy. %s') % e)
 
 
 class DeleteFirewallLink(policy.PolicyTargetMixin,
                          tables.DeleteAction):
     name = "deletefirewall"
+    policy_rules = (("network", "delete_firewall"),)
 
     @staticmethod
     def action_present(count):
@@ -119,7 +135,11 @@ class DeleteFirewallLink(policy.PolicyTargetMixin,
             count
         )
 
-    policy_rules = (("network", "delete_firewall"),)
+    def delete(self, request, obj_id):
+        try:
+            api.fwaas.firewall_delete(request, obj_id)
+        except Exception as e:
+            exceptions.handle(request, _('Unable to delete firewall. %s') % e)
 
 
 class UpdateRuleLink(policy.PolicyTargetMixin, tables.LinkAction):
@@ -183,9 +203,10 @@ class RemoveRuleFromPolicyLink(policy.PolicyTargetMixin,
                                tables.LinkAction):
     name = "removerule"
     verbose_name = _("Remove Rule")
-    classes = ("ajax-modal", "btn-danger",)
+    classes = ("ajax-modal",)
     policy_rules = (("network", "get_firewall_policy"),
                     ("network", "remove_rule"),)
+    action_type = "danger"
 
     def get_link_url(self, policy):
         base_url = reverse("horizon:project:firewalls:removerule",
@@ -248,7 +269,7 @@ def get_rules_name(datum):
 
 def get_routers_name(firewall):
     if firewall.routers:
-        return ', '.join(router['name'] for router in firewall.routers)
+        return ', '.join(router.name_or_id for router in firewall.routers)
 
 
 def get_policy_name(datum):
@@ -257,14 +278,16 @@ def get_policy_name(datum):
 
 
 def get_policy_link(datum):
-    return reverse('horizon:project:firewalls:policydetails',
-                   kwargs={'policy_id': datum.policy.id})
+    if datum.policy:
+        return reverse('horizon:project:firewalls:policydetails',
+                       kwargs={'policy_id': datum.policy.id})
 
 
 class RulesTable(tables.DataTable):
     ACTION_DISPLAY_CHOICES = (
         ("Allow", pgettext_lazy("Action Name of a Firewall Rule", u"ALLOW")),
         ("Deny", pgettext_lazy("Action Name of a Firewall Rule", u"DENY")),
+        ("Reject", pgettext_lazy("Action Name of a Firewall Rule", u"REJECT")),
     )
     name = tables.Column("name_or_id",
                          verbose_name=_("Name"),
@@ -298,7 +321,9 @@ class RulesTable(tables.DataTable):
     class Meta(object):
         name = "rulestable"
         verbose_name = _("Rules")
-        table_actions = (AddRuleLink, DeleteRuleLink)
+        table_actions = (AddRuleLink,
+                         DeleteRuleLink,
+                         tables.NameFilterAction)
         row_actions = (UpdateRuleLink, DeleteRuleLink)
 
 
@@ -319,7 +344,9 @@ class PoliciesTable(tables.DataTable):
     class Meta(object):
         name = "policiestable"
         verbose_name = _("Policies")
-        table_actions = (AddPolicyLink, DeletePolicyLink)
+        table_actions = (AddPolicyLink,
+                         DeletePolicyLink,
+                         tables.NameFilterAction)
         row_actions = (UpdatePolicyLink, InsertRuleToPolicyLink,
                        RemoveRuleFromPolicyLink, DeletePolicyLink)
 
@@ -367,7 +394,9 @@ class FirewallsTable(tables.DataTable):
     class Meta(object):
         name = "firewallstable"
         verbose_name = _("Firewalls")
-        table_actions = (AddFirewallLink, DeleteFirewallLink)
+        table_actions = (AddFirewallLink,
+                         DeleteFirewallLink,
+                         tables.NameFilterAction)
         row_actions = (UpdateFirewallLink, DeleteFirewallLink,
                        AddRouterToFirewallLink, RemoveRouterFromFirewallLink)
 

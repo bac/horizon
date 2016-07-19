@@ -50,8 +50,8 @@ class CreateBackupView(forms.ModalFormView):
 
 class BackupDetailView(tabs.TabView):
     tab_group_class = backup_tabs.BackupDetailTabs
-    template_name = 'project/volumes/backups/detail.html'
-    page_title = _("Volume Backup Details: {{ backup.name }}")
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ backup.name|default:backup.id }}"
 
     def get_context_data(self, **kwargs):
         context = super(BackupDetailView, self).get_context_data(**kwargs)
@@ -88,7 +88,7 @@ class RestoreBackupView(forms.ModalFormView):
     modal_header = _("Restore Volume Backup")
     template_name = 'project/volumes/backups/restore_backup.html'
     submit_label = _("Restore Backup to Volume")
-    submit_url = "horizon:project:volumes:volumes:create_backup"
+    submit_url = "horizon:project:volumes:backups:restore"
     success_url = reverse_lazy('horizon:project:volumes:index')
     page_title = _("Restore a Volume Backup")
 

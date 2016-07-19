@@ -26,25 +26,23 @@
    * Serve as the focal point for table actions.
    */
   angular
-    .module('hz.dashboard.identity.users')
+    .module('horizon.dashboard.identity.users')
     .controller('identityUsersTableController', identityUsersTableController);
 
   identityUsersTableController.$inject = [
-    'hz.dashboard.identity.basePath',
     'horizon.framework.widgets.toast.service',
     'horizon.framework.util.i18n.gettext',
     'horizon.app.core.openstack-service-api.policy',
     'horizon.app.core.openstack-service-api.keystone'
   ];
 
-  function identityUsersTableController(basepath, toast, gettext, policy, keystone) {
+  function identityUsersTableController(toast, gettext, policy, keystone) {
 
     var ctrl = this;
     ctrl.users = [];
     ctrl.iusers = [];
     ctrl.userSession = {};
     ctrl.checked = {};
-    ctrl.path = basepath + 'users/table/';
 
     init();
 
@@ -54,18 +52,17 @@
       // if user has permission
       // fetch table data and populate it
       var rules = [['identity', 'identity:list_users']];
-      policy.check({ rules: rules }).success(policySuccess);
+      policy.ifAllowed({ rules: rules }).then(policySuccess, policyFailed);
     }
 
-    function policySuccess(response) {
-      if (response.allowed) {
-        keystone.getUsers().success(getUsersSuccess);
-        keystone.getCurrentUserSession().success(getSessionSuccess);
-      }
-      else {
-        var msg = gettext('Insufficient privilege level to view user information.');
-        toast.add('info', msg);
-      }
+    function policySuccess() {
+      keystone.getUsers().success(getUsersSuccess);
+      keystone.getCurrentUserSession().success(getSessionSuccess);
+    }
+
+    function policyFailed() {
+      var msg = gettext('Insufficient privilege level to view user information.');
+      toast.add('info', msg);
     }
 
     function getUsersSuccess(response) {

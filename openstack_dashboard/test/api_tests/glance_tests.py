@@ -247,3 +247,67 @@ class GlanceApiTests(test.APITestCase):
         self.mox.ReplayAll()
         image = api.glance.image_get(self.request, 'empty')
         self.assertIsNone(image.name)
+
+    def test_metadefs_namespace_list(self):
+        metadata_defs = self.metadata_defs.list()
+        limit = getattr(settings, 'API_RESULT_LIMIT', 1000)
+
+        glanceclient = self.stub_glanceclient()
+        glanceclient.metadefs_namespace = self.mox.CreateMockAnything()
+        glanceclient.metadefs_namespace.list(page_size=limit,
+                                             limit=limit,
+                                             filters={},
+                                             sort_dir='asc',
+                                             sort_key='namespace',) \
+            .AndReturn(metadata_defs)
+
+        self.mox.ReplayAll()
+
+        defs, more, prev = api.glance.metadefs_namespace_list(self.request)
+        self.assertEqual(len(metadata_defs), len(defs))
+        for i in range(len(metadata_defs)):
+            self.assertEqual(metadata_defs[i].namespace, defs[i].namespace)
+        self.assertFalse(more)
+        self.assertFalse(prev)
+
+    def test_metadefs_namespace_list_with_properties_target(self):
+        metadata_defs = self.metadata_defs.list()
+        limit = getattr(settings, 'API_RESULT_LIMIT', 1000)
+        filters = {'resource_types': ['mock name'],
+                   'properties_target': 'mock properties target'}
+
+        glanceclient = self.stub_glanceclient()
+        glanceclient.metadefs_namespace = self.mox.CreateMockAnything()
+        glanceclient.metadefs_namespace.list(page_size=limit,
+                                             limit=limit,
+                                             filters=filters,
+                                             sort_dir='asc',
+                                             sort_key='namespace',) \
+            .AndReturn(metadata_defs)
+
+        self.mox.ReplayAll()
+
+        defs = api.glance.metadefs_namespace_list(self.request,
+                                                  filters=filters)[0]
+        self.assertEqual(1, len(defs))
+        self.assertEqual('namespace_4', defs[0].namespace)
+
+    @test.create_stubs({api.glance: ('get_version',)})
+    def test_metadefs_namespace_list_v1(self):
+        api.glance.get_version().AndReturn(1)
+
+        self.mox.ReplayAll()
+
+        defs, more, prev = api.glance.metadefs_namespace_list(self.request)
+        self.assertItemsEqual(defs, [])
+        self.assertFalse(more)
+        self.assertFalse(prev)
+
+    @test.create_stubs({api.glance: ('get_version',)})
+    def test_metadefs_resource_types_list_v1(self):
+        api.glance.get_version().AndReturn(1)
+
+        self.mox.ReplayAll()
+
+        res_types = api.glance.metadefs_resource_types_list(self.request)
+        self.assertItemsEqual(res_types, [])

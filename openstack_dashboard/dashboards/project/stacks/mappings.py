@@ -116,7 +116,9 @@ resource_urls = {
 
 
 def resource_to_url(resource):
-    if not resource or not resource.physical_resource_id:
+    if (not resource or
+            not resource.physical_resource_id or
+            not hasattr(resource, 'resource_type')):
         return None
 
     mapping = resource_urls.get(resource.resource_type, {})
@@ -136,7 +138,7 @@ def resource_to_url(resource):
 def stack_output(output):
     if not output:
         return u''
-    if isinstance(output, basestring):
+    if isinstance(output, six.string_types):
         parts = urlparse.urlsplit(output)
         if parts.netloc and parts.scheme in ('http', 'https'):
             url = html.escape(output)

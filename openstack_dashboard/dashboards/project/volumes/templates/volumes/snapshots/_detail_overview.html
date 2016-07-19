@@ -1,11 +1,6 @@
 {% load i18n sizeformat parse_date %}
-{% load url from future %}
 
-<h3>{% trans "Volume Snapshot Overview" %}</h3>
-
-<div class="info row detail">
-  <h4>{% trans "Information" %}</h4>
-  <hr class="header_rule">
+<div class="detail">
   <dl class="dl-horizontal">
     <dt>{% trans "Name" %}</dt>
     <dd>{{ snapshot.name }}</dd>
@@ -28,14 +23,12 @@
       </a>
     </dd>
   </dl>
-</div>
 
-<div class="specs row detail">
   <h4>{% trans "Specs" %}</h4>
   <hr class="header_rule">
   <dl class="dl-horizontal">
     <dt>{% trans "Size" %}</dt>
-    <dd>{{ snapshot.size }} {% trans "GB" %}</dd>
+    <dd>{{ snapshot.size }} {% trans "GiB" %}</dd>
     <dt>{% trans "Created" %}</dt>
     <dd>{{ snapshot.created_at|parse_date }}</dd>
   </dl>

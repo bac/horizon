@@ -1,3 +1,4 @@
+# -*- encoding: UTF-8 -*-
 # Copyright 2015, Rackspace, US, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from StringIO import StringIO
+from six import StringIO
 
 from horizon.test import helpers as test
 from horizon.utils.babel_extract_angular import extract_angular
@@ -149,5 +150,41 @@ class ExtractAngularTestCase(test.TestCase):
                 (4, u'gettext', 'hello world4', []),
                 (8, u'gettext', '"it\\\'s awesome"', []),
                 (9, u'gettext', 'oh \\"hello\\" there', []),
+            ],
+            messages)
+
+    def test_trim_translate_tag(self):
+        buf = StringIO(
+            "<html><translate> \n hello\n world! \n "
+            "</translate></html>")
+
+        messages = list(extract_angular(buf, [], [], {}))
+        self.assertEqual([(1, 'gettext', 'hello world!', [])], messages)
+
+    def test_nested_translate_tag(self):
+        buf = StringIO(
+            "<html><translate>hello <b>beautiful <i>world</i></b> !"
+            "</translate></html>"
+        )
+
+        messages = list(extract_angular(buf, [], [], {}))
+        self.assertEqual(
+            [(1, 'gettext', 'hello <b>beautiful <i>world</i></b> !', [])],
+            messages)
+
+    def test_nested_variations(self):
+        buf = StringIO(
+            '''
+            <p translate>To <a href="link">link</a> here</p>
+            <p translate>To <!-- a comment!! --> here</p>
+            <p translate>To trademark&reg; &#62; &#x3E; here</p>
+            '''
+        )
+        messages = list(extract_angular(buf, [], [], {}))
+        self.assertEqual(
+            [
+                (2, u'gettext', 'To <a href="link">link</a> here', []),
+                (3, u'gettext', 'To <!-- a comment!! --> here', []),
+                (4, u'gettext', u'To trademark® &#62; &#x3E; here', []),
             ],
             messages)

@@ -12,7 +12,6 @@ Before you dive into writing patches, here are some of the basics:
 * Source code: https://github.com/openstack/horizon
 * Code review: https://review.openstack.org/#q,status:open+project:openstack/horizon,n,z
 * Continuous integration:
-
   * Jenkins: https://jenkins.openstack.org
   * Zuul: http://status.openstack.org/zuul
 * IRC Channel: #openstack-horizon on Freenode.
@@ -37,13 +36,18 @@ Second, you'll need to take care of a couple administrative tasks:
 
 Whew! Got all that? Okay! You're good to go.
 
+.. _`OpenStack Contributor License Agreement`: http://wiki.openstack.org/CLA
+.. _`Horizon Developers`: https://launchpad.net/~horizon
+.. _`instructions for setting up git-review`: http://docs.openstack.org/infra/manual/developers.html#development-workflow
+
 Ways To Contribute
 ------------------
 
 The easiest way to get started with Horizon's code is to pick a bug on
-Launchpad that interests you, and start working on that. Alternatively, if
-there's an OpenStack API feature you would like to see implemented in Horizon
-feel free to try building it.
+Launchpad that interests you, and start working on that. Bugs tagged as
+``low-hanging-fruit`` are a good place to start. Alternatively, if there's an
+OpenStack API feature you would like to see implemented in Horizon feel free
+to try building it.
 
 If those are too big, there are lots of great ways to get involved without
 plunging in head-first:
@@ -61,7 +65,6 @@ plunging in head-first:
 .. _`User Experience Design`: https://wiki.openstack.org/wiki/UX#Getting_Started
 .. _`Persona Working Group`: https://wiki.openstack.org/wiki/Personas
 
-
 Choosing Issues To Work On
 --------------------------
 
@@ -73,7 +76,7 @@ you might want to work on:
 #. New bugs you've discovered
 
 If you have an idea for a new feature that isn't in a blueprint yet, it's
-a good idea to write the blueprint first so you don't end up writing a bunch
+a good idea to write the blueprint first, so you don't end up writing a bunch
 of code that may not go in the direction the community wants.
 
 For bugs, open the bug first, but if you can reproduce the bug reliably and
@@ -86,8 +89,8 @@ After You Write Your Patch
 
 Once you've made your changes, there are a few things to do:
 
-* Make sure the unit tests pass: ``./run_tests.sh``
-* Make sure PEP8 is clean: ``./run_tests.sh --pep8``
+* Make sure the unit tests pass: ``./run_tests.sh`` for Python, and ``npm run test`` for JS.
+* Make sure the linting tasks pass: ``./run_tests.sh --pep8`` for Python, and ``npm run lint`` for JS.
 * Make sure your code is ready for translation: ``./run_tests.sh --pseudo de`` See the Translatability section below for details.
 * Make sure your code is up-to-date with the latest master: ``git pull --rebase``
 * Finally, run ``git review`` to upload your changes to Gerrit for review.
@@ -97,11 +100,6 @@ it in a timely fashion, either offering feedback or approving it to be merged.
 If the review is approved, it is sent to Jenkins to verify the unit tests pass
 and it can be merged cleanly. Once Jenkins approves it, the change will be
 merged to the master repository and it's time to celebrate!
-
-.. _`OpenStack Contributor License Agreement`: http://wiki.openstack.org/CLA
-.. _`OpenStack Contributors`: https://launchpad.net/~openstack-cla
-.. _`Horizon Developers`: https://launchpad.net/~horizon
-.. _`instructions for setting up git-review`: http://docs.openstack.org/infra/manual/developers.html#development-workflow
 
 Etiquette
 =========
@@ -129,6 +127,7 @@ The community's guidelines for etiquette are fairly simple:
 
 Translatability
 ===============
+
 Horizon gets translated into multiple languages. The pseudo translation tool
 can be used to verify that code is ready to be translated. The pseudo tool
 replaces a language's translation with a complete, fake translation. Then
@@ -195,11 +194,10 @@ reliable, readable, and maintainable.
 Required
 ~~~~~~~~
 
-
 **Reliable**
 
 * The code has to work on the stable and latest versions of Firefox, Chrome,
-  Safari, and Opera web browsers, and on Microsoft Internet Explorer 9 and
+  Safari, and Opera web browsers, and on Microsoft Internet Explorer 11 and
   later.
 
 * If you turned compression off during development via ``COMPRESS_ENABLED =
@@ -218,6 +216,7 @@ Required
   are doing it in the most optimized way. One example is to build up a document
   fragment and then append the fragment to the DOM in one pass instead of doing
   multiple smaller DOM updates.
+
 * Use “strict”, enclosing each JavaScript file inside a self-executing
   function. The self-executing function keeps the strict scoped to the file,
   so its variables and methods are not exposed to other JavaScript files in
@@ -228,33 +227,29 @@ Required
       accessing global vars, that normally are not flagged.
 
   Example:
+  ::
 
-  .. code ::
-
-           (function(){
-             'use strict';
-             // code...
-           })();
+    (function(){
+      'use strict';
+      // code...
+    })();
 
 * Use ``forEach`` | ``each`` when looping whenever possible. AngularJS and
   jQuery both provide for each loops that provide both iteration and scope.
 
   AngularJS:
+  ::
 
-  .. code ::
-
-     angular.forEach(objectToIterateOver, function(value, key) {
-        // loop logic
-     });
+    angular.forEach(objectToIterateOver, function(value, key) {
+      // loop logic
+    });
 
   jQuery:
+  ::
 
-  .. code ::
-
-     $.each(objectToIterateOver, function( key, value ) {
-       // loop logic
-     });
-
+    $.each(objectToIterateOver, function(key, value) {
+      // loop logic
+    });
 
 * Do not put variables or functions in the global namespace. There are several
   reasons why globals are bad, one being that all JavaScript included in an
@@ -270,7 +265,6 @@ Required
   consistent, so by reading the statement in the code it is not always clear
   how it is being used.
 
-
 **Readable & Maintainable**
 
 * Give meaningful names to methods and variables.
@@ -284,6 +278,7 @@ Required
 
     2. Avoid in-lining styles into element in HTML. Use attributes and
        classes instead.
+
   * In our JS files, we should focus on logic rather than attempting to
     manipulate/style elements.
 
@@ -296,17 +291,16 @@ Required
 
     3. Avoid using classes for detection purposes only, instead, defer to
        attributes. For example to find a div:
-      .. code ::
+       ::
 
-       <div class="something"></div>
-         $(".something").html("Don't find me this way!");
+         <div class="something"></div>
+           $(".something").html("Don't find me this way!");
 
       Is better found like:
+      ::
 
-      .. code ::
-
-       <div data-something></div>
-         $("div[data-something]").html("You found me correctly!");
+        <div data-something></div>
+          $("div[data-something]").html("You found me correctly!");
 
 * Avoid commented-out code.
 * Avoid dead code.
@@ -316,15 +310,13 @@ Required
 * Avoid creating instances of the same object repeatedly within the same scope.
   Instead, assign the object to a variable and re-use the existing object. For
   example:
-
-  .. code ::
+  ::
 
      $(document).on('click', function() { /* do something. */ });
      $(document).on('mouseover', function() { /* do something. */ });
 
   A better approach:
-
-  .. code ::
+  ::
 
      var $document = $(document);
      $document.on('click', function() { /* do something. */ });
@@ -336,7 +328,6 @@ Required
 
 Recommended
 ~~~~~~~~~~~
-
 
 **Readable & Maintainable**
 
@@ -354,18 +345,24 @@ Recommended
 * Use 2 spaces for code indentation.
 * Use ``{ }`` for ``if``, ``for``, ``while`` statements, and don't combine them
   on one line.
-
-  .. code ::
+  ::
 
     // Do this          //Not this          // Not this
     if(x) {             if(x)               if(x) y =x;
       y=x;                y=x;
     }
+
 * Use ESLint in your development environment.
 
+.. _provided: https://wiki.openstack.org/wiki/Horizon/Javascript/EditorConfig
 
 AngularJS
 ---------
+
+.. Note::
+
+  This section is intended as a quick intro to contributing with AngularJS. For
+  more detailed information, check the :doc:`topics/angularjs`.
 
 "John Papa Style Guide"
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -411,8 +408,7 @@ Required
   is named ``gettext``. For regular Javascript files, use either ``gettext`` or
   ``ngettext``. Only those two methods are recognized by our tools and will be
   included in the .po file after running ``./run_tests --makemessages``.
-
-  .. code ::
+  ::
 
     // Angular
     angular.module('myModule')
@@ -424,8 +420,8 @@ Required
     }
 
     // Javascript
-    gettext("translatable text");
-    ngettext("translatable text");
+    gettext(apple);
+    ngettext('apple', 'apples', count);
 
     // Not valid
     var _ = gettext;
@@ -433,9 +429,9 @@ Required
 
     $window.gettext('translatable text');
 
-
 ESLint
 ------
+
 ESLint is a great tool to be used during your code editing to improve
 JavaScript quality by checking your code against a configurable list of checks.
 Therefore, JavaScript developers should configure their editors to use ESLint
@@ -443,8 +439,6 @@ to warn them of any such errors so they can be addressed. Since ESLint has a
 ton of configuration options to choose from, links are provided below to the
 options Horizon wants enforced along with the instructions for setting up
 ESLint for Eclipse, Sublime Text, Notepad++ and WebStorm/PyCharm.
-
-ESLint configuration file: `.eslintrc`_
 
 Instructions for setting up ESLint: `ESLint setup instructions`_
 
@@ -454,11 +448,7 @@ Instructions for setting up ESLint: `ESLint setup instructions`_
     the configurations we recommended to run in your local development
     environment.
 
-.. _.eslintrc: https://wiki.openstack.org/wiki/Horizon/Javascript/EditorConfig/Settings#.eslintrc
 .. _ESLint setup instructions: https://wiki.openstack.org/wiki/Horizon/Javascript/EditorConfig
-.. _provided: https://wiki.openstack.org/wiki/Horizon/Javascript/EditorConfig
-
-
 
 CSS
 ---
@@ -467,49 +457,77 @@ Style guidelines for CSS are currently quite minimal. Do your best to make the
 code readable and well-organized. Two spaces are preferred for indentation
 so as to match both the JavaScript and HTML files.
 
+JavaScript and CSS libraries using xstatic
+------------------------------------------
 
-JavaScript and CSS libraries
-----------------------------
+We do not bundle third-party code in Horizon's source tree. Instead, we package
+the required files as xstatic Python packages and add them as dependencies to
+Horizon.
 
-We do not bundle the third-party code within Horizon's source tree anymore, any
-code that is still there is just left over and will be cleaned up and packaged
-properly eventually. What we do instead, is packaging the required files as
-XStatic Python packages and adding them as dependencies to Horizon. In
-particular, when you need to add a new third-party JavaScript or CSS library to
-Horizon, follow those steps:
+To create a new xstatic package:
 
- 1. Check if the library is already packaged as Xstatic on PyPi, by searching
-    for the library name. If it already is, go to step 5. If it is, but not in
-    the right version, contact the original packager.
- 2. Package the library as an Xstatic package by following the instructions in
-    Xstatic documentation_.
- 3. `Create a new repository on StackForge`_. Use "xstatic-core" and
-    "xstatic-ptl" groups for the ACLs. Make sure to include the
-    ``publish-to-pypi`` job.
- 4. `Setup PyPi`_ to allow OpenStack to publish your package.
- 5. `Tag your release`_. That will cause it to be automatically packaged and
-    released to PyPi.
- 6. Add the package to global-requirements_. Make sure to mention the license.
- 7. Add the package to Horizon's ``requirements.txt`` file, to its
-    ``settings.py``, and to the ``_scripts.html`` or ``_stylesheets.html``
-    templates. Make sure to keep the order alphabetic.
+1. Check if the library is already packaged as xstatic on PyPi, by searching
+   for the library name. If it already is, go to step 5. If it is, but not in
+   the right version, contact the original packager to have them update it.
+2. Package the library as an xstatic package by following the instructions in
+   xstatic documentation_. Install the xstatic-release_ script and follow
+   the instructions that come with it.
+3. `Create a new repository under OpenStack`_. Use "xstatic-core" and
+   "xstatic-ptl" groups for the ACLs. Make sure to include the
+   ``-pypi-wheel-upload`` job in the project config.
+4. `Set up PyPi`_ to allow OpenStack (the "openstackci" user) to publish your
+   package.
+5. Add the new package to `global-requirements`_.
 
-.. _documentation: http://xstatic.rtfd.org/en/latest/packaging.html
-.. _`Create a new repository on StackForge`: http://docs.openstack.org/infra/manual/creators.html
-.. _global-requirements: https://github.com/openstack/requirements/blob/master/global-requirements.txt
-.. _`Tag your release`: http://docs.openstack.org/infra/manual/drivers.html#tagging-a-release
-.. _`Setup PyPi`: http://docs.openstack.org/infra/manual/creators.html#give-openstack-permission-to-publish-releases
+To make a new release of the package, you need to:
 
+1. Ensure the version information in the `xstatic/pkg/<package name>/__init__.py`
+   file is up to date, especially the `BUILD`.
+2. Push your updated package up for review in gerrit.
+3. Once the review is approved and the change merged, `tag your release`_. That
+   will cause it to be automatically packaged and released to PyPi.
 
 .. warning::
 
-    Note that once a package is released, you can not "unrealease" it. You
+    Note that once a package is released, you can not "un-release" it. You
     should never attempt to modify, delete or rename a released package without
     a lot of careful planning and feedback from all projects that use it.
 
-    For the purpose of fixing packaging mistakes, XStatic has the build number
+    For the purpose of fixing packaging mistakes, xstatic has the build number
     mechanism. Simply fix the error, increment the build number and release the
     newer package.
+
+.. _documentation: http://xstatic.rtfd.org/en/latest/packaging.html
+.. _xstatic-release: https://pypi.python.org/pypi/xstatic-release
+.. _`Create a new repository under OpenStack`: http://docs.openstack.org/infra/manual/creators.html
+.. _`Tag your release`: http://docs.openstack.org/infra/manual/drivers.html#tagging-a-release
+.. _`Set up PyPi`: http://docs.openstack.org/infra/manual/creators.html#give-openstack-permission-to-publish-releases
+.. _global-requirements: https://github.com/openstack/requirements/blob/master/global-requirements.txt
+
+
+Integrating a new xstatic package into Horizon
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Having done a release of an xstatic package:
+
+1. Edit the `upper-constraints.txt`_ file to update or include your xstatic release.
+2. Set the evironment variable `UPPER_CONSTRAINTS_FILE` to the edited upper-constraints.txt
+   file name and run tests or local development server through tox. This will pull in the
+   precise version of the xstatic package that you need.
+3. Move on to releasing once you're happy the Horizon changes are stable.
+
+Releasing a new compatible version of Horizon:
+
+1. Submit your edited upper-constraints.txt file for review (if necessary - check if there hasn't
+   been a review automatically created) with a workflow block until point 2 is viable so the release
+   team don't accidentally merge too early.
+2. When submitting your changes to Horizon use a Depends-On: referencing the upper-constraints.txt
+   review in 1. This will cause the OpenStack testing infrastructure to pull in your updated
+   xstatic package as well.
+3. Merge 1 and 2 noting that Horizon's gate may be broken in the interim between 1 and 2, so try to
+   minimise any delay there.
+
+.. _upper-constraints.txt: https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt
 
 
 HTML
@@ -522,9 +540,9 @@ indentation style to match all front-end code.
 Documentation
 -------------
 
-Horizon's documentation is written in reStructuredText and uses Sphinx for
-additional parsing and functionality, and should follow
-standard practices for writing reST. This includes:
+Horizon's documentation is written in reStructuredText (reST) and uses Sphinx
+for additional parsing and functionality, and should follow standard practices
+for writing reST. This includes:
 
 * Flow paragraphs such that lines wrap at 80 characters or less.
 * Use proper grammar, spelling, capitalization and punctuation at all times.
@@ -539,6 +557,14 @@ Unexpected warnings often appear when building the documentation, and slight
 reST syntax errors frequently cause links or cross-references not to work
 correctly.
 
+Documentation is generated with Sphinx using the tox command. To create HTML docs and man pages:
+
+.. code-block:: bash
+
+    $ tox -e docs
+
+The results are in the doc/build/html and doc/build/man directories respectively.
+
 Conventions
 -----------
 
@@ -551,3 +577,45 @@ Simply by convention, we have a few rules about naming:
   * The term "dashboard" refers to a top-level dashboard class, and "panel" to
     the sub-items within a dashboard. Referring to a panel as a dashboard is
     both confusing and incorrect.
+
+Release Notes
+=============
+
+Release notes for a patch should be included in the patch with the
+associated changes whenever possible. This allow for simpler tracking. It also
+enables a single cherry pick to be done if the change is backported to a
+previous release. In some cases, such as a feature that is provided via
+multiple patches, release notes can be done in a follow-on review.
+
+If the following applies to the patch, a release note is required:
+
+* The deployer needs to take an action when upgrading
+* A new feature is implemented
+* Function was removed (hopefully it was deprecated)
+* Current behavior is changed
+* A new config option is added that the deployer should consider changing from
+  the default
+* A security bug is fixed
+
+A release note is suggested if a long-standing or important bug is fixed.
+Otherwise, a release note is not required.
+
+Horizon uses `reno <http://docs.openstack.org/developer/reno/usage.html>`_ to
+generate release notes. Please read the docs for details. In summary, use
+
+.. code-block:: bash
+
+  $ tox -e venv -- reno new <bug-,bp-,whatever>
+
+Then edit the sample file that was created and push it with your change.
+
+To see the results:
+
+.. code-block:: bash
+
+  $ git commit  # Commit the change because reno scans git log.
+
+  $ tox -e releasenotes
+
+Then look at the generated release notes files in releasenotes/build/html in
+your favorite browser.

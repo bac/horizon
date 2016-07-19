@@ -18,7 +18,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
 from horizon import forms
-from horizon import messages
 from horizon import tabs
 from horizon.utils import memoized
 from horizon import workflows
@@ -34,68 +33,11 @@ from openstack_dashboard.dashboards.project.loadbalancers import utils
 from openstack_dashboard.dashboards.project.loadbalancers \
     import workflows as project_workflows
 
-import re
-
 
 class IndexView(tabs.TabbedTableView):
     tab_group_class = (project_tabs.LoadBalancerTabs)
     template_name = 'project/loadbalancers/details_tabs.html'
     page_title = _("Load Balancer")
-
-    def post(self, request, *args, **kwargs):
-        """This method is messy because table actions
-        were not implemented correctly.  ideally,
-        this code can be refactored to move items into
-        table actions
-        """
-        obj_ids = request.POST.getlist('object_ids')
-        action = request.POST['action']
-        results = re.search('.delete([a-z]+)', action)
-        if not results:
-            return super(IndexView, self).post(request, *args, **kwargs)
-        m = results.group(1)
-        if obj_ids == []:
-            obj_ids.append(re.search('([0-9a-z-]+)$', action).group(1))
-        if m == 'monitor':
-            for obj_id in obj_ids:
-                try:
-                    api.lbaas.pool_health_monitor_delete(request, obj_id)
-                    messages.success(request, _('Deleted monitor %s') % obj_id)
-                except Exception as e:
-                    exceptions.handle(request,
-                                      _('Unable to delete monitor. %s') % e)
-        if m == 'pool':
-            for obj_id in obj_ids:
-                try:
-                    api.lbaas.pool_delete(request, obj_id)
-                    messages.success(request, _('Deleted pool %s') % obj_id)
-                except Exception as e:
-                    exceptions.handle(request,
-                                      _('Unable to delete pool. %s') % e)
-        if m == 'member':
-            for obj_id in obj_ids:
-                try:
-                    api.lbaas.member_delete(request, obj_id)
-                    messages.success(request, _('Deleted member %s') % obj_id)
-                except Exception as e:
-                    exceptions.handle(request,
-                                      _('Unable to delete member. %s') % e)
-        if m == 'vip':
-            for obj_id in obj_ids:
-                try:
-                    vip_id = api.lbaas.pool_get(request, obj_id).vip_id
-                except Exception as e:
-                    exceptions.handle(request,
-                                      _('Unable to locate VIP to delete. %s')
-                                      % e)
-                if vip_id is not None:
-                    try:
-                        api.lbaas.vip_delete(request, vip_id)
-                        messages.success(request, _('Deleted VIP %s') % vip_id)
-                    except Exception as e:
-                        exceptions.handle(request,
-                                          _('Unable to delete VIP. %s') % e)
-        return self.get(request, *args, **kwargs)
 
 
 class AddPoolView(workflows.WorkflowView):
@@ -129,8 +71,8 @@ class AddMonitorView(workflows.WorkflowView):
 
 class PoolDetailsView(tabs.TabView):
     tab_group_class = project_tabs.PoolDetailsTabs
-    template_name = 'project/loadbalancers/details_tabs.html'
-    page_title = _("Pool Details")
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ pool.name|default:pool.id }}"
 
     @memoized.memoized_method
     def get_data(self):
@@ -169,14 +111,51 @@ class PoolDetailsView(tabs.TabView):
 
 class VipDetailsView(tabs.TabView):
     tab_group_class = project_tabs.VipDetailsTabs
-    template_name = 'project/loadbalancers/details_tabs.html'
-    page_title = _("VIP Details")
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ vip.name|default:vip_id }}"
+
+    @memoized.memoized_method
+    def get_data(self):
+        vid = self.kwargs['vip_id']
+        vip = []
+        try:
+            vip = api.lbaas.vip_get(self.request, vid)
+            fips = api.network.tenant_floating_ip_list(self.request)
+            vip_fip = [fip for fip in fips
+                       if fip.port_id == vip.port.id]
+            if vip_fip:
+                vip.fip = vip_fip[0]
+        except Exception:
+            exceptions.handle(self.request,
+                              _('Unable to retrieve VIP details.'))
+        return vip
+
+    def get_context_data(self, **kwargs):
+        context = super(VipDetailsView, self).get_context_data(**kwargs)
+        vip = self.get_data()
+        context['vip'] = vip
+        vip_nav = vip.pool.name_or_id
+        breadcrumb = [
+            (vip_nav,
+             reverse('horizon:project:loadbalancers:vipdetails',
+                     args=(vip.id,))),
+            (_("VIP"),), ]
+        context["custom_breadcrumb"] = breadcrumb
+        return context
+
+    def get_tabs(self, request, *args, **kwargs):
+        vip = self.get_data()
+        return self.tab_group_class(request, vip=vip, **kwargs)
+
+    @staticmethod
+    def get_redirect_url():
+        return reverse("horizon:project:loadbalancers:index")
 
 
 class MemberDetailsView(tabs.TabView):
     tab_group_class = project_tabs.MemberDetailsTabs
-    template_name = 'project/loadbalancers/details_tabs.html'
-    page_title = _("Member Details")
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ member.name|default:member.id }}"
 
     @memoized.memoized_method
     def get_data(self):
@@ -191,6 +170,14 @@ class MemberDetailsView(tabs.TabView):
         context = super(MemberDetailsView, self).get_context_data(**kwargs)
         member = self.get_data()
         context['member'] = member
+        member_nav = member.pool.name_or_id
+        breadcrumb = [
+            (member_nav,
+             reverse('horizon:project:loadbalancers:pooldetails',
+                     args=(member.pool.id,))),
+            (_("Members"), reverse('horizon:project:loadbalancers:members')),
+        ]
+        context["custom_breadcrumb"] = breadcrumb
         table = project_tables.MembersTable(self.request)
         context["url"] = self.get_redirect_url()
         context["actions"] = table.render_row_actions(member)
@@ -207,8 +194,8 @@ class MemberDetailsView(tabs.TabView):
 
 class MonitorDetailsView(tabs.TabView):
     tab_group_class = project_tabs.MonitorDetailsTabs
-    template_name = 'project/loadbalancers/details_tabs.html'
-    page_title = _("Monitor Details")
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ monitor.name|default:monitor.id }}"
 
     @memoized.memoized_method
     def get_data(self):
@@ -223,6 +210,10 @@ class MonitorDetailsView(tabs.TabView):
         context = super(MonitorDetailsView, self).get_context_data(**kwargs)
         monitor = self.get_data()
         context['monitor'] = monitor
+        breadcrumb = [
+            (_("Monitors"), reverse('horizon:project:loadbalancers:monitors')),
+        ]
+        context["custom_breadcrumb"] = breadcrumb
         table = project_tables.MonitorsTable(self.request)
         context["url"] = self.get_redirect_url()
         context["actions"] = table.render_row_actions(monitor)

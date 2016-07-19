@@ -37,7 +37,7 @@ class AddPoolAction(workflows.Action):
     description = forms.CharField(
         initial="", required=False,
         max_length=80, label=_("Description"))
-    # provider is optional because some LBaaS implemetation does
+    # provider is optional because some LBaaS implementation does
     # not support service-type extension.
     provider = forms.ChoiceField(label=_("Provider"), required=False)
     subnet_id = forms.ChoiceField(label=_("Subnet"))
@@ -61,7 +61,7 @@ class AddPoolAction(workflows.Action):
             networks = []
         for n in networks:
             for s in n['subnets']:
-                name = "%s (%s)" % (s.name, s.cidr)
+                name = "%s (%s)" % (s.name_or_id, s.cidr)
                 subnet_id_choices.append((s.id, name))
         self.fields['subnet_id'].choices = subnet_id_choices
 
@@ -154,9 +154,8 @@ class AddVipAction(workflows.Action):
     subnet_id = forms.ChoiceField(label=_("VIP Subnet"),
                                   initial="",
                                   required=False)
-    address = forms.IPField(label=_("Specify a free IP address "
-                                    "from the selected subnet"),
-                            version=forms.IPv4,
+    address = forms.IPField(label=_("IP address"),
+                            version=forms.IPv4 | forms.IPv6,
                             mask=False,
                             required=False)
     protocol_port = forms.IntegerField(
@@ -228,12 +227,7 @@ class AddVipAction(workflows.Action):
     class Meta(object):
         name = _("Specify VIP")
         permissions = ('openstack.services.network',)
-        help_text = _("Create a VIP for this pool. "
-                      "Assign a name, description, IP address, port, "
-                      "and maximum connections allowed for the VIP. "
-                      "Choose the protocol and session persistence "
-                      "method for the VIP. "
-                      "Admin State is UP (checked) by default.")
+        help_text_template = 'project/loadbalancers/_create_vip_help.html'
 
 
 class AddVipStep(workflows.Step):
@@ -305,25 +299,23 @@ class AddMemberAction(workflows.Action):
             'data-slug': 'membertype'
         }))
     members = forms.MultipleChoiceField(
-        label=_("Member(s)"),
         required=False,
         initial=["default"],
         widget=forms.SelectMultiple(attrs={
             'class': 'switched',
             'data-switch-on': 'membertype',
-            'data-membertype-server_list': _("Member(s)"),
+            'data-membertype-server_list': _("Member Instance(s)"),
         }),
         help_text=_("Select members for this pool "))
-    address = forms.IPField(required=False, label=_("Member address"),
-                            help_text=_("Specify member IP address"),
-                            widget=forms.TextInput(attrs={
-                                'class': 'switched',
-                                'data-switch-on': 'membertype',
-                                'data-membertype-member_address':
-                                _("Member address"),
-                            }),
-                            initial="", version=forms.IPv4 | forms.IPv6,
-                            mask=False)
+    address = forms.IPField(
+        required=False,
+        help_text=_("Specify member IP address"),
+        widget=forms.TextInput(attrs={
+            'class': 'switched',
+            'data-switch-on': 'membertype',
+            'data-membertype-member_address': _("Member Address"),
+        }),
+        initial="", version=forms.IPv4 | forms.IPv6, mask=False)
     weight = forms.IntegerField(
         max_value=256, min_value=1, label=_("Weight"), required=False,
         help_text=_("Relative part of requests this pool member serves "
@@ -368,11 +360,10 @@ class AddMemberAction(workflows.Action):
                               _('Unable to retrieve instances list.'))
 
         if len(servers) == 0:
-            self.fields['members'].label = _(
-                "No servers available. To add a member, you "
-                "need at least one running instance.")
-            self.fields['pool_id'].required = False
-            self.fields['protocol_port'].required = False
+            self.fields['members'].widget.attrs[
+                'data-membertype-server_list'] = _(
+                    "No servers available. To add a member, you "
+                    "need at least one running instance.")
             return
 
         for m in servers:
@@ -444,27 +435,31 @@ class AddMember(workflows.Workflow):
                 # Sort port list for each member. This is needed to avoid
                 # attachment of random ports in case of creation of several
                 # members attached to several networks.
-                plist = sorted(plist, key=lambda port: port.network_id)
-                psubnet = [p for p in plist for ips in p.fixed_ips
-                           if ips['subnet_id'] == subnet_id]
+                if plist:
+                    plist = sorted(plist, key=lambda port: port.network_id)
+                    psubnet = [p for p in plist for ips in p.fixed_ips
+                               if ips['subnet_id'] == subnet_id]
 
-                # If possible, select a port on pool subnet.
-                if psubnet:
-                    selected_port = psubnet[0]
-                elif plist:
-                    selected_port = plist[0]
+                    # If possible, select a port on pool subnet.
+                    if psubnet:
+                        selected_port = psubnet[0]
+                    elif plist:
+                        selected_port = plist[0]
+                    else:
+                        selected_port = None
+
+                    if selected_port:
+                        context['address'] = \
+                            selected_port.fixed_ips[0]['ip_address']
+                        try:
+                            api.lbaas.member_create(request, **context).id
+                        except Exception as e:
+                            msg = self.failure_message
+                            LOG.info('%s: %s' % (msg, e))
+                            return False
                 else:
-                    selected_port = None
-
-                if selected_port:
-                    context['address'] = \
-                        selected_port.fixed_ips[0]['ip_address']
-                    try:
-                        api.lbaas.member_create(request, **context).id
-                    except Exception as e:
-                        msg = self.failure_message
-                        LOG.info('%s: %s' % (msg, e))
-                        return False
+                    self.failure_message = _('No ports available.')
+                    return False
             return True
         else:
             try:
@@ -555,7 +550,7 @@ class AddMonitorAction(workflows.Action):
         delay = cleaned_data.get('delay')
         timeout = cleaned_data.get('timeout')
 
-        if not delay >= timeout:
+        if (delay is None) or (delay < timeout):
             msg = _('Delay must be greater than or equal to Timeout')
             self._errors['delay'] = self.error_class([msg])
 

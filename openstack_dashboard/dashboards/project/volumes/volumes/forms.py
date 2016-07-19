@@ -17,8 +17,6 @@
 Views for managing volumes.
 """
 
-from oslo_utils import units
-
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.forms import ValidationError  # noqa
@@ -70,7 +68,7 @@ def availability_zones(request):
                                          'zones.'))
     if not zone_list:
         zone_list.insert(0, ("", _("No availability zones found")))
-    elif len(zone_list) > 0:
+    elif len(zone_list) > 1:
         zone_list.insert(0, ("", _("Any Availability Zone")))
 
     return zone_list
@@ -80,48 +78,48 @@ class CreateForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=255, label=_("Volume Name"),
                            required=False)
     description = forms.CharField(max_length=255, widget=forms.Textarea(
-        attrs={'class': 'modal-body-fixed-width', 'rows': 4}),
+        attrs={'rows': 4}),
         label=_("Description"), required=False)
-    volume_source_type = forms.ChoiceField(label=_("Volume Source"),
-                                           required=False,
-                                           widget=forms.Select(attrs={
-                                               'class': 'switchable',
-                                               'data-slug': 'source'}))
+    volume_source_type = forms.ChoiceField(
+        label=_("Volume Source"),
+        required=False,
+        widget=forms.ThemableSelectWidget(attrs={
+            'class': 'switchable',
+            'data-slug': 'source'}))
     snapshot_source = forms.ChoiceField(
         label=_("Use snapshot as a source"),
-        widget=forms.SelectWidget(
+        widget=forms.ThemableSelectWidget(
             attrs={'class': 'snapshot-selector'},
             data_attrs=('size', 'name'),
-            transform=lambda x: "%s (%sGB)" % (x.name, x.size)),
+            transform=lambda x: "%s (%s GiB)" % (x.name, x.size)),
         required=False)
     image_source = forms.ChoiceField(
         label=_("Use image as a source"),
-        widget=forms.SelectWidget(
+        widget=forms.ThemableSelectWidget(
             attrs={'class': 'image-selector'},
             data_attrs=('size', 'name', 'min_disk'),
             transform=lambda x: "%s (%s)" % (x.name, filesizeformat(x.bytes))),
         required=False)
     volume_source = forms.ChoiceField(
         label=_("Use a volume as source"),
-        widget=forms.SelectWidget(
+        widget=forms.ThemableSelectWidget(
             attrs={'class': 'image-selector'},
             data_attrs=('size', 'name'),
-            transform=lambda x: "%s (%s)" % (
-                x.name, filesizeformat(x.size * units.Gi))),
+            transform=lambda x: "%s (%s GiB)" % (x.name, x.size)),
         required=False)
     type = forms.ChoiceField(
         label=_("Type"),
         required=False,
-        widget=forms.Select(
+        widget=forms.ThemableSelectWidget(
             attrs={'class': 'switched',
                    'data-switch-on': 'source',
                    'data-source-no_source_type': _('Type'),
                    'data-source-image_source': _('Type')}))
-    size = forms.IntegerField(min_value=1, initial=1, label=_("Size (GB)"))
+    size = forms.IntegerField(min_value=1, initial=1, label=_("Size (GiB)"))
     availability_zone = forms.ChoiceField(
         label=_("Availability Zone"),
         required=False,
-        widget=forms.Select(
+        widget=forms.ThemableSelectWidget(
             attrs={'class': 'switched',
                    'data-switch-on': 'source',
                    'data-source-no_source_type': _('Availability Zone'),
@@ -144,7 +142,7 @@ class CreateForm(forms.SelfHandlingForm):
                 pass
             self.fields['size'].help_text = (
                 _('Volume size must be equal to or greater than the '
-                  'snapshot size (%sGB)') % snapshot.size)
+                  'snapshot size (%sGiB)') % snapshot.size)
             del self.fields['image_source']
             del self.fields['volume_source']
             del self.fields['volume_source_type']
@@ -173,7 +171,7 @@ class CreateForm(forms.SelfHandlingForm):
                 min_vol_size = min_disk_size
                 size_help_text = (_('Volume size must be equal to or '
                                     'greater than the image minimum '
-                                    'disk size (%sGB)')
+                                    'disk size (%sGiB)')
                                   % min_disk_size)
             self.fields['size'].initial = min_vol_size
             self.fields['size'].help_text = size_help_text
@@ -200,8 +198,8 @@ class CreateForm(forms.SelfHandlingForm):
             self.fields['description'].initial = volume.description
             min_vol_size = volume.size
             size_help_text = (_('Volume size must be equal to or greater '
-                                'than the origin volume size (%s)')
-                              % filesizeformat(volume.size))
+                                'than the origin volume size (%sGiB)')
+                              % volume.size)
             self.fields['size'].initial = min_vol_size
             self.fields['size'].help_text = size_help_text
             self.fields['volume_source'].choices = ((volume.id, volume),)
@@ -268,6 +266,10 @@ class CreateForm(forms.SelfHandlingForm):
         self.fields['type'].choices = [("", _("No volume type"))] + \
                                       [(type.name, type.name)
                                        for type in volume_types]
+        if 'initial' in kwargs and 'type' in kwargs['initial']:
+            # if there is a default volume type to select, then remove
+            # the first ""No volume type" entry
+            self.fields['type'].choices.pop(0)
 
         if "snapshot_id" in request.GET:
             self.prepare_source_fields_if_snapshot_specified(request)
@@ -326,7 +328,7 @@ class CreateForm(forms.SelfHandlingForm):
                 snapshot_id = snapshot.id
                 if (data['size'] < snapshot.size):
                     error_message = (_('The volume size cannot be less than '
-                                       'the snapshot size (%sGB)')
+                                       'the snapshot size (%sGiB)')
                                      % snapshot.size)
                     raise ValidationError(error_message)
                 az = None
@@ -347,7 +349,7 @@ class CreateForm(forms.SelfHandlingForm):
                                  properties.get('min_disk', 0))
                 if (min_disk_size > 0 and data['size'] < min_disk_size):
                     error_message = (_('The volume size cannot be less than '
-                                       'the image minimum disk size (%sGB)')
+                                       'the image minimum disk size (%sGiB)')
                                      % min_disk_size)
                     raise ValidationError(error_message)
             elif (data.get("volume_source", None) and
@@ -358,7 +360,7 @@ class CreateForm(forms.SelfHandlingForm):
 
                 if data['size'] < volume.size:
                     error_message = (_('The volume size cannot be less than '
-                                       'the source volume size (%sGB)')
+                                       'the source volume size (%sGiB)')
                                      % volume.size)
                     raise ValidationError(error_message)
             else:
@@ -366,9 +368,9 @@ class CreateForm(forms.SelfHandlingForm):
                     data['size'] = int(data['size'])
 
             if availableGB < data['size']:
-                error_message = _('A volume of %(req)iGB cannot be created as '
-                                  'you only have %(avail)iGB of your quota '
-                                  'available.')
+                error_message = _('A volume of %(req)iGiB cannot be created '
+                                  'as you only have %(avail)iGiB of your '
+                                  'quota available.')
                 params = {'req': data['size'],
                           'avail': availableGB}
                 raise ValidationError(error_message % params)
@@ -415,9 +417,9 @@ class CreateForm(forms.SelfHandlingForm):
 
 
 class AttachForm(forms.SelfHandlingForm):
-    instance = forms.ChoiceField(label=_("Attach to Instance"),
-                                 help_text=_("Select an instance to "
-                                             "attach to."))
+    instance = forms.ThemableChoiceField(label=_("Attach to Instance"),
+                                         help_text=_("Select an instance to "
+                                                     "attach to."))
 
     device = forms.CharField(label=_("Device Name"),
                              widget=forms.TextInput(attrs={'placeholder':
@@ -466,11 +468,15 @@ class AttachForm(forms.SelfHandlingForm):
         # The name of the instance in the choices list has the ID appended to
         # it, so let's slice that off...
         instance_name = instance_name.rsplit(" (")[0]
+
+        # api requires non-empty device name or None
+        device = data.get('device') or None
+
         try:
             attach = api.nova.instance_volume_attach(request,
                                                      data['volume_id'],
                                                      data['instance'],
-                                                     data.get('device', ''))
+                                                     device)
             volume = cinder.volume_get(request, data['volume_id'])
             message = _('Attaching volume %(vol)s to instance '
                         '%(inst)s on %(dev)s.') % {"vol": volume.name,
@@ -529,18 +535,22 @@ class CreateSnapshotForm(forms.SelfHandlingForm):
 
 
 class CreateTransferForm(forms.SelfHandlingForm):
-    name = forms.CharField(max_length=255, label=_("Transfer Name"),
-                           required=False)
+    name = forms.CharField(max_length=255, label=_("Transfer Name"))
+
+    def clean_name(self):
+        cleaned_name = self.cleaned_data['name']
+        if cleaned_name.isspace():
+            msg = _('Volume transfer name cannot be empty.')
+            self._errors['name'] = self.error_class([msg])
+
+        return cleaned_name
 
     def handle(self, request, data):
         try:
             volume_id = self.initial['volume_id']
             transfer = cinder.transfer_create(request, volume_id, data['name'])
 
-            if data['name']:
-                msg = _('Created volume transfer: "%s".') % data['name']
-            else:
-                msg = _('Created volume transfer.')
+            msg = _('Created volume transfer: "%s".') % data['name']
             messages.success(request, msg)
             response = http.HttpResponseRedirect(
                 reverse("horizon:project:volumes:volumes:show_transfer",
@@ -637,7 +647,7 @@ class UploadToImageForm(forms.SelfHandlingForm):
                                attrs={'readonly': 'readonly'}))
     image_name = forms.CharField(max_length=255, label=_('Image Name'))
     disk_format = forms.ChoiceField(label=_('Disk Format'),
-                                    widget=forms.Select(),
+                                    widget=forms.ThemableSelectWidget(),
                                     required=False)
     force = forms.BooleanField(
         label=pgettext_lazy("Force upload volume in in-use status to image",
@@ -696,11 +706,11 @@ class ExtendForm(forms.SelfHandlingForm):
         required=False,
     )
     orig_size = forms.IntegerField(
-        label=_("Current Size (GB)"),
+        label=_("Current Size (GiB)"),
         widget=forms.TextInput(attrs={'readonly': 'readonly'}),
         required=False,
     )
-    new_size = forms.IntegerField(label=_("New Size (GB)"))
+    new_size = forms.IntegerField(label=_("New Size (GiB)"))
 
     def clean(self):
         cleaned_data = super(ExtendForm, self).clean()
@@ -715,8 +725,8 @@ class ExtendForm(forms.SelfHandlingForm):
         availableGB = usages['maxTotalVolumeGigabytes'] - \
             usages['gigabytesUsed']
         if availableGB < (new_size - orig_size):
-            message = _('Volume cannot be extended to %(req)iGB as '
-                        'you only have %(avail)iGB of your quota '
+            message = _('Volume cannot be extended to %(req)iGiB as '
+                        'you only have %(avail)iGiB of your quota '
                         'available.')
             params = {'req': new_size, 'avail': availableGB}
             self._errors["new_size"] = self.error_class([message % params])
@@ -743,11 +753,11 @@ class RetypeForm(forms.SelfHandlingForm):
     name = forms.CharField(label=_('Volume Name'),
                            widget=forms.TextInput(
                                attrs={'readonly': 'readonly'}))
-    volume_type = forms.ChoiceField(label=_('Type'))
+    volume_type = forms.ThemableChoiceField(label=_('Type'))
     MIGRATION_POLICY_CHOICES = [('never', _('Never')),
                                 ('on-demand', _('On Demand'))]
     migration_policy = forms.ChoiceField(label=_('Migration Policy'),
-                                         widget=forms.Select(),
+                                         widget=forms.ThemableSelectWidget(),
                                          choices=(MIGRATION_POLICY_CHOICES),
                                          initial='never',
                                          required=False)

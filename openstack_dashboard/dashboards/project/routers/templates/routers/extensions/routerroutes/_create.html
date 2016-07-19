@@ -1,6 +1,5 @@
 {% extends "horizon/common/_modal_form.html" %}
 {% load i18n %}
-{% load url from future %}
 
 {% block form_id %}add_routerroute_form{% endblock %}
 {% block form_action %}{% url 'horizon:project:routers:addrouterroute' router.id %}
@@ -21,9 +20,4 @@
     {% trans "Next Hop IP must be a part of one of the subnets to which the router interfaces are connected." %}
     </p>
 </div>
-{% endblock %}
-
-{% block modal-footer %}
-  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Add route" %}" />
-  <a href="{% url 'horizon:project:routers:index' %}" class="btn btn-default secondary cancel close">{% trans "Cancel" %}</a>
 {% endblock %}

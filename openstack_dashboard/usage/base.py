@@ -14,6 +14,7 @@ from __future__ import division
 
 import datetime
 
+from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -26,7 +27,7 @@ from openstack_dashboard.usage import quotas
 
 
 class BaseUsage(object):
-    show_terminated = False
+    show_deleted = False
 
     def __init__(self, request, project_id=None):
         self.project_id = project_id or request.user.tenant_id
@@ -39,6 +40,14 @@ class BaseUsage(object):
     @property
     def today(self):
         return timezone.now()
+
+    @property
+    def first_day(self):
+        days_range = getattr(settings, 'OVERVIEW_DAYS_RANGE', 1)
+        if days_range:
+            return self.today.date() - datetime.timedelta(days=days_range)
+        else:
+            return datetime.date(self.today.year, self.today.month, 1)
 
     @staticmethod
     def get_start(year, month, day):
@@ -57,7 +66,8 @@ class BaseUsage(object):
 
     def get_date_range(self):
         if not hasattr(self, "start") or not hasattr(self, "end"):
-            args_start = (self.today.year, self.today.month, 1)
+            args_start = (self.first_day.year, self.first_day.month,
+                          self.first_day.day)
             args_end = (self.today.year, self.today.month, self.today.day)
             form = self.get_form()
             if form.is_valid():
@@ -73,14 +83,13 @@ class BaseUsage(object):
                 messages.error(self.request,
                                _("Invalid date format: "
                                  "Using today as default."))
-        self.start = self.get_start(*args_start)
-        self.end = self.get_end(*args_end)
+            self.start = self.get_start(*args_start)
+            self.end = self.get_end(*args_end)
         return self.start, self.end
 
     def init_form(self):
-        today = datetime.date.today()
-        self.start = datetime.date(day=1, month=today.month, year=today.year)
-        self.end = today
+        self.start = self.first_day
+        self.end = self.today.date()
 
         return self.start, self.end
 
@@ -178,7 +187,7 @@ class BaseUsage(object):
 
     def get_cinder_limits(self):
         """Get volume limits if cinder is enabled."""
-        if not api.base.is_service_enabled(self.request, 'volume'):
+        if not api.cinder.is_volume_service_enabled(self.request):
             return
         try:
             self.limits.update(api.cinder.tenant_absolute_limits(self.request))
@@ -190,7 +199,8 @@ class BaseUsage(object):
 
     def get_limits(self):
         try:
-            self.limits = api.nova.tenant_absolute_limits(self.request)
+            self.limits = api.nova.tenant_absolute_limits(self.request,
+                                                          reserved=True)
         except Exception:
             exceptions.handle(self.request,
                               _("Unable to retrieve limit information."))
@@ -248,7 +258,7 @@ class BaseUsage(object):
 
 
 class GlobalUsage(BaseUsage):
-    show_terminated = True
+    show_deleted = True
 
     def get_usage_list(self, start, end):
         return api.nova.usage_list(self.request, start, end)
@@ -259,10 +269,10 @@ class ProjectUsage(BaseUsage):
              'hours', 'local_gb')
 
     def get_usage_list(self, start, end):
-        show_terminated = self.request.GET.get('show_terminated',
-                                               self.show_terminated)
+        show_deleted = self.request.GET.get('show_deleted',
+                                            self.show_deleted)
         instances = []
-        terminated_instances = []
+        deleted_instances = []
         usage = api.nova.usage_get(self.request, self.project_id, start, end)
         # Attribute may not exist if there are no instances
         if hasattr(usage, 'server_usages'):
@@ -273,8 +283,8 @@ class ProjectUsage(BaseUsage):
                 server_uptime = server_usage['uptime']
                 total_uptime = now - datetime.timedelta(seconds=server_uptime)
                 server_usage['uptime_at'] = total_uptime
-                if server_usage['ended_at'] and not show_terminated:
-                    terminated_instances.append(server_usage)
+                if server_usage['ended_at'] and not show_deleted:
+                    deleted_instances.append(server_usage)
                 else:
                     instances.append(server_usage)
         usage.server_usages = instances

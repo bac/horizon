@@ -8,8 +8,7 @@
   });
 
   describe('validators directive', function () {
-    beforeEach(module('horizon.framework.widgets'));
-    beforeEach(module('horizon.framework.util.validators'));
+    beforeEach(module('horizon.framework'));
 
     describe('validateNumberMax directive', function () {
       var $scope, $form;
@@ -20,10 +19,10 @@
 
         $scope.count = 0;
 
-        var markup =  '<form name="testForm">' +
+        var markup = '<form name="testForm">' +
                         '<input type="text" name="count" ng-model="count" ' +
                           'validate-number-max="1"/>' +
-                      '</form>';
+                     '</form>';
 
         $compile(angular.element(markup))($scope);
         $form = $scope.testForm;
@@ -60,10 +59,10 @@
 
         $scope.count = 0;
 
-        var markup =  '<form name="testForm">' +
+        var markup = '<form name="testForm">' +
                         '<input type="text" name="count" ng-model="count" ' +
                           'validate-number-min="1"/>' +
-                      '</form>';
+                     '</form>';
 
         $compile(angular.element(markup))($scope);
         $form = $scope.testForm;
@@ -92,86 +91,99 @@
       });
     });
 
-    describe('hzPasswordMatch directive', function () {
+    describe('validateUnique directive', function () {
 
-      var $compile, $rootScope, $timeout, element, password, cpassword;
+      var scope, port, name, protocol;
+      var items = [{ id: '1', protocol: 'HTTP' },
+                   { id: '2', protocol: 'HTTPS' },
+                   { id: '3', protocol: 'TCP' }];
       var markup =
-        '<form name="form">' +
-          '<input type="password" ng-model="user.password" name="password">' +
-          '<input type="password" ng-model="user.cpassword" ' +
-            'hz-password-match="form.password">' +
+        '<form>' +
+          '<input type="number" id="port" ng-model="port" validate-unique="ports">' +
+          '<input id="name" ng-model="name" validate-unique="names">' +
+          '<input id="protocol" ng-model="protocol" validate-unique="protocolIsUnique">' +
         '</form>';
 
+      function protocolIsUnique(value) {
+        return !items.some(function(item) {
+          return item.protocol === value;
+        });
+      }
+
       beforeEach(inject(function ($injector) {
-        $compile = $injector.get('$compile');
-        $rootScope = $injector.get('$rootScope').$new();
-        $timeout = $injector.get('$timeout');
+        var compile = $injector.get('$compile');
+        scope = $injector.get('$rootScope').$new();
 
         // generate dom from markup
-        element = $compile(markup)($rootScope);
-        password = element.children('input[name]');
-        cpassword = element.children('input[hz-password-match]');
+        var element = compile(markup)(scope);
+        port = element.children('#port');
+        name = element.children('#name');
+        protocol = element.children('#protocol');
 
-        // setup up initial data
-        $rootScope.user = {};
-        $rootScope.$apply();
+        // set initial data
+        scope.ports = [80, 443];
+        scope.names = ['name1', 'name2'];
+        scope.protocolIsUnique = protocolIsUnique;
+        scope.$apply();
       }));
 
       it('should be initially empty', function () {
-        expect(password.val()).toEqual('');
-        expect(password.val()).toEqual(cpassword.val());
-        expect(cpassword.hasClass('ng-valid')).toBe(true);
+        expect(port.val()).toEqual('');
+        expect(name.val()).toEqual('');
+        expect(protocol.val()).toEqual('');
+        expect(port.hasClass('ng-valid')).toBe(true);
+        expect(name.hasClass('ng-valid')).toBe(true);
+        expect(protocol.hasClass('ng-valid')).toBe(true);
       });
 
-      it('should not match if user changes only password', function (done) {
-        $rootScope.user.password = 'password';
-        $rootScope.$apply();
-        cpassword.change();
-
-        $timeout.flush();
-
-        expect(cpassword.val()).not.toEqual(password.val());
-        expect(cpassword.hasClass('ng-invalid')).toBe(true);
-        done();
+      it('should be invalid if values are not unique', function () {
+        scope.port = 80;
+        scope.name = 'name1';
+        scope.protocol = 'TCP';
+        scope.$apply();
+        expect(port.hasClass('ng-valid')).toBe(false);
+        expect(name.hasClass('ng-valid')).toBe(false);
+        expect(protocol.hasClass('ng-valid')).toBe(false);
       });
 
-      it('should not match if user changes only confirmation password', function (done) {
-        $rootScope.user.cpassword = 'password';
-        $rootScope.$apply();
-        cpassword.change();
-
-        $timeout.flush();
-
-        expect(cpassword.val()).not.toEqual(password.val());
-        expect(cpassword.hasClass('ng-invalid')).toBe(true);
-        done();
+      it('should be valid if values are unique', function () {
+        scope.port = 81;
+        scope.name = 'name3';
+        scope.protocol = 'TERMINATED_HTTPS';
+        scope.$apply();
+        expect(port.hasClass('ng-valid')).toBe(true);
+        expect(name.hasClass('ng-valid')).toBe(true);
+        expect(protocol.hasClass('ng-valid')).toBe(true);
       });
 
-      it('should match if both passwords are the same', function (done) {
-        $rootScope.user.password = 'password';
-        $rootScope.user.cpassword = 'password';
-        $rootScope.$apply();
-        cpassword.change();
-
-        $timeout.flush();
-
-        expect(cpassword.val()).toEqual(password.val());
-        expect(cpassword.hasClass('ng-valid')).toBe(true);
-        done();
+      it('should be valid if param is undefined', function () {
+        delete scope.ports;
+        scope.port = 80;
+        scope.$apply();
+        expect(port.hasClass('ng-valid')).toBe(true);
       });
 
-      it('should not match if both passwords are different', function (done) {
-        $rootScope.user.password = 'password123';
-        $rootScope.user.cpassword = 'password345';
-        $rootScope.$apply();
-        cpassword.change();
-
-        $timeout.flush();
-
-        expect(cpassword.val()).not.toEqual(password.val());
-        expect(cpassword.hasClass('ng-invalid')).toBe(true);
-        done();
+      it('should be valid if param is a string', function () {
+        scope.ports = '80';
+        scope.port = 80;
+        scope.$apply();
+        expect(port.hasClass('ng-valid')).toBe(true);
       });
-    }); // end of hzPasswordMatch directive
+
+      it('should be valid if param is a number', function () {
+        scope.ports = 80;
+        scope.port = 80;
+        scope.$apply();
+        expect(port.hasClass('ng-valid')).toBe(true);
+      });
+
+      it('should be valid if param is an object', function () {
+        scope.ports = { port: 80 };
+        scope.port = 80;
+        scope.$apply();
+        expect(port.hasClass('ng-valid')).toBe(true);
+      });
+    });
+
   });
 })();

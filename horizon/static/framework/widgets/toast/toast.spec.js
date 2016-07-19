@@ -24,21 +24,18 @@
 
   describe('toast factory', function() {
 
-    var $compile,
-        $scope,
-        service;
+    var $timeout, service;
 
     var successMsg = "I am success.";
     var dangerMsg = "I am danger.";
     var infoMsg = "I am info.";
+    var errorMsg = "I am error.";
 
     beforeEach(module('templates'));
-    beforeEach(module('horizon.framework.widgets'));
-    beforeEach(module('horizon.framework.widgets.toast'));
+    beforeEach(module('horizon.framework'));
     beforeEach(inject(function ($injector) {
       service = $injector.get('horizon.framework.widgets.toast.service');
-      $scope = $injector.get('$rootScope').$new();
-      $compile = $injector.get('$compile');
+      $timeout = $injector.get('$timeout');
     }));
 
     it('should create different toasts', function() {
@@ -51,6 +48,23 @@
       service.add('info', infoMsg);
       expect(service.get().length).toBe(3);
       expect(service.get()[2].msg).toBe(infoMsg);
+      service.add('error', errorMsg);
+      expect(service.get().length).toBe(4);
+      expect(service.get()[3].type).toBe('danger');
+      expect(service.get()[3].msg).toBe(errorMsg);
+
+    });
+
+    it('should dismiss specific toasts after a delay', function() {
+      service.add('danger', dangerMsg);
+      service.add('success', successMsg);
+      service.add('info', infoMsg);
+      expect(service.get().length).toBe(3);
+
+      $timeout.flush();
+
+      expect(service.get().length).toBe(1);
+      expect(service.get()[0].type).toBe('danger');
     });
 
     it('should provide a function to clear all toasts', function() {
@@ -66,7 +80,8 @@
       service.add('danger', dangerMsg);
       service.add('success', successMsg);
       service.add('danger', dangerMsg);
-      expect(service.get().length).toBe(3);
+      service.add('error', errorMsg);
+      expect(service.get().length).toBe(4);
       service.clearErrors();
       expect(service.get().length).toBe(1);
       expect(service.get()[0].type).toBe('success');
@@ -94,21 +109,21 @@
   describe('toast directive', function () {
 
     var $compile,
-        $scope,
-        $element,
-        service;
+      $scope,
+      $element,
+      service;
 
     var successMsg = "I am success.";
     var dangerMsg = "I am danger.";
     var infoMsg = "I am info.";
+    var errorMsg = "I am error.";
 
     function toasts() {
       return $element.find('.alert');
     }
 
     beforeEach(module('templates'));
-    beforeEach(module('horizon.framework.widgets'));
-    beforeEach(module('horizon.framework.widgets.toast'));
+    beforeEach(module('horizon.framework'));
     beforeEach(inject(function ($injector) {
       $scope = $injector.get('$rootScope').$new();
       $compile = $injector.get('$compile');
@@ -123,19 +138,22 @@
       service.add('danger', dangerMsg);
       service.add('success', successMsg);
       service.add('info', infoMsg);
+      service.add('error', errorMsg);
       $scope.$apply();
-      expect(toasts().length).toBe(3);
+      expect(toasts().length).toBe(4);
     });
 
     it('should have the proper classes for different toasts types', function() {
       service.add('danger', dangerMsg);
       service.add('success', successMsg);
       service.add('info', infoMsg);
+      service.add('error', errorMsg);
       $scope.$apply();
-      expect(toasts().length).toBe(3);
+      expect(toasts().length).toBe(4);
       expect(toasts().eq(0).hasClass('alert-danger'));
       expect(toasts().eq(1).hasClass('alert-success'));
       expect(toasts().eq(2).hasClass('alert-info'));
+      expect(toasts().eq(3).hasClass('alert-danger'));
     });
 
     it('should be possible to remove a toast by clicking close', function() {

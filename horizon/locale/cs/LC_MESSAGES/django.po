@@ -1,51 +1,20 @@
-# Translations template for PROJECT.
-# Copyright (C) 2015 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-#
-# Translators:
-# Zbyněk Schwarz <zbynek.schwarz@gmail.com>, 2014-2015
+# Zbyněk Schwarz <zbynek.schwarz@gmail.com>, 2015. #zanata
+# Lenka Husáková <lenka.husakova@ultimum.io>, 2016. #zanata
+# Stanislav Ulrych <stanislav.ulrych@ultimum.io>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: Horizon\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-04 04:10+0000\n"
-"PO-Revision-Date: 2015-07-22 10:49+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
-"Language-Team: Czech (http://www.transifex.com/openstack/horizon/language/"
-"cs/)\n"
+"Project-Id-Version: horizon 10.0.0.0b2.dev230\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-06-28 01:54+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
+"PO-Revision-Date: 2016-06-27 11:12+0000\n"
+"Last-Translator: Lenka Husáková <lenka.husakova@ultimum.io>\n"
+"Language-Team: Czech\n"
 "Language: cs\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-
-#, python-format
-msgid ""
-"\n"
-"      <label>From:</label> %(start)s"
-msgstr ""
-"\n"
-"      <label>Od:</label> %(start)s"
-
-#, python-format
-msgid ""
-"\n"
-"      <label>To:</label>%(end)s"
-msgstr ""
-"\n"
-"      <label>Do:</label>%(end)s"
-
-msgid ""
-"\n"
-"      If you are not sure which authentication method to use, contact your "
-"administrator.\n"
-"    "
-msgstr ""
-"\n"
-"      Pokud nevíte, kterou metodu ověření použít, kontaktujte svého správce "
-"systému.\n"
-"    "
+"X-Generator: Zanata 3.7.3\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
 
 #, python-format
 msgctxt "past"
@@ -98,11 +67,11 @@ msgstr "%s TB"
 
 #, python-format
 msgid "%s completed successfully."
-msgstr "%s úspěšně dokončeno"
+msgstr "%s úspěšně dokončeno."
 
 #, python-format
 msgid "%s did not complete."
-msgstr "%s nedokončeno"
+msgstr "%s nedokončeno."
 
 msgid "&laquo;&nbsp;Prev"
 msgstr "&laquo;&nbsp;Zpět"
@@ -117,11 +86,19 @@ msgid "0 Bytes"
 msgstr "0 bajtů"
 
 #, python-format
+msgid "<label>From:</label> %(start)s"
+msgstr " <label>Od:</label> %(start)s"
+
+#, python-format
+msgid "<label>To:</label>%(end)s"
+msgstr "<label>Do:</label>%(end)s"
+
+#, python-format
 msgid "A %(resource)s with the name \"%(name)s\" already exists."
-msgstr "%(resource)s s názvem \"%(name)s\" již existuje"
+msgstr "%(resource)s s názvem \"%(name)s\" již existuje."
 
 msgid "Actions"
-msgstr "Činnost"
+msgstr "Činnosti"
 
 msgid "Active Instances:"
 msgstr "Aktivní instance:"
@@ -140,6 +117,20 @@ msgstr "Dostupné"
 
 msgid "Back"
 msgstr "Zpět"
+
+#. Translators: test code, don't really have to translate
+msgid "Batch Item"
+msgid_plural "Batch Items"
+msgstr[0] "Položka dávky"
+msgstr[1] "Položky dávky"
+msgstr[2] "Položek dávky"
+
+#. Translators: test code, don't really have to translate
+msgid "Batched Item"
+msgid_plural "Batched Items"
+msgstr[0] "Dávková položka"
+msgstr[1] "Dávkové položky"
+msgstr[2] "Dávkových položek"
 
 msgid "Cancel"
 msgstr "Zrušit"
@@ -174,6 +165,10 @@ msgstr[0] "Zobrazena %(nav_items)s položka"
 msgstr[1] "Zobrazeny %(nav_items)s položky"
 msgstr[2] "Zobrazeno %(nav_items)s položek"
 
+#, python-format
+msgid "Error processing message json file '%(path)s': %(exception)s"
+msgstr "Chyba při zpracování JSON souboru '%(path)s': %(exception)s"
+
 msgid "Error: "
 msgstr "Chyba:"
 
@@ -186,6 +181,13 @@ msgstr "Filtr"
 msgid "Horizon"
 msgstr "Horizon"
 
+msgid ""
+"If you are not sure which authentication method to use, contact your "
+"administrator."
+msgstr ""
+"Pokud nevíte, kterou metodu ověření použít, kontaktujte svého správce "
+"systému.   "
+
 msgid "Incorrect format for IP address"
 msgstr "Nesprávný formát IP adresy"
 
@@ -193,8 +195,7 @@ msgid "Info: "
 msgstr "Informace:"
 
 msgid "Invalid metadata entry. Use comma-separated key=value pairs"
-msgstr ""
-"Neplatná položka popisných dat. Použijte čárkou oddělené páry klíč=hodnota"
+msgstr "Neplatná položka metadat. Použijte čárkou oddělené páry klíč=hodnota"
 
 msgid "Invalid subnet mask"
 msgstr "Neplatná maska podsítě"
@@ -203,17 +204,17 @@ msgid "Invalid version for IP address"
 msgstr "Neplatná verze IP adresy"
 
 msgid "Limit Summary"
-msgstr "Omezit souhrn"
+msgstr "Omezit přehled"
 
-msgid "Log In"
-msgstr "Přihlásit"
+msgid "Log in"
+msgstr "Přihlášení"
 
 msgid "Login"
 msgstr "Přihlášení"
 
 #, python-format
 msgid ""
-"Login as different user or go back to <a href=\"%(home_url)s\"> home page</a>"
+"Login as different user or go back to <a href=\"%(home_url)s\">home page</a>"
 msgstr ""
 "Přihlaste se jako jiný uživatel nebo se vraťte na <a href=\"%(home_url)s\"> "
 "domovskou stránku</a>"
@@ -221,11 +222,12 @@ msgstr ""
 msgid "Members"
 msgstr "Členové"
 
+#, python-format
+msgid "Message json file '%(path)s' is malformed. %(exception)s"
+msgstr "JSON soubor '%(path)s' je poškozen. %(exception)s"
+
 msgid "More Actions"
 msgstr "Další činnosti"
-
-msgid "N/A"
-msgstr "Nedostupné"
 
 msgid "Navigation Item"
 msgstr "Položka navigace"
@@ -252,6 +254,12 @@ msgstr "Žádní členové."
 msgid "None available."
 msgstr "Žádné dostupné."
 
+msgid "Not a valid ICMP code"
+msgstr "Neplatný kód ICMP"
+
+msgid "Not a valid ICMP type"
+msgstr "Neplatný typ ICMP"
+
 msgid "Not a valid IP protocol number"
 msgstr "Není platné číslo protokolu IP"
 
@@ -265,16 +273,16 @@ msgid "Other"
 msgstr "Ostatní"
 
 msgid "Password is not accepted"
-msgstr "Heslo není přijato"
+msgstr "Heslo není správné"
+
+msgid "Please confirm your selection."
+msgstr "Potvrďte prosím váš výběr."
 
 msgid "Please log in to continue."
 msgstr "K pokračování je nutno se přihlásit."
 
 msgid "Please select a row before taking that action."
-msgstr "Před provedením této činnosti prosím zvolte řádky."
-
-msgid "Port number must be integer"
-msgstr "Číslo portu musí být celé číslo"
+msgstr "Před provedením této činnosti prosím zvolte řádek."
 
 msgid "Processing..."
 msgstr "Zpracovávaní..."
@@ -289,11 +297,22 @@ msgstr "Vyberte %s pro prohlížení."
 msgid "Select a period of time to query its usage:"
 msgstr "Vyberte časové období pro zobrazení využití:"
 
-msgid "Session timed out."
-msgstr "Relace vypršela."
+#. Translators: test code, don't really have to translate
+msgid "Sell Puppy"
+msgid_plural "Sell Puppies"
+msgstr[0] "Prodat štěně"
+msgstr[1] "Prodat štěňata"
+msgstr[2] "Prodat štěňat"
 
 msgid "Sign In"
 msgstr "Přihlásit"
+
+#. Translators: test code, don't really have to translate
+msgid "Sold Puppy"
+msgid_plural "Sold Puppies"
+msgstr[0] "Štěně prodáno"
+msgstr[1] "Štěňata prodána"
+msgstr[2] "Štěňata prodána"
 
 msgid "Submit"
 msgstr "Odeslat"
@@ -308,11 +327,25 @@ msgstr "Přehled"
 msgid "The attribute %(attr)s doesn't exist on %(obj)s."
 msgstr "Vlastnost %(attr)s neexistuje v %(obj)s."
 
+msgid ""
+"The current user has insufficient permission to complete the requested task."
+msgstr ""
+"Současný uživatel nemá dostatečné oprávnění pro dokončení požadovaného úkolu."
+
 msgid "The date should be in YYYY-mm-dd format."
 msgstr "Datum by mělo být ve formátu RRRR-mm-dd."
 
 msgid "The string may only contain ASCII printable characters."
 msgstr "Řetězec může obsahovat pouze zobrazitelné znaky ASCII."
+
+#, python-format
+msgid ""
+"The value of %(resource)s is %(name)s inside the template. When launching a "
+"stack from this interface, the value must start with \"http://\" or "
+"\"https://\""
+msgstr ""
+"Hodnota %(resource)s je %(name)s uvnitř šablony. Při spuštění zásobníku z "
+"tohoto rozhraní musí hodnota začínat \"http://\" nebo \"https://\""
 
 msgid "This Period's GB-Hours:"
 msgstr "GB hodin za toto období:"
@@ -337,17 +370,28 @@ msgstr "Neoprávněný přístup. Prosím zkuste se přihlásit znovu."
 msgid "Unauthorized: %s"
 msgstr "Neoprávněné: %s"
 
-msgid "Update"
-msgstr "Aktualizovat"
+msgid "Update Item"
+msgid_plural "Update Items"
+msgstr[0] "Aktualizovat položku"
+msgstr[1] "Aktualizovat položky"
+msgstr[2] "Aktualizovat položky"
 
-msgid "Updated"
-msgstr "Aktualizováno"
+msgid "Updated Item"
+msgid_plural "Updated Items"
+msgstr[0] "Položka aktualizována"
+msgstr[1] "Položky aktualizovány"
+msgstr[2] "Položek aktualizováno"
 
 msgid "Usage Summary"
-msgstr "Souhrn využití"
+msgstr "Přehled využití"
 
-msgid "Used"
-msgstr "Využito"
+#, python-format
+msgid "Used <span> %(used)s </span>(No Limit)"
+msgstr "Využito <span> %(used)s </span>(Bez limitu)"
+
+#, python-format
+msgid "Used <span> %(used)s </span>of<span> %(available)s </span>"
+msgstr "Využito <span> %(used)s </span>z<span> %(available)s </span>"
 
 msgid "Warning: "
 msgstr "Varování:"
@@ -358,10 +402,10 @@ msgstr "Nemáte oprávnění pro %(action)s: %(objs)s"
 
 #, python-format
 msgid "You are not authorized to access %s"
-msgstr "Nemá oprávnění k přístupu %s"
+msgstr "Nemáte oprávnění k přístupu k %s"
 
 msgid "You do not have permission to access the resource:"
 msgstr "Nemáte oprávnění k přístupu do zdroje:"
 
-msgid "of"
-msgstr "z"
+msgid "You have selected:"
+msgstr "Vybrali jste:"

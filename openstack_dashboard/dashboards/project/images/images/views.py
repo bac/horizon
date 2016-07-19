@@ -29,6 +29,7 @@ from horizon import tabs
 from horizon.utils import memoized
 
 from openstack_dashboard import api
+from openstack_dashboard.utils import filters
 
 from openstack_dashboard.dashboards.project.images.images \
     import forms as project_forms
@@ -49,16 +50,33 @@ class CreateView(forms.ModalFormView):
     success_url = reverse_lazy("horizon:project:images:index")
     page_title = _("Create An Image")
 
+    def get_initial(self):
+        initial = {}
+        for name in [
+            'name',
+            'description',
+            'image_url',
+            'source_type',
+            'architecture',
+            'disk_format',
+            'minimum_disk',
+            'minimum_ram'
+        ]:
+            tmp = self.request.GET.get(name)
+            if tmp:
+                initial[name] = tmp
+        return initial
+
 
 class UpdateView(forms.ModalFormView):
     form_class = project_forms.UpdateImageForm
     form_id = "update_image_form"
-    modal_header = _("Update Image")
-    submit_label = _("Update Image")
+    modal_header = _("Edit Image")
+    submit_label = _("Edit Image")
     submit_url = "horizon:project:images:images:update"
     template_name = 'project/images/images/update.html'
     success_url = reverse_lazy("horizon:project:images:index")
-    page_title = _("Update Image")
+    page_title = _("Edit Image")
 
     @memoized.memoized_method
     def get_object(self):
@@ -99,8 +117,8 @@ class UpdateView(forms.ModalFormView):
 
 class DetailView(tabs.TabView):
     tab_group_class = project_tabs.ImageDetailTabs
-    template_name = 'project/images/images/detail.html'
-    page_title = _("Image Details: {{ image.name }}")
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ image.name }}"
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
@@ -109,6 +127,8 @@ class DetailView(tabs.TabView):
         context["image"] = image
         context["url"] = self.get_redirect_url()
         context["actions"] = table.render_row_actions(image)
+        choices = project_tables.ImagesTable.STATUS_DISPLAY_CHOICES
+        image.status_label = filters.get_display_label(choices, image.status)
         return context
 
     @staticmethod

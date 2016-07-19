@@ -17,9 +17,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from collections import OrderedDict
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
-from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -70,11 +70,27 @@ class AdminIndexView(tables.DataTableView):
     def has_more_data(self, table):
         return self._more
 
+    def needs_filter_first(self, table):
+        return self._needs_filter_first
+
     def get_data(self):
         instances = []
         marker = self.request.GET.get(
             project_tables.AdminInstancesTable._meta.pagination_param, None)
-        search_opts = self.get_filters({'marker': marker, 'paginate': True})
+        default_search_opts = {'marker': marker, 'paginate': True}
+
+        search_opts = self.get_filters(default_search_opts.copy())
+
+        """If admin_filter_first is set and if there are not other filters
+        selected, then search criteria must be provided and return an empty
+        list"""
+        if self.admin_filter_first and \
+                len(search_opts) == len(default_search_opts):
+            self._needs_filter_first = True
+            self._more = False
+            return instances
+
+        self._needs_filter_first = False
         # Gather our tenants to correlate against IDs
         try:
             tenants, has_more = api.keystone.tenant_list(self.request)
@@ -119,8 +135,8 @@ class AdminIndexView(tables.DataTableView):
                 # If fails to retrieve flavor list, creates an empty list.
                 flavors = []
 
-            full_flavors = SortedDict([(f.id, f) for f in flavors])
-            tenant_dict = SortedDict([(t.id, t) for t in tenants])
+            full_flavors = OrderedDict([(f.id, f) for f in flavors])
+            tenant_dict = OrderedDict([(t.id, t) for t in tenants])
             # Loop through instances to get flavor and tenant info.
             for inst in instances:
                 flavor_id = inst.flavor["id"]
@@ -143,7 +159,7 @@ class AdminIndexView(tables.DataTableView):
         filter_field = self.table.get_filter_field()
         filter_action = self.table._meta._filter_action
         if filter_action.is_api_filter(filter_field):
-            filter_string = self.table.get_filter_string()
+            filter_string = self.table.get_filter_string().strip()
             if filter_field and filter_string:
                 filters[filter_field] = filter_string
         return filters
@@ -155,6 +171,7 @@ class LiveMigrateView(forms.ModalFormView):
     context_object_name = 'instance'
     success_url = reverse_lazy("horizon:admin:instances:index")
     page_title = _("Live Migrate")
+    success_label = page_title
 
     def get_context_data(self, **kwargs):
         context = super(LiveMigrateView, self).get_context_data(**kwargs)

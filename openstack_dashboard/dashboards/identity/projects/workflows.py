@@ -16,12 +16,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
-from openstack_auth import utils as auth_utils
+from openstack_auth import utils
 
 from horizon import exceptions
 from horizon import forms
@@ -30,11 +31,14 @@ from horizon.utils import memoized
 from horizon import workflows
 
 from openstack_dashboard import api
-from openstack_dashboard.api import base
 from openstack_dashboard.api import cinder
 from openstack_dashboard.api import keystone
 from openstack_dashboard.api import nova
 from openstack_dashboard.usage import quotas
+
+
+LOG = logging.getLogger(__name__)
+
 
 INDEX_URL = "horizon:identity:projects:index"
 ADD_USER_URL = "horizon:identity:projects:create_user"
@@ -57,7 +61,7 @@ class ProjectQuotaAction(workflows.Action):
     volumes = forms.IntegerField(min_value=-1, label=_("Volumes"))
     snapshots = forms.IntegerField(min_value=-1, label=_("Volume Snapshots"))
     gigabytes = forms.IntegerField(
-        min_value=-1, label=_("Total Size of Volumes and Snapshots (GB)"))
+        min_value=-1, label=_("Total Size of Volumes and Snapshots (GiB)"))
     ram = forms.IntegerField(min_value=-1, label=_("RAM (MB)"))
     floating_ips = forms.IntegerField(min_value=-1, label=_("Floating IPs"))
     fixed_ips = forms.IntegerField(min_value=-1, label=_("Fixed IPs"))
@@ -113,6 +117,7 @@ class UpdateProjectQuotaAction(ProjectQuotaAction):
         name = _("Quota")
         slug = 'update_quotas'
         help_text = _("Set maximum quotas for the project.")
+        permissions = ('openstack.roles.admin', 'openstack.services.compute')
 
 
 class CreateProjectQuotaAction(ProjectQuotaAction):
@@ -120,6 +125,7 @@ class CreateProjectQuotaAction(ProjectQuotaAction):
         name = _("Quota")
         slug = 'create_quotas'
         help_text = _("Set maximum quotas for the project.")
+        permissions = ('openstack.roles.admin', 'openstack.services.compute')
 
 
 class UpdateProjectQuota(workflows.Step):
@@ -164,27 +170,6 @@ class CreateProjectInfoAction(workflows.Action):
             self.fields["domain_id"].widget = readonlyInput
             self.fields["domain_name"].widget = readonlyInput
 
-    def clean_name(self):
-        project_name = self.cleaned_data['name']
-        domain_id = self.cleaned_data['domain_id']
-
-        # Due to potential performance issues project name validation
-        # for the keystone.v2 is omitted
-        try:
-            if keystone.VERSIONS.active >= 3:
-                tenant = api.keystone.tenant_list(
-                    self.request,
-                    domain=domain_id,
-                    filters={'name': project_name})
-
-                if tenant:
-                    msg = _('Project name is already in use. Please use a '
-                            'different name.')
-                    raise forms.ValidationError(msg)
-        except Exception:
-            exceptions.handle(self.request, ignore=True)
-        return project_name
-
     class Meta(object):
         name = _("Project Information")
         help_text = _("Create a project to organize users.")
@@ -209,13 +194,14 @@ class UpdateProjectMembersAction(workflows.MembershipAction):
         err_msg = _('Unable to retrieve user list. Please try again later.')
         # Use the domain_id from the project
         domain_id = self.initial.get("domain_id", None)
+
         project_id = ''
         if 'project_id' in self.initial:
             project_id = self.initial['project_id']
 
         # Get the default role
         try:
-            default_role = api.keystone.get_default_role(self.request)
+            default_role = keystone.get_default_role(self.request)
             # Default role is necessary to add members to a project
             if default_role is None:
                 default = getattr(settings,
@@ -404,7 +390,7 @@ class CommonQuotaWorkflow(workflows.Workflow):
             [(key, data[key]) for key in quotas.NOVA_QUOTA_FIELDS])
         nova.tenant_quota_update(request, project_id, **nova_data)
 
-        if base.is_service_enabled(request, 'volume'):
+        if cinder.is_volume_service_enabled(request):
             cinder_data = dict([(key, data[key]) for key in
                                 quotas.CINDER_QUOTA_FIELDS])
             cinder.tenant_quota_update(request,
@@ -448,7 +434,10 @@ class CreateProject(CommonQuotaWorkflow):
                                             **kwargs)
 
     def format_status_message(self, message):
-        return message % self.context.get('name', 'unknown project')
+        if "%s" in message:
+            return message % self.context.get('name', 'unknown project')
+        else:
+            return message
 
     def _create_project(self, request, data):
         # create the project
@@ -461,6 +450,10 @@ class CreateProject(CommonQuotaWorkflow):
                                                      enabled=data['enabled'],
                                                      domain=domain_id)
             return self.object
+        except exceptions.Conflict:
+            msg = _('Project name "%s" is already used.') % data['name']
+            self.failure_message = msg
+            return
         except Exception:
             exceptions.handle(request, ignore=True)
             return
@@ -498,8 +491,6 @@ class CreateProject(CommonQuotaWorkflow):
                                 'members%(group_msg)s and set project quotas.')
                               % {'users_to_add': users_to_add,
                                  'group_msg': group_msg})
-        finally:
-            auth_utils.remove_project_cache(request.user.token.unscoped_token)
 
     def _update_project_groups(self, request, data, project_id):
         # update project groups
@@ -546,12 +537,38 @@ class CreateProject(CommonQuotaWorkflow):
         self._update_project_members(request, data, project_id)
         if PROJECT_GROUP_ENABLED:
             self._update_project_groups(request, data, project_id)
-        self._update_project_quota(request, data, project_id)
+        if keystone.is_cloud_admin(request):
+            self._update_project_quota(request, data, project_id)
         return True
+
+
+class CreateProjectNoQuota(CreateProject):
+    slug = "create_project"
+    name = _("Create Project")
+    finalize_button_name = _("Create Project")
+    success_message = _('Created new project "%s".')
+    failure_message = _('Unable to create project "%s".')
+    success_url = "horizon:identity:projects:index"
+    default_steps = (CreateProjectInfo, UpdateProjectMembers)
+
+    def __init__(self, request=None, context_seed=None, entry_point=None,
+                 *args, **kwargs):
+        if PROJECT_GROUP_ENABLED:
+            self.default_steps = (CreateProjectInfo,
+                                  UpdateProjectMembers,
+                                  UpdateProjectGroups,)
+        super(CreateProject, self).__init__(request=request,
+                                            context_seed=context_seed,
+                                            entry_point=entry_point,
+                                            *args,
+                                            **kwargs)
 
 
 class UpdateProjectInfoAction(CreateProjectInfoAction):
     enabled = forms.BooleanField(required=False, label=_("Enabled"))
+    domain_name = forms.CharField(label=_("Domain Name"),
+                                  required=False,
+                                  widget=forms.HiddenInput())
 
     def __init__(self, request, initial, *args, **kwargs):
         super(UpdateProjectInfoAction, self).__init__(
@@ -572,12 +589,6 @@ class UpdateProjectInfoAction(CreateProjectInfoAction):
         if self.fields['enabled'].widget.attrs.get('disabled', False):
             cleaned_data['enabled'] = True
         return cleaned_data
-
-    def clean_name(self):
-        project_name = self.cleaned_data['name']
-        if self.initial['name'] == project_name:
-            return project_name
-        return super(UpdateProjectInfoAction, self).clean_name()
 
     class Meta(object):
         name = _("Project Information")
@@ -622,14 +633,18 @@ class UpdateProject(CommonQuotaWorkflow):
                                             **kwargs)
 
     def format_status_message(self, message):
-        return message % self.context.get('name', 'unknown project')
+        if "%s" in message:
+            return message % self.context.get('name', 'unknown project')
+        else:
+            return message
 
     @memoized.memoized_method
     def _get_available_roles(self, request):
         return api.keystone.role_list(request)
 
     def _update_project(self, request, data):
-        # update project info
+        """Update project info"""
+        domain_id = api.keystone.get_effective_domain_id(self.request)
         try:
             project_id = data['project_id']
             return api.keystone.tenant_update(
@@ -637,8 +652,14 @@ class UpdateProject(CommonQuotaWorkflow):
                 project_id,
                 name=data['name'],
                 description=data['description'],
-                enabled=data['enabled'])
-        except Exception:
+                enabled=data['enabled'],
+                domain=domain_id)
+        except exceptions.Conflict:
+            msg = _('Project name "%s" is already used.') % data['name']
+            self.failure_message = msg
+            return
+        except Exception as e:
+            LOG.debug('Project update failed: %s' % e)
             exceptions.handle(request, ignore=True)
             return
 
@@ -679,8 +700,9 @@ class UpdateProject(CommonQuotaWorkflow):
                                      available_roles, current_role_ids):
         is_current_user = user_id == request.user.id
         is_current_project = project_id == request.user.tenant_id
+        _admin_roles = utils.get_admin_roles()
         available_admin_role_ids = [role.id for role in available_roles
-                                    if role.name.lower() == 'admin']
+                                    if role.name.lower() in _admin_roles]
         admin_roles = [role for role in current_role_ids
                        if role in available_admin_role_ids]
         if len(admin_roles):
@@ -715,7 +737,22 @@ class UpdateProject(CommonQuotaWorkflow):
                 request, project=project_id)
             users_to_modify = len(users_roles)
 
+            # TODO(bpokorny): The following lines are needed to make sure we
+            # only modify roles for users who are in the current domain.
+            # Otherwise, we'll end up removing roles for users who have roles
+            # on the project but aren't in the domain.  For now, Horizon won't
+            # support managing roles across domains.  The Keystone CLI
+            # supports it, so we may want to add that in the future.
+            all_users = api.keystone.user_list(request,
+                                               domain=data['domain_id'])
+            users_dict = {user.id: user.name for user in all_users}
+
             for user_id in users_roles.keys():
+                # Don't remove roles if the user isn't in the domain
+                if user_id not in users_dict:
+                    users_to_modify -= 1
+                    continue
+
                 # Check if there have been any changes in the roles of
                 # Existing project members.
                 current_role_ids = list(users_roles[user_id])
@@ -761,8 +798,6 @@ class UpdateProject(CommonQuotaWorkflow):
                               % {'users_to_modify': users_to_modify,
                                  'group_msg': group_msg})
             return False
-        finally:
-            auth_utils.remove_project_cache(request.user.token.unscoped_token)
 
     def _update_project_groups(self, request, data, project_id, domain_id):
         # update project groups
@@ -872,8 +907,32 @@ class UpdateProject(CommonQuotaWorkflow):
             if not ret:
                 return False
 
-        ret = self._update_project_quota(request, data, project_id)
-        if not ret:
-            return False
+        if api.keystone.is_cloud_admin(request):
+            ret = self._update_project_quota(request, data, project_id)
+            if not ret:
+                return False
 
         return True
+
+
+class UpdateProjectNoQuota(UpdateProject):
+    slug = "update_project"
+    name = _("Edit Project")
+    finalize_button_name = _("Save")
+    success_message = _('Modified project "%s".')
+    failure_message = _('Unable to modify project "%s".')
+    success_url = "horizon:identity:projects:index"
+    default_steps = (UpdateProjectInfo, UpdateProjectMembers)
+
+    def __init__(self, request=None, context_seed=None, entry_point=None,
+                 *args, **kwargs):
+        if PROJECT_GROUP_ENABLED:
+            self.default_steps = (UpdateProjectInfo,
+                                  UpdateProjectMembers,
+                                  UpdateProjectGroups)
+
+        super(UpdateProject, self).__init__(request=request,
+                                            context_seed=context_seed,
+                                            entry_point=entry_point,
+                                            *args,
+                                            **kwargs)

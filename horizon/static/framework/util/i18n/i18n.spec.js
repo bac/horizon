@@ -17,7 +17,7 @@
   'use strict';
 
   describe('horizon.framework.util.i18n', function () {
-    beforeEach(module('horizon.framework.util.i18n'));
+    beforeEach(module('horizon.framework'));
 
     describe('gettext', function () {
       var factory;
@@ -38,7 +38,9 @@
 
       describe("injected window.gettext", function () {
         beforeEach(module(function ($provide) {
-          var $window = { gettext: function (x) { return x.replace(/good/, 'bad'); } };
+          var $window = { gettext: function (x) {
+            return x.replace(/good/, 'bad');
+          }};
           $provide.value('$window', $window);
         }));
 

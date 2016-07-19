@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import itertools
+import collections
 import logging
 import sys
 
@@ -18,7 +18,6 @@ import six
 
 from django import template
 from django.template import loader
-from django.utils import datastructures
 
 from horizon.tables import base as horizon_tables
 
@@ -40,7 +39,7 @@ class FormsetCell(horizon_tables.Cell):
                 self.attrs['class'] = (self.attrs.get('class', '') +
                                        ' error form-group')
                 self.attrs['title'] = ' '.join(
-                    unicode(error) for error in self.field.errors)
+                    six.text_type(error) for error in self.field.errors)
 
 
 class FormsetRow(horizon_tables.Row):
@@ -51,16 +50,16 @@ class FormsetRow(horizon_tables.Row):
     def __init__(self, column, datum, form):
         self.form = form
         super(FormsetRow, self).__init__(column, datum)
-        if self.cells == []:
+        if not self.cells:
             # We need to be able to handle empty rows, because there may
             # be extra empty forms in a formset. The original DataTable breaks
             # on this, because it sets self.cells to [], but later expects a
-            # SortedDict. We just fill self.cells with empty Cells.
+            # OrderedDict. We just fill self.cells with empty Cells.
             cells = []
             for column in self.table.columns.values():
                 cell = self.table._meta.cell_class(None, column, self)
                 cells.append((column.name or column.auto, cell))
-            self.cells = datastructures.SortedDict(cells)
+            self.cells = collections.OrderedDict(cells)
 
     def render(self):
         return loader.render_to_string(self.template_path,
@@ -137,8 +136,8 @@ class FormsetDataTableMixin(object):
             else:
                 formset = self.get_formset()
                 formset.is_valid()
-            for datum, form in itertools.izip_longest(self.filtered_data,
-                                                      formset):
+            for datum, form in six.moves.zip_longest(self.filtered_data,
+                                                     formset):
                 row = self._meta.row_class(self, datum, form)
                 if self.get_object_id(datum) == self.current_item_id:
                     self.selected = True

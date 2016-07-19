@@ -17,7 +17,6 @@
 #    under the License.
 
 from collections import Sequence  # noqa
-import logging
 
 from django.conf import settings
 
@@ -28,9 +27,6 @@ import six
 
 __all__ = ('APIResourceWrapper', 'APIDictWrapper',
            'get_service_from_catalog', 'url_for',)
-
-
-LOG = logging.getLogger(__name__)
 
 
 class APIVersionManager(object):
@@ -325,7 +321,7 @@ def url_for(request, service_type, endpoint_type=None, region=None):
     raise exceptions.ServiceCatalogException(service_type)
 
 
-def is_service_enabled(request, service_type, service_name=None):
+def is_service_enabled(request, service_type):
     service = get_service_from_catalog(request.user.service_catalog,
                                        service_type)
     if service:
@@ -336,10 +332,7 @@ def is_service_enabled(request, service_type, service_name=None):
             # ignore region for identity
             if service['type'] == 'identity' or \
                _get_endpoint_region(endpoint) == region:
-                if service_name:
-                    return service.get('name') == service_name
-                else:
-                    return True
+                return True
     return False
 
 

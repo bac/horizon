@@ -2,10 +2,14 @@
 {% load i18n %}
 {% block title %}{% trans "Hypervisor Servers" %}{% endblock %}
 
+{% block page_header %}
+  {% include "horizon/common/_detail_header.html" %}
+{% endblock %}
+
 {% block main %}
-<div class="row">
-  <div class="col-sm-12">
-  {{ table.render }}
+  <div class="row">
+    <div class="col-sm-12">
+    {{ table.render }}
+    </div>
   </div>
-</div>
 {% endblock %}

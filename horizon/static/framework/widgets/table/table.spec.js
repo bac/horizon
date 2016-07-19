@@ -25,12 +25,15 @@
 
     var $scope, $element;
 
+    beforeEach(module('templates'));
     beforeEach(module('smart-table'));
-    beforeEach(module('horizon.framework.widgets'));
-    beforeEach(module('horizon.framework.widgets.table'));
+    beforeEach(module('horizon.framework'));
 
     beforeEach(inject(function($injector) {
       var $compile = $injector.get('$compile');
+      var $templateCache = $injector.get('$templateCache');
+      var basePath = $injector.get('horizon.framework.widgets.basePath');
+
       $scope = $injector.get('$rootScope').$new();
 
       $scope.safeFakeData = [
@@ -41,28 +44,7 @@
 
       $scope.fakeData = [];
 
-      var markup =
-        '<table st-table="fakeData" st-safe-src="safeFakeData" hz-table>' +
-        '<thead>' +
-          '<tr>' +
-            '<th><input type="checkbox" hz-select-all="fakeData"/></th>' +
-            '<th></th>' +
-            '<th>Animal</th>' +
-          '</tr>' +
-        '</thead>' +
-        '<tbody>' +
-          '<tr ng-repeat-start="row in fakeData">' +
-            '<td><input type="checkbox" hz-select="row" ' +
-                  'ng-model="selected[row.id].checked"></td>' +
-            '<td><i class="fa fa-chevron-right" hz-expand-detail></i></td>' +
-            '<td>{{ row.animal }}</td>' +
-          '</tr>' +
-          '<tr class="detail-row" ng-repeat-end>' +
-            '<td class="detail" colspan="3"></td>' +
-          '</tr>' +
-        '</tbody>' +
-        '</table>';
-
+      var markup = $templateCache.get(basePath + 'table/table.mock.html');
       $element = angular.element(markup);
       $compile($element)($scope);
 
@@ -95,56 +77,56 @@
         /*eslint-enable angular/ng_controller_name */
       });
 
-      it('should update selected and numSelected when select called', function() {
+      it('should update selected when select called', function() {
         /*eslint-disable angular/ng_controller_name */
         var hzTableCtrl = $element.controller('hzTable');
         var firstRow = $scope.safeFakeData[0];
-        hzTableCtrl.select(firstRow, true);
+        hzTableCtrl.toggleSelect(firstRow, true);
         /*eslint-enable angular/ng_controller_name */
 
-        var hzTableScope = $element.scope();
-        expect(hzTableScope.selected[firstRow.id]).toBeDefined();
-        expect(hzTableScope.numSelected).toBe(1);
+        expect(hzTableCtrl.selections[firstRow.id]).toBeDefined();
+        expect(hzTableCtrl.selected.length).toBe(1);
       });
     });
 
     describe('hzSelect directive', function() {
-      var checkboxes;
+      var checkboxes, hzTableCtrl;
 
       beforeEach(function() {
         checkboxes = $element.find('input[hz-select]');
+        hzTableCtrl = $element.controller('hzTable');
       });
 
-      it('should have numSelected === 1 when first checkbox is clicked', function() {
+      it('selected length should be 1 when first checkbox is clicked', function() {
         var checkbox = checkboxes.first();
         checkbox[0].checked = true;
         checkbox.triggerHandler('click');
 
-        expect($element.scope().numSelected).toBe(1);
+        expect(hzTableCtrl.selected.length).toBe(1);
       });
 
-      it('should have numSelected === 0 when first checkbox is clicked, then unclicked',
+      it('selected length should be 0 when first checkbox is clicked, then unclicked',
         function() {
           var checkbox = checkboxes.first();
           checkbox[0].checked = true;
           checkbox.triggerHandler('click');
 
-          expect($element.scope().numSelected).toBe(1);
+          expect(hzTableCtrl.selected.length).toBe(1);
 
           checkbox[0].checked = false;
           checkbox.triggerHandler('click');
 
-          expect($element.scope().numSelected).toBe(0);
+          expect(hzTableCtrl.selected.length).toBe(0);
         }
       );
 
-      it('should have numSelected === 3 and select-all checked when all rows selected', function() {
+      it('selected length should be 3 and select-all checked when all rows selected', function() {
         angular.forEach(checkboxes, function(checkbox) {
           checkbox.checked = true;
           angular.element(checkbox).triggerHandler('click');
         });
 
-        expect($element.scope().numSelected).toBe(3);
+        expect(hzTableCtrl.selected.length).toBe(3);
         expect($element.find('input[hz-select-all]')[0].checked).toBe(true);
       });
 
@@ -156,7 +138,7 @@
           });
 
           // all checkboxes selected so check-all should be checked
-          expect($element.scope().numSelected).toBe(3);
+          expect(hzTableCtrl.selected.length).toBe(3);
           expect($element.find('input[hz-select-all]')[0].checked).toBe(true);
 
           // deselect one checkbox
@@ -165,13 +147,18 @@
           firstCheckbox.triggerHandler('click');
 
           // check-all should be unchecked
-          expect($element.scope().numSelected).toBe(2);
+          expect(hzTableCtrl.selected.length).toBe(2);
           expect($element.find('input[hz-select-all]')[0].checked).toBe(false);
         }
       );
     });
 
     describe('hzSelectAll directive', function() {
+
+      var hzTableCtrl;
+      beforeEach(function() {
+        hzTableCtrl = $element.controller('hzTable');
+      });
 
       it('should not be selected if there are no rows in the table', function() {
         var selectAll = $element.find('input[hz-select-all]').first();
@@ -188,7 +175,7 @@
         selectAll[0].checked = true;
         selectAll.triggerHandler('click');
 
-        expect($element.scope().numSelected).toBe(3);
+        expect(hzTableCtrl.selected.length).toBe(3);
         var checkboxes = $element.find('tbody input[hz-select]');
         angular.forEach(checkboxes, function(checkbox) {
           expect(checkbox.checked).toBe(true);
@@ -202,7 +189,7 @@
 
         var checkboxes = $element.find('tbody input[hz-select]');
 
-        expect($element.scope().numSelected).toBe(3);
+        expect(hzTableCtrl.selected.length).toBe(3);
         angular.forEach(checkboxes, function(checkbox) {
           expect(checkbox.checked).toBe(true);
         });
@@ -210,7 +197,7 @@
         selectAll[0].checked = false;
         selectAll.triggerHandler('click');
 
-        expect($element.scope().numSelected).toBe(0);
+        expect(hzTableCtrl.selected.length).toBe(0);
         angular.forEach(checkboxes, function(checkbox) {
           expect(checkbox.checked).toBe(false);
         });
@@ -227,7 +214,7 @@
         selectAll[0].checked = true;
         selectAll.triggerHandler('click');
 
-        expect($element.scope().numSelected).toBe(3);
+        expect(hzTableCtrl.selected.length).toBe(3);
         var checkboxes = $element.find('tbody input[hz-select]');
         angular.forEach(checkboxes, function(checkbox) {
           expect(checkbox.checked).toBe(true);
@@ -238,7 +225,7 @@
     describe('hzExpandDetail directive', function() {
 
       it('should have summary row with class "expanded" when expanded', function() {
-        var expandIcon = $element.find('i.fa').first();
+        var expandIcon = $element.find('.fa').first();
         expandIcon.click();
 
         var summaryRow = expandIcon.closest('tr');
@@ -246,21 +233,89 @@
       });
 
       it('should have summary row without class "expanded" when not expanded', function(done) {
-        var expandIcon = $element.find('i.fa').first();
+        var expandIcon = $element.find('.fa').first();
 
         // Click twice to mock expand and collapse
         expandIcon.click();
         expandIcon.click();
 
-        /*eslint-disable angular/ng_timeout_service */
+        /*eslint-disable angular/timeout-service */
         // Wait for the slide down animation to complete before test
         setTimeout(function() {
           var summaryRow = expandIcon.closest('tr');
           expect(summaryRow.hasClass('expanded')).toBe(false);
           done();
         }, 2000);
-        /*eslint-enable angular/ng_timeout_service */
+        /*eslint-enable angular/timeout-service */
+      });
+
+      it('should broadcast event when row is expanded', function() {
+        spyOn($scope, '$broadcast');
+        var expandIcon = $element.find('.fa').first();
+        expandIcon.click();
+        expect($scope.$broadcast).toHaveBeenCalled();
       });
     });
+
+  });
+
+  describe('hzTableFooter directive', function () {
+    var $scope, $compile, $element;
+
+    beforeEach(module('templates'));
+    beforeEach(module('smart-table'));
+    beforeEach(module('horizon.framework'));
+
+    beforeEach(inject(function ($injector) {
+      $compile = $injector.get('$compile');
+      $scope = $injector.get('$rootScope').$new();
+
+      $scope.safeTableData = [
+        { id: '1', animal: 'cat' },
+        { id: '2', animal: 'dog' },
+        { id: '3', animal: 'fish' }
+      ];
+
+      $scope.fakeTableData = [];
+
+      var markup =
+        '<table st-table="fakeTableData" st-safe-src="safeTableData" hz-table>' +
+          '<tfoot hz-table-footer items="safeTableData">' +
+          '</tfoot>' +
+        '</table>';
+
+      $element = angular.element(markup);
+      $compile($element)($scope);
+      $scope.$apply();
+    }));
+
+    it('displays the correct number of items', function() {
+      expect($element).toBeDefined();
+      expect($element.find('span').length).toBe(1);
+      expect($element.find('span').text()).toBe('Displaying 3 items');
+    });
+
+    it('displays the correct custom message string', function() {
+      $scope.message = "<span>{$ items.length $} items</span>";
+
+      var markup =
+        '<table st-table="fakeTableData" st-safe-src="safeTableData" hz-table>' +
+          '<tfoot hz-table-footer items="safeTableData" message="{$ message $}">' +
+          '</tfoot>' +
+        '</table>';
+
+      $element = angular.element(markup);
+      $compile($element)($scope);
+      $scope.$apply();
+
+      expect($element).toBeDefined();
+      expect($element.find('span').length).toBe(1);
+      expect($element.find('span').text()).toBe('3 items');
+    });
+
+    it('includes pagination', function() {
+      expect($element.find('div').attr('st-items-by-page')).toEqual('20');
+    });
+
   });
 }());

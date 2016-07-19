@@ -20,5 +20,8 @@ ADD_INSTALLED_APPS = [
     'openstack_dashboard.dashboards.admin',
 ]
 
-ADD_JS_FILES = [
+ADD_ANGULAR_MODULES = [
+    'horizon.dashboard.admin',
 ]
+
+AUTO_DISCOVER_STATIC_FILES = True

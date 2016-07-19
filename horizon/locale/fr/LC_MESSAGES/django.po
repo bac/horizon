@@ -1,55 +1,21 @@
-# Translations template for PROJECT.
-# Copyright (C) 2015 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-#
-# Translators:
-# Bruno Cornec <bruno.cornec@hp.com>, 2015
-# François Bureau, 2015
-# François Bureau, 2015
-# Frédéric <frosmont@free.fr>, 2014
-# JF Taltavull <jftalta@gmail.com>, 2015
-# Maxime COQUEREL <max.coquerel@gmail.com>, 2015
+# Kevin Tibi <kodokuu@gmail.com>, 2015. #zanata
+# Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
+# Gérald LONLAS <g.lonlas@gmail.com>, 2016. #zanata
+# Kevin Tibi <kodokuu@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: Horizon\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-04 04:10+0000\n"
-"PO-Revision-Date: 2015-08-02 19:41+0000\n"
-"Last-Translator: JF Taltavull <jftalta@gmail.com>\n"
-"Language-Team: French (http://www.transifex.com/openstack/horizon/language/"
-"fr/)\n"
+"Project-Id-Version: horizon 9.0.1.dev356\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-05-24 18:48+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
+"PO-Revision-Date: 2016-03-28 06:42+0000\n"
+"Last-Translator: JF Taltavull <jftalta@gmail.com>\n"
+"Language-Team: French\n"
 "Language: fr\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-
-#, python-format
-msgid ""
-"\n"
-"      <label>From:</label> %(start)s"
-msgstr ""
-"\n"
-"<label>Du :</label> %(start)s"
-
-#, python-format
-msgid ""
-"\n"
-"      <label>To:</label>%(end)s"
-msgstr ""
-"\n"
-"<label>au :</label>%(end)s"
-
-msgid ""
-"\n"
-"      If you are not sure which authentication method to use, contact your "
-"administrator.\n"
-"    "
-msgstr ""
-"\n"
-"Si vous n'êtes pas sûr de la méthode d'identification à utiliser, veuillez "
-"contacter votre administrateur"
+"X-Generator: Zanata 3.7.3\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 
 #, python-format
 msgctxt "past"
@@ -108,7 +74,7 @@ msgid "%s did not complete."
 msgstr "%s ne s'est pas terminé."
 
 msgid "&laquo;&nbsp;Prev"
-msgstr "&laquo;&nbsp;Aperçu"
+msgstr "&laquo;&nbsp;Précédent"
 
 msgid "(No Limit)"
 msgstr "(Pas de limite)"
@@ -139,28 +105,40 @@ msgid "All available"
 msgstr "Disponibles"
 
 msgid "Available"
-msgstr "disponible(s)"
+msgstr "Disponible"
 
 msgid "Back"
 msgstr "Retour"
+
+#. Translators: test code, don't really have to translate
+msgid "Batch Item"
+msgid_plural "Batch Items"
+msgstr[0] "Batch Item"
+msgstr[1] "Batch Items"
+
+#. Translators: test code, don't really have to translate
+msgid "Batched Item"
+msgid_plural "Batched Items"
+msgstr[0] "Batched Item"
+msgstr[1] "Batched Items"
 
 msgid "Cancel"
 msgstr "Annuler"
 
 msgid "Connect"
-msgstr "Connection"
+msgstr "Connecter"
 
 msgid "Delete"
 msgstr "Supprimer"
 
 msgid "Deleted"
-msgstr "Supprimée"
+msgstr "Supprimé(e)"
 
 #, python-format
 msgid "Displaying %(content_items)s item"
 msgid_plural "Displaying %(content_items)s items"
-msgstr[0] "Affichage de l'item %(content_items)s"
-msgstr[1] "Affichage des items %(content_items)s"
+msgstr[0] "Affichage de l'élément %(content_items)s"
+msgstr[1] "Affichage des éléments %(content_items)s"
 
 #, python-format
 msgid "Displaying %(counter)s item"
@@ -171,8 +149,24 @@ msgstr[1] "Affichage de %(counter)s items"
 #, python-format
 msgid "Displaying %(nav_items)s item"
 msgid_plural "Displaying %(nav_items)s items"
-msgstr[0] "Affichage de l'item %(nav_items)s"
-msgstr[1] "Affichage des items %(nav_items)s"
+msgstr[0] "Affichage de l'élément %(nav_items)s"
+msgstr[1] "Affichage des éléments %(nav_items)s"
+
+#. Translators: test code, don't really have to translate
+msgid "Down Item"
+msgid_plural "Down Items"
+msgstr[0] "Descendre l'élément"
+msgstr[1] "Descendre les éléments"
+
+#. Translators: test code, don't really have to translate
+msgid "Downed Item"
+msgid_plural "Downed Items"
+msgstr[0] "Élément descendu"
+msgstr[1] "Éléments descendus"
+
+#, python-format
+msgid "Error processing message json file '%(path)s': %(exception)s"
+msgstr "Erreur lors du traitement du fichier json '%(path)s': %(exception)s"
 
 msgid "Error: "
 msgstr "Erreur :"
@@ -194,8 +188,8 @@ msgstr "Information :"
 
 msgid "Invalid metadata entry. Use comma-separated key=value pairs"
 msgstr ""
-"Saisie de métadonnées non valide. Utiliser les paires clé=valeur séparées "
-"par des virgules"
+"La saisie des métadonnées est non valide. Utiliser les paires clé=valeur "
+"séparées par des virgules"
 
 msgid "Invalid subnet mask"
 msgstr "Masque de sous-réseau invalide"
@@ -206,27 +200,22 @@ msgstr "Version d'adresse IP invalide"
 msgid "Limit Summary"
 msgstr "Synthèse  des Quotas"
 
-msgid "Log In"
+msgid "Log in"
 msgstr "Se connecter"
 
 msgid "Login"
 msgstr "Identifiant"
 
-#, python-format
-msgid ""
-"Login as different user or go back to <a href=\"%(home_url)s\"> home page</a>"
-msgstr ""
-"Connectez-vous avec un autre nom d'utilisateur ou revenez à <a href="
-"\"%(home_url)s\"> la page d’accueil</a>"
-
 msgid "Members"
 msgstr "Membres"
 
-msgid "More Actions"
-msgstr "Plus d'Actions"
+#, python-format
+msgid "Message json file '%(path)s' is malformed. %(exception)s"
+msgstr ""
+"Le format du fichier de message json '%(path)s'  est incorrect. %(exception)s"
 
-msgid "N/A"
-msgstr "N/D"
+msgid "More Actions"
+msgstr "Plus d'actions"
 
 msgid "Navigation Item"
 msgstr "Elément de navigation"
@@ -274,9 +263,6 @@ msgstr "Merci de vous connecter pour continuer."
 msgid "Please select a row before taking that action."
 msgstr "Merci de sélectionner une ligne avant de faire cette action."
 
-msgid "Port number must be integer"
-msgstr "Le numéro de port doit être un nombre entier"
-
 msgid "Processing..."
 msgstr "Traitement en cours..."
 
@@ -285,22 +271,21 @@ msgstr "Enregistrer"
 
 #, python-format
 msgid "Select a %s to browse."
-msgstr "Sélectionner une %s à parcourir."
+msgstr "Sélectionner un(e) %s à parcourir."
 
 msgid "Select a period of time to query its usage:"
-msgstr "Sélectionnez une période de temps pour interroger son utilisation :"
+msgstr "Sélectionnez une période de temps pour connaitre son utilisation :"
 
+#. Translators: test code, don't really have to translate
 msgid "Sell Puppy"
 msgid_plural "Sell Puppies"
 msgstr[0] "Chiot à vendre"
 msgstr[1] "Chiots à vendre"
 
-msgid "Session timed out."
-msgstr "La session a expiré."
-
 msgid "Sign In"
 msgstr "Se connecter"
 
+#. Translators: test code, don't really have to translate
 msgid "Sold Puppy"
 msgid_plural "Sold Puppies"
 msgstr[0] "Chiot vendu"
@@ -317,7 +302,7 @@ msgstr "Résumé"
 
 #, python-format
 msgid "The attribute %(attr)s doesn't exist on %(obj)s."
-msgstr "L'attribut %(attr)s n'existe pas sur %(obj)s."
+msgstr "L'attribut %(attr)s  de l'objet %(obj)s n'existe pas."
 
 msgid "The date should be in YYYY-mm-dd format."
 msgstr "La date doit être au format AAAA-mm-jj"
@@ -325,17 +310,27 @@ msgstr "La date doit être au format AAAA-mm-jj"
 msgid "The string may only contain ASCII printable characters."
 msgstr "La chaîne ne peut contenir que des caractères ASCII imprimables."
 
+#, python-format
+msgid ""
+"The value of %(resource)s is %(name)s inside the template. When launching a "
+"stack from this interface, the value must start with \"http://\" or "
+"\"https://\""
+msgstr ""
+"La valeur de %(resource)s est %(name)s à l'intérieur du template. Quand vous "
+"lancez une stack depuis l'interface, la valeur doit commencer par \"http://"
+"\" ou \"https://\""
+
 msgid "This Period's GB-Hours:"
 msgstr "GB-Heures de cette période :"
 
 msgid "This Period's RAM-Hours:"
-msgstr "Dans cette période RAM-Heures:"
+msgstr "RAM-Heures de cette période :"
 
 msgid "This Period's VCPU-Hours:"
 msgstr "VCPU-Heures de cette Période :"
 
 msgid "This action cannot be undone."
-msgstr "Cette action ne peut pas être réalisée."
+msgstr "Cette action ne peut pas être défaite."
 
 #, python-format
 msgid "Unable to %(action)s: %(objs)s"
@@ -348,17 +343,30 @@ msgstr "Accès non autorisé. Merci de vous reconnecter."
 msgid "Unauthorized: %s"
 msgstr "%s : non autorisé"
 
-msgid "Update"
-msgstr "Mettre à jour"
+#. Translators: test code, don't really have to translate
+msgid "Up Item"
+msgid_plural "Up Items"
+msgstr[0] "Remonter l'élément"
+msgstr[1] "Remonter les éléments"
 
-msgid "Updated"
-msgstr "Mis à jour"
+msgid "Update Item"
+msgid_plural "Update Items"
+msgstr[0] "Mise à jour de l'élément"
+msgstr[1] "Mise à jour des éléments"
+
+msgid "Updated Item"
+msgid_plural "Updated Items"
+msgstr[0] "Élément mis à jour"
+msgstr[1] "Éléments mis à jour"
+
+#. Translators: test code, don't really have to translate
+msgid "Upped Item"
+msgid_plural "Upped Items"
+msgstr[0] "Élément remonté"
+msgstr[1] "Éléments remontés"
 
 msgid "Usage Summary"
 msgstr "Résumé de l'Utilisation"
-
-msgid "Used"
-msgstr "Utilisé"
 
 msgid "Warning: "
 msgstr "Avertissement :"
@@ -373,6 +381,3 @@ msgstr "Vous n'êtes pas autorisé à accéder à %s"
 
 msgid "You do not have permission to access the resource:"
 msgstr "Vous n'avez pas la permission d'accéder à la ressource :"
-
-msgid "of"
-msgstr "de"

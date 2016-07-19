@@ -18,40 +18,74 @@
 
   angular
     .module('horizon.app.core.openstack-service-api')
-    .service('horizon.app.core.openstack-service-api.neutron', NeutronAPI);
+    .factory('horizon.app.core.openstack-service-api.neutron', neutronAPI);
 
-  NeutronAPI.$inject = ['horizon.framework.util.http.service',
-                        'horizon.framework.widgets.toast.service'];
+  neutronAPI.$inject = [
+    'horizon.framework.util.http.service',
+    'horizon.framework.widgets.toast.service'
+  ];
 
   /**
    * @ngdoc service
-   * @name horizon.app.core.openstack-service-api.neutron
+   * @name neutronAPI
+   * @param {Object} apiService
+   * @param {Object} toastService
    * @description Provides access to Neutron APIs.
+   * @returns {Object} The service
    */
-  function NeutronAPI(apiService, toastService) {
+  function neutronAPI(apiService, toastService) {
+    var service = {
+      getNetworks: getNetworks,
+      createNetwork: createNetwork,
+      getSubnets: getSubnets,
+      createSubnet: createSubnet,
+      getPorts: getPorts,
+      getAgents: getAgents,
+      getExtensions: getExtensions,
+      getDefaultQuotaSets: getDefaultQuotaSets,
+      updateProjectQuota: updateProjectQuota
+    };
+
+    return service;
+
+    /////////////
+
+    // Neutron Services
+
+    /**
+     * @name getAgents
+     * @description Get the list of Neutron agents.
+     *
+     * @returns {Object} An object with property "items." Each item is an agent.
+     */
+    function getAgents() {
+      return apiService.get('/api/neutron/agents/')
+        .error(function () {
+          toastService.add('error', gettext('Unable to retrieve the agents.'));
+        });
+    }
 
     // Networks
 
     /**
-     * @name horizon.app.core.openstack-service-api.neturonAPI.getNetworks
+     * @name getNetworks
      * @description
      * Get a list of networks for a tenant.
      *
-     * The listing result is an object with property "items". Each item is
-     * a network.
+     * @returns {Object} An object with property "items". Each item is a network.
      */
-    this.getNetworks = function() {
+    function getNetworks() {
       return apiService.get('/api/neutron/networks/')
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the networks.'));
         });
-    };
+    }
 
     /**
-     * @name horizon.app.core.openstack-service-api.neutron.createNetwork
+     * @name createNetwork
      * @description
      * Create a new network.
-     * @returns The new network object on success.
+     * @returns {Object} The new network object on success.
      *
      * @param {Object} newNetwork
      * The network to create.  Required.
@@ -89,17 +123,17 @@
      * policies.  Optional.
      *
      */
-    this.createNetwork = function(newNetwork) {
+    function createNetwork(newNetwork) {
       return apiService.post('/api/neutron/networks/', newNetwork)
         .error(function () {
           toastService.add('error', gettext('Unable to create the network.'));
         });
-    };
+    }
 
     // Subnets
 
     /**
-     * @name horizon.app.core.openstack-service-api.neutron.getSubnets
+     * @name getSubnets
      * @description
      * Get a list of subnets for a network.
      *
@@ -108,19 +142,20 @@
      *
      * @param {string} networkId
      * The network id to retrieve subnets for. Required.
+     * @returns {Object} The result of the API call
      */
-    this.getSubnets = function(networkId) {
+    function getSubnets(networkId) {
       return apiService.get('/api/neutron/subnets/', networkId)
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the subnets.'));
         });
-    };
+    }
 
     /**
-     * @name horizon.app.core.openstack-service-api.neutron.createSubnet
+     * @name createSubnet
      * @description
      * Create a Subnet for given Network.
-     * @returns The JSON representation of Subnet on success.
+     * @returns {Object} The JSON representation of Subnet on success.
      *
      * @param {Object} newSubnet
      * The subnet to create.
@@ -173,32 +208,134 @@
      * Set to true if DHCP is enabled and false if DHCP is disabled. Optional.
      *
      */
-    this.createSubnet = function(newSubnet) {
+    function createSubnet(newSubnet) {
       return apiService.post('/api/neutron/subnets/', newSubnet)
         .error(function () {
           toastService.add('error', gettext('Unable to create the subnet.'));
         });
-    };
+    }
 
     // Ports
 
     /**
-     * @name horizon.app.core.openstack-service-api.neutron.getPorts
+     * @name getPorts
      * @description
      * Get a list of ports for a network.
      *
      * The listing result is an object with property "items". Each item is
      * a port.
      *
-     * @param {string} networkId
-     * The network id to retrieve ports for. Required.
+     * @param {string} params - The parameters
+     * @param {string} params.status
+     * The port status. Value is ACTIVE or DOWN.
+     *
+     * @param {string} params.display_name
+     * The port name.
+     *
+     * @param {boolean} params.admin_state
+     * The administrative state of the router, which is up (true) or down (false).
+     *
+     * @param {string} params.network_id
+     * The UUID of the attached network.
+     *
+     * @param {string} params.tenant_id
+     * The UUID of the tenant who owns the network.
+     * Only administrative users can specify a tenant UUID other than their own.
+     * You cannot change this value through authorization policies.
+     *
+     * @param {string} params.device_owner
+     * The UUID of the entity that uses this port. For example, a DHCP agent.
+     *
+     * @param {string} params.mac_address
+     * The MAC address of the port.
+     *
+     * @param {string} params.port_id
+     * The UUID of the port.
+     *
+     * @param {Array} params.security_groups
+     * The UUIDs of any attached security groups.
+     *
+     * @param {string} params.device_id
+     * The UUID of the device that uses this port. For example, a virtual server.
+     *
+     * @returns {Object} The result of the API call
      */
-    this.getPorts = function(networkId) {
-      return apiService.get('/api/neutron/ports/', networkId)
+    function getPorts(params) {
+      var config = params ? { 'params' : params} : {};
+      return apiService.get('/api/neutron/ports/', config)
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the ports.'));
         });
-    };
+    }
 
+    // Extensions
+
+    /**
+     * @name getExtensions
+     * @description
+     * Returns a list of enabled extensions.
+     *
+     * The listing result is an object with property "items". Each item is
+     * an extension.
+     * @example
+     * The following is an example of response:
+     *
+     *  {
+     *    "items": [
+     *      {
+     *        "updated": "2012-07-29T10:00:00-00:00",
+     *        "name": "Quota management support",
+     *        "links": [],
+     *        "alias": "quotas",
+     *        "description": "Expose functions for quotas management per tenant"
+     *      }
+     *    ]
+     *  }
+     * @returns {Object} The result of the API call
+     */
+    function getExtensions() {
+      return apiService.get('/api/neutron/extensions/')
+        .error(function() {
+          toastService.add('error', gettext('Unable to retrieve the extensions.'));
+        });
+    }
+
+    // Default Quota Sets
+
+    /**
+     * @name getDefaultQuotaSets
+     * @description
+     * Get default quotasets
+     *
+     * The listing result is an object with property "items." Each item is
+     * a quota.
+     *
+     */
+    function getDefaultQuotaSets() {
+      return apiService.get('/api/neutron/quota-sets/defaults/')
+        .error(function() {
+          toastService.add('error', gettext('Unable to retrieve the default quotas.'));
+        });
+    }
+
+    // Quotas Extension
+
+    /**
+     * @name updateProjectQuota
+     * @description
+     * Update a single project quota data.
+     * @param {application/json} quota
+     * A JSON object with the atributes to set to new quota values.
+     * @param {string} projectId
+     * Specifies the id of the project that'll have the quota data updated.
+     */
+    function updateProjectQuota(quota, projectId) {
+      var url = '/api/neutron/quotas-sets/' + projectId;
+      return apiService.patch(url, quota)
+        .error(function() {
+          toastService.add('error', gettext('Unable to update project quota data.'));
+        });
+    }
   }
+
 }());

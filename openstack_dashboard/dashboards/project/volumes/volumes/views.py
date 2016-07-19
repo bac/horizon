@@ -16,9 +16,17 @@
 Views for managing volumes.
 """
 
+import json
+
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
+from django import http
+from django.template.defaultfilters import slugify  # noqa
+from django.utils.decorators import method_decorator
+from django.utils import encoding
 from django.utils.translation import ugettext_lazy as _
+from django.views.decorators.cache import cache_control
+from django.views.decorators.cache import never_cache
 from django.views import generic
 
 from horizon import exceptions
@@ -29,7 +37,9 @@ from horizon.utils import memoized
 
 from openstack_dashboard import api
 from openstack_dashboard.api import cinder
+from openstack_dashboard import exceptions as dashboard_exception
 from openstack_dashboard.usage import quotas
+from openstack_dashboard.utils import filters
 
 from openstack_dashboard.dashboards.project.volumes \
     .volumes import forms as project_forms
@@ -42,8 +52,8 @@ from openstack_dashboard.dashboards.project.volumes \
 
 class DetailView(tabs.TabView):
     tab_group_class = project_tabs.VolumeDetailTabs
-    template_name = 'project/volumes/volumes/detail.html'
-    page_title = _("Volume Details: {{ volume.name }}")
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ volume.name|default:volume.id }}"
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
@@ -52,13 +62,8 @@ class DetailView(tabs.TabView):
         context["volume"] = volume
         context["url"] = self.get_redirect_url()
         context["actions"] = table.render_row_actions(volume)
-        status_label = [label for (value, label) in
-                        project_tables.VolumesTableBase.STATUS_DISPLAY_CHOICES
-                        if value.lower() == (volume.status or '').lower()]
-        if status_label:
-            volume.status_label = status_label[0]
-        else:
-            volume.status_label = volume.status
+        choices = project_tables.VolumesTableBase.STATUS_DISPLAY_CHOICES
+        volume.status_label = filters.get_display_label(choices, volume.status)
         return context
 
     @memoized.memoized_method
@@ -66,6 +71,10 @@ class DetailView(tabs.TabView):
         try:
             volume_id = self.kwargs['volume_id']
             volume = cinder.volume_get(self.request, volume_id)
+            snapshots = cinder.volume_snapshot_list(
+                self.request, search_opts={'volume_id': volume.id})
+            if snapshots:
+                setattr(volume, 'has_snapshot', True)
             for att in volume.attachments:
                 att['instance'] = api.nova.server_get(self.request,
                                                       att['server_id'])
@@ -93,13 +102,49 @@ class CreateView(forms.ModalFormView):
     success_url = reverse_lazy('horizon:project:volumes:volumes_tab')
     page_title = _("Create a Volume")
 
+    def get_initial(self):
+        initial = super(CreateView, self).get_initial()
+        self.default_vol_type = None
+        try:
+            self.default_vol_type = cinder.volume_type_default(self.request)
+            initial['type'] = self.default_vol_type.name
+        except dashboard_exception.NOT_FOUND:
+            pass
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super(CreateView, self).get_context_data(**kwargs)
         try:
             context['usages'] = quotas.tenant_limit_usages(self.request)
+            context['volume_types'] = self._get_volume_types()
         except Exception:
             exceptions.handle(self.request)
         return context
+
+    def _get_volume_types(self):
+        try:
+            volume_types = cinder.volume_type_list(self.request)
+        except Exception:
+            exceptions.handle(self.request,
+                              _('Unable to retrieve volume type list.'))
+
+        # check if we have default volume type so we can present the
+        # description of no volume type differently
+        no_type_description = None
+        if self.default_vol_type is None:
+            message = \
+                _("If \"No volume type\" is selected, the volume will be "
+                  "created without a volume type.")
+
+            no_type_description = encoding.force_text(message)
+
+        type_descriptions = [{'name': '',
+                              'description': no_type_description}] + \
+                            [{'name': type.name,
+                              'description': getattr(type, "description", "")}
+                             for type in volume_types]
+
+        return json.dumps(type_descriptions)
 
 
 class ExtendView(forms.ModalFormView):
@@ -256,6 +301,7 @@ class ShowTransferView(forms.ModalFormView):
     modal_header = _("Volume Transfer")
     submit_url = "horizon:project:volumes:volumes:show_transfer"
     cancel_label = _("Close")
+    download_label = _("Download transfer credentials")
     page_title = _("Volume Transfer Details")
 
     def get_object(self):
@@ -276,6 +322,11 @@ class ShowTransferView(forms.ModalFormView):
         context['auth_key'] = self.kwargs['auth_key']
         context['submit_url'] = reverse(self.submit_url, args=[
             context['transfer_id'], context['auth_key']])
+        context['download_label'] = self.download_label
+        context['download_url'] = reverse(
+            'horizon:project:volumes:volumes:download_transfer_creds',
+            args=[context['transfer_id'], context['auth_key']]
+        )
         return context
 
     def get_initial(self):
@@ -478,3 +529,28 @@ class EncryptionDetailView(generic.TemplateView):
 
     def get_redirect_url(self):
         return reverse('horizon:project:volumes:index')
+
+
+class DownloadTransferCreds(generic.View):
+    # TODO(Itxaka): Remove cache_control in django >= 1.9
+    # https://code.djangoproject.com/ticket/13008
+    @method_decorator(cache_control(max_age=0, no_cache=True,
+                                    no_store=True, must_revalidate=True))
+    @method_decorator(never_cache)
+    def get(self, request, transfer_id, auth_key):
+        try:
+            transfer = cinder.transfer_get(self.request, transfer_id)
+        except Exception:
+            transfer = None
+        response = http.HttpResponse(content_type='application/text')
+        response['Content-Disposition'] = \
+            'attachment; filename=%s.txt' % slugify(transfer_id)
+        response.write('%s: %s\n%s: %s\n%s: %s' % (
+            _("Transfer name"),
+            getattr(transfer, 'name', ''),
+            _("Transfer ID"),
+            transfer_id,
+            _("Authorization Key"),
+            auth_key))
+        response['Content-Length'] = str(len(response.content))
+        return response

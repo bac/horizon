@@ -64,6 +64,18 @@ class UnmanageVolumeAction(tables.LinkAction):
         return False
 
 
+class MigrateVolume(tables.LinkAction):
+    name = "migrate"
+    verbose_name = _("Migrate Volume")
+    url = "horizon:admin:volumes:volumes:migrate"
+    classes = ("ajax-modal", "btn-migrate")
+    policy_rules = (
+        ("volume", "volume_extension:volume_admin_actions:migrate_volume"),)
+
+    def allowed(self, request, volume=None):
+        return volume.status in ("available", "in-use")
+
+
 class UpdateVolumeStatusAction(tables.LinkAction):
     name = "update_status"
     verbose_name = _("Update Volume Status")
@@ -79,7 +91,8 @@ class VolumesTable(volumes_tables.VolumesTable):
                          verbose_name=_("Name"),
                          link="horizon:admin:volumes:volumes:detail")
     host = tables.Column("os-vol-host-attr:host", verbose_name=_("Host"))
-    tenant = tables.Column("tenant_name", verbose_name=_("Project"))
+    tenant = tables.Column(lambda obj: getattr(obj, 'tenant_name', None),
+                           verbose_name=_("Project"))
 
     class Meta(object):
         name = "volumes"
@@ -91,6 +104,7 @@ class VolumesTable(volumes_tables.VolumesTable):
                          VolumesFilterAction)
         row_actions = (volumes_tables.DeleteVolume,
                        UpdateVolumeStatusAction,
-                       UnmanageVolumeAction)
+                       UnmanageVolumeAction,
+                       MigrateVolume)
         columns = ('tenant', 'host', 'name', 'size', 'status', 'volume_type',
                    'attachments', 'bootable', 'encryption',)

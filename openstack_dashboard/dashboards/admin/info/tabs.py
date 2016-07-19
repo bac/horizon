@@ -19,7 +19,6 @@ from horizon import tabs
 from openstack_dashboard.api import base
 from openstack_dashboard.api import cinder
 from openstack_dashboard.api import heat
-from openstack_dashboard.api import keystone
 from openstack_dashboard.api import neutron
 from openstack_dashboard.api import nova
 from openstack_dashboard.dashboards.admin.info import constants
@@ -28,24 +27,38 @@ from openstack_dashboard.dashboards.admin.info import tables
 
 class ServicesTab(tabs.TableTab):
     table_classes = (tables.ServicesTable,)
-    name = _("Services")
-    slug = "services"
+    name = tables.ServicesTable.Meta.verbose_name
+    slug = tables.ServicesTable.Meta.name
     template_name = constants.INFO_DETAIL_TEMPLATE_NAME
+
+    def generate_catalog_endpoints(self, catalog):
+        for i, service in enumerate(catalog):
+            regions = set(endpoint['region'] for endpoint
+                          in service['endpoints'])
+            for region in regions:
+                endpoints = [endpoint for endpoint
+                             in service['endpoints']
+                             if endpoint['region'] == region]
+                # sort the endpoints, so they appear in consistent order
+                endpoints.sort(key=lambda endpoint: endpoint.get('interface'))
+                yield {'id': service['name'] + region,
+                       'name': service['name'],
+                       'type': service['type'],
+                       'region': region,
+                       'endpoints': endpoints,
+                       }
 
     def get_services_data(self):
         request = self.tab_group.request
-        services = []
-        for i, service in enumerate(request.user.service_catalog):
-            service['id'] = i
-            services.append(
-                keystone.Service(service, request.user.services_region))
+        catalog = request.user.service_catalog
+        services = list(self.generate_catalog_endpoints(catalog))
         return services
 
 
 class NovaServicesTab(tabs.TableTab):
     table_classes = (tables.NovaServicesTable,)
-    name = _("Compute Services")
-    slug = "nova_services"
+    name = tables.NovaServicesTable.Meta.verbose_name
+    slug = tables.NovaServicesTable.Meta.name
     template_name = constants.INFO_DETAIL_TEMPLATE_NAME
     permissions = ('openstack.services.compute',)
 
@@ -62,10 +75,12 @@ class NovaServicesTab(tabs.TableTab):
 
 class CinderServicesTab(tabs.TableTab):
     table_classes = (tables.CinderServicesTable,)
-    name = _("Block Storage Services")
-    slug = "cinder_services"
+    name = tables.CinderServicesTable.Meta.verbose_name
+    slug = tables.CinderServicesTable.Meta.name
     template_name = constants.INFO_DETAIL_TEMPLATE_NAME
-    permissions = ('openstack.services.volume',)
+    permissions = (
+        ('openstack.services.volume', 'openstack.services.volumev2'),
+    )
 
     def get_cinder_services_data(self):
         try:
@@ -80,8 +95,8 @@ class CinderServicesTab(tabs.TableTab):
 
 class NetworkAgentsTab(tabs.TableTab):
     table_classes = (tables.NetworkAgentsTable,)
-    name = _("Network Agents")
-    slug = "network_agents"
+    name = tables.NetworkAgentsTable.Meta.verbose_name
+    slug = tables.NetworkAgentsTable.Meta.name
     template_name = constants.INFO_DETAIL_TEMPLATE_NAME
 
     def allowed(self, request):

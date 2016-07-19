@@ -1,10 +1,6 @@
 {% load i18n %}
 
-<h3>{% trans "User Overview" %}</h3>
-
-<div class="info detail">
-  <h4>{% trans "Information" %}</h4>
-  <hr class="header_rule">
+<div class="detail">
   <dl class="dl-horizontal">
     {% if domain_id %}
       <dt>{% trans "Domain ID" %}</dt>
@@ -16,14 +12,22 @@
     {% endif %}
     <dt>{% trans "User Name" %}</dt>
     <dd>{{ user.name }}</dd>
+    {% if description %}
+      <dt>{% trans "Description" %}</dt>
+      <dd>{{ description }}</dd>
+    {% endif %}
     <dt>{% trans "ID" %}</dt>
     <dd>{{ user.id }}</dd>
     <dt>{% trans "Email" %}</dt>
     <dd>{{ user.email|default:_("None") }}</dd>
     <dt>{% trans "Enabled" %}</dt>
     <dd>{{ user.enabled|yesno|capfirst }}</dd>
-    <dt>{% trans "Project ID" %}</dt>
+    <dt>{% trans "Primary Project ID" %}</dt>
     <dd>{{ user.project_id }}</dd>
+    {% if tenant_name %}
+      <dt>{% trans "Primary Project Name" %}</dt>
+      <dd>{{ tenant_name }}</dd>
+    {% endif %}
   </dl>
 </div>
 

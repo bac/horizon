@@ -1,6 +1,5 @@
 {% extends "horizon/common/_modal_form.html" %}
 {% load i18n %}
-{% load url from future %}
 
 {% block form_id %}create_metadata_form{% endblock %}
 {% block form_action %}{% url 'horizon:admin:metadata_defs:create' %}{% endblock %}
@@ -29,9 +28,4 @@
     glance-manage db_load_metadefs
   </p>
 </div>
-{% endblock %}
-
-{% block modal-footer %}
-  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Import Namespace" %}" />
-  <a href="{% url 'horizon:admin:metadata_defs:index' %}" class="btn btn-default secondary cancel close">{% trans "Cancel" %}</a>
 {% endblock %}

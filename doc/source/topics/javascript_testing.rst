@@ -12,7 +12,7 @@ There are multiple components in our JavaScript testing framework:
   * `PhantomJS`_ provides a headless WebKit (the browser engine). This gives us
     native support for many web features without relying on specific browsers
     being installed.
-  * `ESLint`_ is a pluggable code linting utilty. This will catch small errors
+  * `ESLint`_ is a pluggable code linting utility. This will catch small errors
     and inconsistencies in your JS, which may lead to bigger issues later on.
     See :ref:`js_code_style` for more detail.
 
@@ -46,8 +46,8 @@ developing, be sure to check the coverage reports on the master branch and
 compare your development branch; this will help identify missing tests.
 
 To generate coverage reports, run ``npm run test``. The coverage reports can be
-found at ``horizon/.coverage-karma/`` (framework tests) and
-``openstack_dashboard/.coverage-karma/`` (dashboard tests). Load
+found at ``horizon/coverage-karma/`` (framework tests) and
+``openstack_dashboard/coverage-karma/`` (dashboard tests). Load
 ``<browser>/index.html`` in a browser to view the reports.
 
 Writing Tests
@@ -65,7 +65,9 @@ Jasmine uses suites and specs:
 
 ``.spec.js`` files can be handled manually or automatically. To use the
 automatic file discovery add::
-  AUTO_DISCOVER_STATIC_FILES = True
+
+    AUTO_DISCOVER_STATIC_FILES = True
+
 to your enabled file. JS code for testing should use the extensions
 ``.mock.js`` and ``.spec.js``.
 
@@ -130,7 +132,7 @@ Lines added to ``horizon/test/jasmine/jasmine_tests.py``:
 
     describe('horizon.framework.widgets.modal module', function() {
 
-      beforeEach(module('horizon.framework.widgets.modal'));
+      beforeEach(module('horizon.framework'));
 
       describe('simpleModalCtrl', function() {
         var scope;

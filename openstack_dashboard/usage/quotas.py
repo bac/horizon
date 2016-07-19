@@ -145,7 +145,12 @@ def _get_quota_data(request, method_name, disabled_quotas=None,
     if disabled_quotas is None:
         disabled_quotas = get_disabled_quotas(request)
     if 'volumes' not in disabled_quotas:
-        quotasets.append(getattr(cinder, method_name)(request, tenant_id))
+        try:
+            quotasets.append(getattr(cinder, method_name)(request, tenant_id))
+        except cinder.cinder_exception.ClientException:
+            disabled_quotas.extend(CINDER_QUOTA_FIELDS)
+            msg = _("Unable to retrieve volume limit information.")
+            exceptions.handle(request, msg)
     for quota in itertools.chain(*quotasets):
         if quota.name not in disabled_quotas:
             qs[quota.name] = quota.limit
@@ -226,7 +231,7 @@ def get_disabled_quotas(request):
     disabled_quotas = []
 
     # Cinder
-    if not base.is_service_enabled(request, 'volume'):
+    if not cinder.is_volume_service_enabled(request):
         disabled_quotas.extend(CINDER_QUOTA_FIELDS)
 
     # Neutron
@@ -285,7 +290,7 @@ def _get_tenant_compute_usages(request, usages, disabled_quotas, tenant_id):
         usages.tally('cores', getattr(flavor, 'vcpus', None))
         usages.tally('ram', getattr(flavor, 'ram', None))
 
-    # Initialise the tally if no instances have been launched yet
+    # Initialize the tally if no instances have been launched yet
     if len(instances) == 0:
         usages.tally('cores', 0)
         usages.tally('ram', 0)
@@ -309,34 +314,50 @@ def _get_tenant_network_usages(request, usages, disabled_quotas, tenant_id):
         networks = []
         networks = neutron.network_list(request, shared=False)
         if tenant_id:
-            networks = filter(lambda net: net.tenant_id == tenant_id, networks)
+            networks = [net for net in networks if net.tenant_id == tenant_id]
         usages.tally('networks', len(networks))
+        # get shared networks
+        shared_networks = neutron.network_list(request, shared=True)
+        if tenant_id:
+            shared_networks = [net for net in shared_networks
+                               if net.tenant_id == tenant_id]
+        usages.tally('networks', len(shared_networks))
 
     if 'subnet' not in disabled_quotas:
-        subnets = []
-        subnets = neutron.subnet_list(request)
-        usages.tally('subnets', len(subnets))
+        subnets = neutron.subnet_list(request, shared=False)
+        if tenant_id:
+            subnets = [sub for sub in subnets if sub.tenant_id == tenant_id]
+        # get shared subnets
+        shared_subnets = neutron.subnet_list(request, shared=True)
+        if tenant_id:
+            shared_subnets = [subnet for subnet in shared_subnets
+                              if subnet.tenant_id == tenant_id]
+        usages.tally('subnets', len(subnets) + len(shared_subnets))
 
     if 'router' not in disabled_quotas:
         routers = []
         routers = neutron.router_list(request)
         if tenant_id:
-            routers = filter(lambda rou: rou.tenant_id == tenant_id, routers)
+            routers = [rou for rou in routers if rou.tenant_id == tenant_id]
         usages.tally('routers', len(routers))
 
 
 def _get_tenant_volume_usages(request, usages, disabled_quotas, tenant_id):
     if 'volumes' not in disabled_quotas:
-        if tenant_id:
-            opts = {'all_tenants': 1, 'project_id': tenant_id}
-            volumes = cinder.volume_list(request, opts)
-            snapshots = cinder.volume_snapshot_list(request, opts)
-        else:
-            volumes = cinder.volume_list(request)
-            snapshots = cinder.volume_snapshot_list(request)
-        usages.tally('gigabytes', sum([int(v.size) for v in volumes]))
-        usages.tally('volumes', len(volumes))
-        usages.tally('snapshots', len(snapshots))
+        try:
+            if tenant_id:
+                opts = {'all_tenants': 1, 'project_id': tenant_id}
+                volumes = cinder.volume_list(request, opts)
+                snapshots = cinder.volume_snapshot_list(request, opts)
+            else:
+                volumes = cinder.volume_list(request)
+                snapshots = cinder.volume_snapshot_list(request)
+            usages.tally('gigabytes', sum([int(v.size) for v in volumes]))
+            usages.tally('volumes', len(volumes))
+            usages.tally('snapshots', len(snapshots))
+        except cinder.cinder_exception.ClientException:
+            msg = _("Unable to retrieve volume limit information.")
+            exceptions.handle(request, msg)
 
 
 @memoized
@@ -370,22 +391,25 @@ def tenant_limit_usages(request):
     limits = {}
 
     try:
-        limits.update(nova.tenant_absolute_limits(request))
+        limits.update(nova.tenant_absolute_limits(request, reserved=True))
     except Exception:
         msg = _("Unable to retrieve compute limit information.")
         exceptions.handle(request, msg)
 
-    if base.is_service_enabled(request, 'volume'):
+    if cinder.is_volume_service_enabled(request):
         try:
             limits.update(cinder.tenant_absolute_limits(request))
             volumes = cinder.volume_list(request)
             snapshots = cinder.volume_snapshot_list(request)
-            total_size = sum([getattr(volume, 'size', 0) for volume
-                              in volumes])
-            limits['gigabytesUsed'] = total_size
+            # gigabytesUsed should be a total of volumes and snapshots
+            vol_size = sum([getattr(volume, 'size', 0) for volume
+                            in volumes])
+            snap_size = sum([getattr(snap, 'size', 0) for snap
+                             in snapshots])
+            limits['gigabytesUsed'] = vol_size + snap_size
             limits['volumesUsed'] = len(volumes)
             limits['snapshotsUsed'] = len(snapshots)
-        except Exception:
+        except cinder.cinder_exception.ClientException:
             msg = _("Unable to retrieve volume limit information.")
             exceptions.handle(request, msg)
 

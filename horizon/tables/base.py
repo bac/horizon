@@ -19,6 +19,7 @@ import logging
 from operator import attrgetter
 import sys
 
+from django.conf import settings
 from django.core import exceptions as core_exceptions
 from django.core import urlresolvers
 from django import forms
@@ -27,7 +28,6 @@ from django import template
 from django.template.defaultfilters import slugify  # noqa
 from django.template.defaultfilters import truncatechars  # noqa
 from django.template.loader import render_to_string
-from django.utils.datastructures import SortedDict
 from django.utils.html import escape
 from django.utils import http
 from django.utils.http import urlencode
@@ -38,6 +38,7 @@ import six
 
 from horizon import conf
 from horizon import exceptions
+from horizon.forms import ThemableCheckboxInput
 from horizon import messages
 from horizon.tables.actions import FilterAction  # noqa
 from horizon.tables.actions import LinkAction  # noqa
@@ -49,6 +50,7 @@ PALETTE = termcolors.PALETTES[termcolors.DEFAULT_PALETTE]
 STRING_SEPARATOR = "__"
 
 
+@six.python_2_unicode_compatible
 class Column(html.HTMLElement):
     """A class which represents a single column in a :class:`.DataTable`.
 
@@ -109,7 +111,7 @@ class Column(html.HTMLElement):
 
             status_choices = (
                     ('enabled', True),
-                    ('true', True)
+                    ('true', True),
                     ('up', True),
                     ('active', True),
                     ('yes', True),
@@ -163,10 +165,10 @@ class Column(html.HTMLElement):
        A callable to get the HTML attributes of a column cell depending
        on the data. For example, to add additional description or help
        information for data in a column cell (e.g. in Images panel, for the
-       column 'format'):
+       column 'format')::
 
             helpText = {
-              'ARI':'Amazon Ramdisk Image'
+              'ARI':'Amazon Ramdisk Image',
               'QCOW2':'QEMU' Emulator'
               }
 
@@ -268,7 +270,7 @@ class Column(html.HTMLElement):
     )
 
     def __init__(self, transform, verbose_name=None, sortable=True,
-                 link=None, allowed_data_types=[], hidden=False, attrs=None,
+                 link=None, allowed_data_types=None, hidden=False, attrs=None,
                  status=False, status_choices=None, display_choices=None,
                  empty_value=None, filters=None, classes=None, summation=None,
                  auto=None, truncate=None, link_classes=None, wrap_list=False,
@@ -276,6 +278,7 @@ class Column(html.HTMLElement):
                  update_action=None, link_attrs=None,
                  cell_attributes_getter=None, help_text=None):
 
+        allowed_data_types = allowed_data_types or []
         self.classes = list(classes or getattr(self, "classes", []))
         super(Column, self).__init__()
         self.attrs.update(attrs or {})
@@ -320,9 +323,10 @@ class Column(html.HTMLElement):
         self.display_choices = display_choices
 
         if summation is not None and summation not in self.summation_methods:
-            raise ValueError("Summation method %s must be one of %s."
-                             % (summation,
-                                ", ".join(self.summation_methods.keys())))
+            raise ValueError(
+                "Summation method %(summation)s must be one of %(keys)s.",
+                {'summation': summation,
+                 'keys': ", ".join(self.summation_methods.keys())})
         self.summation = summation
 
         self.creation_counter = Column.creation_counter
@@ -335,7 +339,7 @@ class Column(html.HTMLElement):
         if self.link is not None:
             self.classes.append('anchor')
 
-    def __unicode__(self):
+    def __str__(self):
         return six.text_type(self.verbose_name)
 
     def __repr__(self):
@@ -355,14 +359,12 @@ class Column(html.HTMLElement):
             data = datum.get(self.transform)
         else:
             # Basic object lookups
-            try:
-                data = getattr(datum, self.transform)
-            except AttributeError:
+            data = getattr(datum, self.transform, None)
+            if data is None:
                 msg = _("The attribute %(attr)s doesn't exist on "
                         "%(obj)s.") % {'attr': self.transform, 'obj': datum}
                 msg = termcolors.colorize(msg, **PALETTE['ERROR'])
-                LOG.warning(msg)
-                data = None
+                LOG.debug(msg)
         return data
 
     def get_data(self, datum):
@@ -395,7 +397,7 @@ class Column(html.HTMLElement):
                 except Exception:
                     msg = ("Filter '%(filter)s' failed with data "
                            "'%(data)s' on column '%(col_name)s'")
-                    args = {'filter': filter_func.func_name,
+                    args = {'filter': filter_func.__name__,
                             'data': data,
                             'col_name': six.text_type(self.verbose_name)}
                     LOG.warning(msg, args)
@@ -433,6 +435,12 @@ class Column(html.HTMLElement):
         except urlresolvers.NoReverseMatch:
             return self.link
 
+    if getattr(settings, 'INTEGRATION_TESTS_SUPPORT', False):
+        def get_default_attrs(self):
+            attrs = super(Column, self).get_default_attrs()
+            attrs.update({'data-selenium': self.name})
+            return attrs
+
     def get_summation(self):
         """Returns the summary value for the data in this column if a
         valid summation method is specified for it. Otherwise returns ``None``.
@@ -442,7 +450,7 @@ class Column(html.HTMLElement):
 
         summation_function = self.summation_methods[self.summation]
         data = [self.get_raw_data(datum) for datum in self.table.data]
-        data = filter(lambda datum: datum is not None, data)
+        data = [raw_data for raw_data in data if raw_data is not None]
 
         if len(data):
             try:
@@ -486,7 +494,7 @@ class Row(html.HTMLElement):
 
     .. attribute:: cells
 
-        The cells belonging to this row stored in a ``SortedDict`` object.
+        The cells belonging to this row stored in a ``OrderedDict`` object.
         This attribute is populated during instantiation.
 
     .. attribute:: status
@@ -554,7 +562,7 @@ class Row(html.HTMLElement):
         for column in table.columns.values():
             cell = table._meta.cell_class(datum, column, self)
             cells.append((column.name or column.auto, cell))
-        self.cells = SortedDict(cells)
+        self.cells = collections.OrderedDict(cells)
 
         if self.ajax:
             interval = conf.HORIZON_CONFIG['ajax_poll_interval']
@@ -574,8 +582,11 @@ class Row(html.HTMLElement):
 
         # Add the row's display name if available
         display_name = table.get_object_display(datum)
+        display_name_key = table.get_object_display_key(datum)
+
         if display_name:
             self.attrs['data-display'] = escape(display_name)
+            self.attrs['data-display-key'] = escape(display_name_key)
 
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.id)
@@ -605,11 +616,11 @@ class Row(html.HTMLElement):
 
     def get_cells(self):
         """Returns the bound cells for this row in order."""
-        return self.cells.values()
+        return list(self.cells.values())
 
     def get_ajax_update_url(self):
         table_url = self.table.get_absolute_url()
-        params = urlencode(SortedDict([
+        params = urlencode(collections.OrderedDict([
             ("action", self.ajax_action_name),
             ("table", self.table.name),
             ("obj_id", self.table.get_object_id(self.datum))
@@ -650,10 +661,15 @@ class Cell(html.HTMLElement):
         self.inline_edit_mod = False
         # add tooltip to cells if the truncate variable is set
         if column.truncate:
+            # NOTE(tsufiev): trying to pull cell raw data out of datum for
+            # those columns where truncate is False leads to multiple errors
+            # in unit tests
             data = getattr(datum, column.name, '') or ''
             if len(data) > column.truncate:
                 self.attrs['data-toggle'] = 'tooltip'
                 self.attrs['title'] = data
+                if getattr(settings, 'INTEGRATION_TESTS_SUPPORT', False):
+                    self.attrs['data-selenium'] = data
         self.data = self.get_data(datum, column, row)
 
     def get_data(self, datum, column, row):
@@ -662,7 +678,7 @@ class Cell(html.HTMLElement):
         if column.auto == "multi_select":
             data = ""
             if row.can_be_selected(datum):
-                widget = forms.CheckboxInput(check_test=lambda value: False)
+                widget = ThemableCheckboxInput(check_test=lambda value: False)
                 # Convert value to string to avoid accidental type conversion
                 data = widget.render('object_ids',
                                      six.text_type(table.get_object_id(datum)),
@@ -684,7 +700,8 @@ class Cell(html.HTMLElement):
             # Adding id of the input so it pairs with label correctly
             form_field_attributes['id'] = widget_name
 
-            if template.defaultfilters.urlize in column.filters:
+            if (template.defaultfilters.urlize in column.filters or
+                    template.defaultfilters.yesno in column.filters):
                 data = widget.render(widget_name,
                                      column.get_raw_data(datum),
                                      form_field_attributes)
@@ -800,7 +817,7 @@ class Cell(html.HTMLElement):
     def get_ajax_update_url(self):
         column = self.column
         table_url = column.table.get_absolute_url()
-        params = urlencode(SortedDict([
+        params = urlencode(collections.OrderedDict([
             ("action", self.row.ajax_cell_action_name),
             ("table", column.table.name),
             ("cell_name", column.name),
@@ -995,7 +1012,7 @@ class DataTableOptions(object):
         filter_actions = [action for action in self.table_actions if
                           issubclass(action, FilterAction)]
         if len(filter_actions) > 1:
-            raise NotImplementedError("Multiple filter actions is not "
+            raise NotImplementedError("Multiple filter actions are not "
                                       "currently supported.")
         self.filter = getattr(options, 'filter', len(filter_actions) > 0)
         if len(filter_actions) == 1:
@@ -1046,38 +1063,46 @@ class DataTableOptions(object):
                                       'data_type_name',
                                       "_table_data_type")
 
+        self.filter_first_message = \
+            getattr(options,
+                    'filter_first_message',
+                    _('Please specify a search criteria first.'))
+
 
 class DataTableMetaclass(type):
     """Metaclass to add options to DataTable class and collect columns."""
     def __new__(mcs, name, bases, attrs):
         # Process options from Meta
         class_name = name
-        attrs["_meta"] = opts = DataTableOptions(attrs.get("Meta", None))
+        dt_attrs = {}
+        dt_attrs["_meta"] = opts = DataTableOptions(attrs.get("Meta", None))
 
         # Gather columns; this prevents the column from being an attribute
         # on the DataTable class and avoids naming conflicts.
         columns = []
         for attr_name, obj in attrs.items():
-            if issubclass(type(obj), (opts.column_class, Column)):
-                column_instance = attrs.pop(attr_name)
+            if isinstance(obj, (opts.column_class, Column)):
+                column_instance = attrs[attr_name]
                 column_instance.name = attr_name
                 column_instance.classes.append('normal_column')
                 columns.append((attr_name, column_instance))
+            else:
+                dt_attrs[attr_name] = obj
         columns.sort(key=lambda x: x[1].creation_counter)
 
         # Iterate in reverse to preserve final order
-        for base in bases[::-1]:
+        for base in reversed(bases):
             if hasattr(base, 'base_columns'):
-                columns = base.base_columns.items() + columns
-        attrs['base_columns'] = SortedDict(columns)
+                columns[0:0] = base.base_columns.items()
+        dt_attrs['base_columns'] = collections.OrderedDict(columns)
 
         # If the table is in a ResourceBrowser, the column number must meet
         # these limits because of the width of the browser.
         if opts.browser_table == "navigation" and len(columns) > 3:
-            raise ValueError("You can only assign three column to %s."
+            raise ValueError("You can assign at most three columns to %s."
                              % class_name)
         if opts.browser_table == "content" and len(columns) > 2:
-            raise ValueError("You can only assign two columns to %s."
+            raise ValueError("You can assign at most two columns to %s."
                              % class_name)
 
         if opts.columns:
@@ -1087,7 +1112,7 @@ class DataTableMetaclass(type):
                 if column_data[0] not in opts.columns:
                     columns.pop(columns.index(column_data))
             # Re-order based on declared columns
-            columns.sort(key=lambda x: attrs['_meta'].columns.index(x[0]))
+            columns.sort(key=lambda x: dt_attrs['_meta'].columns.index(x[0]))
         # Add in our auto-generated columns
         if opts.multi_select and opts.browser_table != "navigation":
             multi_select = opts.column_class("multi_select",
@@ -1102,7 +1127,7 @@ class DataTableMetaclass(type):
             actions_column.classes.append('actions_column')
             columns.append(("actions", actions_column))
         # Store this set of columns internally so we can copy them per-instance
-        attrs['_columns'] = SortedDict(columns)
+        dt_attrs['_columns'] = collections.OrderedDict(columns)
 
         # Gather and register actions for later access since we only want
         # to instantiate them once.
@@ -1110,17 +1135,18 @@ class DataTableMetaclass(type):
         actions = list(set(opts.row_actions) | set(opts.table_actions) |
                        set(opts.table_actions_menu))
         actions.sort(key=attrgetter('name'))
-        actions_dict = SortedDict([(action.name, action())
-                                   for action in actions])
-        attrs['base_actions'] = actions_dict
+        actions_dict = collections.OrderedDict([(action.name, action())
+                                                for action in actions])
+        dt_attrs['base_actions'] = actions_dict
         if opts._filter_action:
             # Replace our filter action with the instantiated version
             opts._filter_action = actions_dict[opts._filter_action.name]
 
         # Create our new class!
-        return type.__new__(mcs, name, bases, attrs)
+        return type.__new__(mcs, name, bases, dt_attrs)
 
 
+@six.python_2_unicode_compatible
 @six.add_metaclass(DataTableMetaclass)
 class DataTable(object):
     """A class which defines a table with all data and associated actions.
@@ -1156,6 +1182,8 @@ class DataTable(object):
         self.breadcrumb = None
         self.current_item_id = None
         self.permissions = self._meta.permissions
+        self.needs_filter_first = False
+        self._filter_first_message = self._meta.filter_first_message
 
         # Create a new set
         columns = []
@@ -1163,7 +1191,7 @@ class DataTable(object):
             column = copy.copy(_column)
             column.table = self
             columns.append((key, column))
-        self.columns = SortedDict(columns)
+        self.columns = collections.OrderedDict(columns)
         self._populate_data_cache()
 
         # Associate these actions with this table
@@ -1173,7 +1201,7 @@ class DataTable(object):
         self.needs_summary_row = any([col.summation
                                       for col in self.columns.values()])
 
-    def __unicode__(self):
+    def __str__(self):
         return six.text_type(self._meta.verbose_name)
 
     def __repr__(self):
@@ -1303,6 +1331,12 @@ class DataTable(object):
         """Returns the message to be displayed when there is no data."""
         return self._no_data_message
 
+    def get_filter_first_message(self):
+        """Return the message to be displayed when the user needs to provide
+        first a search criteria before loading any data.
+        """
+        return self._filter_first_message
+
     def get_object_by_id(self, lookup):
         """Returns the data object from the table's dataset which matches
         the ``lookup`` parameter specified. An error will be raised if
@@ -1314,12 +1348,16 @@ class DataTable(object):
         Uses :meth:`~horizon.tables.DataTable.get_object_id` internally.
         """
         if not isinstance(lookup, six.text_type):
-            lookup = six.text_type(str(lookup), 'utf-8')
+            lookup = str(lookup)
+            if six.PY2:
+                lookup = lookup.decode('utf-8')
         matches = []
         for datum in self.data:
             obj_id = self.get_object_id(datum)
             if not isinstance(obj_id, six.text_type):
-                obj_id = six.text_type(str(obj_id), 'utf-8')
+                obj_id = str(obj_id)
+                if six.PY2:
+                    obj_id = obj_id.decode('utf-8')
             if obj_id == lookup:
                 matches.append(datum)
         if len(matches) > 1:
@@ -1387,7 +1425,7 @@ class DataTable(object):
         """hide checkbox column if no current table action is allowed."""
         if not self.multi_select:
             return
-        select_column = self.columns.values()[0]
+        select_column = list(self.columns.values())[0]
         # Try to find if the hidden class need to be
         # removed or added based on visible flag.
         hidden_found = 'hidden' in select_column.classes
@@ -1568,8 +1606,7 @@ class DataTable(object):
 
             # If not allowed, neither edit mod or updating is allowed.
             if not cell.update_allowed:
-                datum_display = (self.get_object_display(datum) or
-                                 _("N/A"))
+                datum_display = (self.get_object_display(datum) or "N/A")
                 LOG.info('Permission denied to %s: "%s"' %
                          ("Update Action", datum_display))
                 return HttpResponse(status=401)
@@ -1661,15 +1698,17 @@ class DataTable(object):
         """
         return datum.id
 
+    def get_object_display_key(self, datum):
+        return 'name'
+
     def get_object_display(self, datum):
         """Returns a display name that identifies this object.
 
         By default, this returns a ``name`` attribute from the given object,
         but this can be overridden to return other values.
         """
-        if hasattr(datum, 'name'):
-            return datum.name
-        return None
+        display_key = self.get_object_display_key(datum)
+        return getattr(datum, display_key, None)
 
     def has_prev_data(self):
         """Returns a boolean value indicating whether there is previous data

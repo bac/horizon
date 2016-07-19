@@ -20,11 +20,7 @@ ADD_EXCEPTIONS = {}
 ADD_INSTALLED_APPS = ['openstack_dashboard.dashboards.identity']
 
 ADD_ANGULAR_MODULES = [
-    'hz.dashboard.identity',
+    'horizon.dashboard.identity',
 ]
 
 AUTO_DISCOVER_STATIC_FILES = True
-
-ADD_SCSS_FILES = [
-    'dashboard/identity/identity.scss'
-]

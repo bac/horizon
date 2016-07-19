@@ -33,7 +33,8 @@ class LaunchStack(tables.LinkAction):
     url = "horizon:project:stacks:select_template"
     classes = ("ajax-modal",)
     icon = "plus"
-    policy_rules = (("orchestration", "cloudformation:CreateStack"),)
+    policy_rules = (("orchestration", "stacks:validate_template"),
+                    ("orchestration", "stacks:create"),)
 
 
 class PreviewStack(tables.LinkAction):
@@ -41,13 +42,16 @@ class PreviewStack(tables.LinkAction):
     verbose_name = _("Preview Stack")
     url = "horizon:project:stacks:preview_template"
     classes = ("ajax-modal",)
-    policy_rules = (("orchestration", "cloudformation:PreviewStack"),)
+    icon = "eye"
+    policy_rules = (("orchestration", "stacks:validate_template"),
+                    ("orchestration", "stacks:preview"),)
 
 
 class CheckStack(tables.BatchAction):
     name = "check"
     verbose_name = _("Check Stack")
-    policy_rules = (("orchestration", "cloudformation:CheckStack"),)
+    policy_rules = (("orchestration", "actions:action"),)
+    icon = "check-square"
 
     @staticmethod
     def action_present(count):
@@ -72,7 +76,8 @@ class CheckStack(tables.BatchAction):
 class SuspendStack(tables.BatchAction):
     name = "suspend"
     verbose_name = _("Suspend Stack")
-    policy_rules = (("orchestration", "cloudformation:SuspendStack"),)
+    policy_rules = (("orchestration", "actions:action"),)
+    icon = "pause"
 
     @staticmethod
     def action_present(count):
@@ -97,7 +102,8 @@ class SuspendStack(tables.BatchAction):
 class ResumeStack(tables.BatchAction):
     name = "resume"
     verbose_name = _("Resume Stack")
-    policy_rules = (("orchestration", "cloudformation:ResumeStack"),)
+    policy_rules = (("orchestration", "actions:action"),)
+    icon = "play"
 
     @staticmethod
     def action_present(count):
@@ -147,7 +153,7 @@ class DeleteStack(tables.DeleteAction):
             count
         )
 
-    policy_rules = (("orchestration", "cloudformation:DeleteStack"),)
+    policy_rules = (("orchestration", "stacks:delete"),)
 
     def delete(self, request, stack_id):
         api.heat.stack_delete(request, stack_id)
@@ -284,11 +290,11 @@ class StacksTable(tables.DataTable):
         pagination_param = 'stack_marker'
         status_columns = ["status", ]
         row_class = StacksUpdateRow
+        table_actions_menu = (CheckStack,
+                              SuspendStack,
+                              ResumeStack,)
         table_actions = (LaunchStack,
                          PreviewStack,
-                         CheckStack,
-                         SuspendStack,
-                         ResumeStack,
                          DeleteStack,
                          StacksFilterAction,)
         row_actions = (CheckStack,
@@ -299,6 +305,8 @@ class StacksTable(tables.DataTable):
 
 
 def get_resource_url(obj):
+    if obj.physical_resource_id == obj.stack_id:
+        return None
     return urlresolvers.reverse('horizon:project:stacks:resource',
                                 args=(obj.stack_id, obj.resource_name))
 
@@ -309,8 +317,7 @@ class EventsTable(tables.DataTable):
                                      verbose_name=_("Stack Resource"),
                                      link=get_resource_url)
     physical_resource = tables.Column('physical_resource_id',
-                                      verbose_name=_("Resource"),
-                                      link=mappings.resource_to_url)
+                                      verbose_name=_("Resource"))
     timestamp = tables.Column('event_time',
                               verbose_name=_("Time Since Event"),
                               filters=(filters.parse_isotime,

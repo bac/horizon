@@ -1,5 +1,5 @@
 /*
- *    (c) Copyright 2015 Hewlett-Packard Development Company, L.P.
+ * (c) Copyright 2015 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,18 @@
   'use strict';
 
   describe('Nova API', function() {
-    var service;
+    var testCall, service;
     var apiService = {};
     var toastService = {};
 
-    beforeEach(module('horizon.app.core.openstack-service-api'));
+    beforeEach(
+      module('horizon.mock.openstack-service-api',
+        function($provide, initServices) {
+          testCall = initServices($provide, apiService, toastService);
+        })
+    );
 
-    beforeEach(module(function($provide) {
-      window.apiTest.initServices($provide, apiService, toastService);
-    }));
+    beforeEach(module('horizon.app.core.openstack-service-api'));
 
     beforeEach(inject(['horizon.app.core.openstack-service-api.nova', function(novaAPI) {
       service = novaAPI;
@@ -37,6 +40,12 @@
     });
 
     var tests = [
+      {
+        "func": "getServices",
+        "method": "get",
+        "path": "/api/nova/services/",
+        "error": "Unable to retrieve the nova services."
+      },
       {
         "func": "getKeypairs",
         "method": "get",
@@ -97,6 +106,12 @@
         "testInput": [
           42
         ]
+      },
+      {
+        "func": "getServers",
+        "method": "get",
+        "path": "/api/nova/servers/",
+        "error": "Unable to retrieve instances."
       },
       {
         "func": "getExtensions",
@@ -170,7 +185,7 @@
       {
         "func": "getFlavor",
         "method": "get",
-        "path": "/api/nova/flavors/42",
+        "path": "/api/nova/flavors/42/",
         "data": {
           "params": {
             "get_extras": "true"
@@ -185,7 +200,24 @@
       {
         "func": "getFlavor",
         "method": "get",
-        "path": "/api/nova/flavors/42",
+        "path": "/api/nova/flavors/42/",
+        "data": {
+          "params": {
+            "get_extras": "true",
+            "get_access_list": "true"
+          }
+        },
+        "error": "Unable to retrieve the flavor.",
+        "testInput": [
+          42,
+          true,
+          true
+        ]
+      },
+      {
+        "func": "getFlavor",
+        "method": "get",
+        "path": "/api/nova/flavors/42/",
         "data": {
           "params": {}
         },
@@ -198,20 +230,148 @@
       {
         "func": "getFlavorExtraSpecs",
         "method": "get",
-        "path": "/api/nova/flavors/42/extra-specs",
+        "path": "/api/nova/flavors/42/extra-specs/",
         "error": "Unable to retrieve the flavor extra specs.",
         "testInput": [
           42
         ]
+      },
+      {
+        "func": "editFlavorExtraSpecs",
+        "method": "patch",
+        "path": "/api/nova/flavors/42/extra-specs/",
+        "data": {
+          "updated": {a: '1', b: '2'},
+          "removed": ['c', 'd']
+        },
+        "error": "Unable to edit the flavor extra specs.",
+        "testInput": [
+          42, {a: '1', b: '2'}, ['c', 'd']
+        ]
+      },
+      {
+        "func": "getAggregateExtraSpecs",
+        "method": "get",
+        "path": "/api/nova/aggregates/42/extra-specs/",
+        "error": "Unable to retrieve the aggregate extra specs.",
+        "testInput": [
+          42
+        ]
+      },
+      {
+        "func": "editAggregateExtraSpecs",
+        "method": "patch",
+        "path": "/api/nova/aggregates/42/extra-specs/",
+        "data": {
+          "updated": {a: '1', b: '2'},
+          "removed": ['c', 'd']
+        },
+        "error": "Unable to edit the aggregate extra specs.",
+        "testInput": [
+          42, {a: '1', b: '2'}, ['c', 'd']
+        ]
+      },
+      {
+        "func": "getInstanceMetadata",
+        "method": "get",
+        "path": "/api/nova/servers/42/metadata",
+        "error": "Unable to retrieve instance metadata.",
+        "testInput": [
+          42
+        ]
+      },
+      {
+        "func": "editInstanceMetadata",
+        "method": "patch",
+        "path": "/api/nova/servers/42/metadata",
+        "data": {
+          "updated": {a: '1', b: '2'},
+          "removed": ['c', 'd']
+        },
+        "error": "Unable to edit instance metadata.",
+        "testInput": [
+          42, {a: '1', b: '2'}, ['c', 'd']
+        ]
+      },
+      {
+        "func": "createFlavor",
+        "method": "post",
+        "path": "/api/nova/flavors/",
+        "data": 42,
+        "error": "Unable to create the flavor.",
+        "testInput": [
+          42
+        ]
+      },
+      {
+        "func": "updateFlavor",
+        "method": "patch",
+        "path": "/api/nova/flavors/42/",
+        "data": {
+          id: 42
+        },
+        "error": "Unable to update the flavor.",
+        "testInput": [
+          {
+            id: 42
+          }
+        ]
+      },
+      {
+        "func": "deleteFlavor",
+        "method": "delete",
+        "path": "/api/nova/flavors/42/",
+        "error": "Unable to delete the flavor with id: 42",
+        "testInput": [42]
+      },
+      {
+        "func": "getDefaultQuotaSets",
+        "method": "get",
+        "path": "/api/nova/quota-sets/defaults/",
+        "error": "Unable to retrieve the default quotas."
+      },
+      {
+        "func": "setDefaultQuotaSets",
+        "method": "patch",
+        "data": {
+          "id": 42
+        },
+        "testInput": [
+          {
+            "id": 42
+          }
+        ],
+        "path": "/api/nova/quota-sets/defaults/",
+        "error": "Unable to set the default quotas."
+      },
+      {
+        "func": "getEditableQuotas",
+        "method": "get",
+        "path": "/api/nova/quota-sets/editable/",
+        "error": "Unable to retrieve the editable quotas."
+      },
+      {
+        "func": "updateProjectQuota",
+        "method": "patch",
+        "path": "/api/nova/quota-sets/42",
+        "data": {
+          "cores": 42
+        },
+        "error": "Unable to update project quota data.",
+        "testInput": [
+          {
+            "cores": 42
+          },
+          42
+        ]
       }
-
     ];
 
     // Iterate through the defined tests and apply as Jasmine specs.
     angular.forEach(tests, function(params) {
       it('defines the ' + params.func + ' call properly', function() {
         var callParams = [apiService, service, toastService, params];
-        window.apiTest.testCall.apply(this, callParams);
+        testCall.apply(this, callParams);
       });
     });
 
@@ -242,73 +402,56 @@
       expect(data).toEqual({items: [{'os-flavor-access:is_public': true, is_public: true}]});
 
     });
+
   });
 
-  describe("novaExtensions", function() {
-    var factory, q, novaAPI;
+  //// This is separated due to differences in what is being tested.
+  describe('Keypair functions', function() {
+
+    var service, $window;
 
     beforeEach(module('horizon.app.core.openstack-service-api'));
 
-    beforeEach(module(function($provide) {
-      novaAPI = {getExtensions: function() {return {then: angular.noop};}};
-      q = {defer: function() { return {resolve: angular.noop}; }};
-      $provide.value('$cacheFactory', function() {return "cache";});
-      $provide.value('$q', q);
-      $provide.value('horizon.app.core.openstack-service-api.nova', novaAPI);
+    beforeEach(module(function ($provide) {
+      $provide.value('horizon.framework.util.http.service', {});
+      $provide.value('horizon.framework.widgets.toast.service', {});
     }));
 
-    beforeEach(inject(function($injector) {
-      factory = $injector.get('horizon.app.core.openstack-service-api.novaExtensions');
+    beforeEach(inject(function (_$injector_, _$rootScope_, _$timeout_, _$window_) {
+      service = _$injector_.get(
+        'horizon.app.core.openstack-service-api.nova'
+      );
+      $window = _$window_;
+      $window.WEBROOT = '/';
     }));
 
-    it("is defined", function() {
-      expect(factory).toBeDefined();
+    afterEach(inject(function (_$window_) {
+      $window = _$window_;
+      $window.WEBROOT = '/';
+    }));
+
+    it('returns a link to download the private key for an existing keypair', function() {
+      var link = service.getCreateKeypairUrl("keypairName");
+      expect(link).toEqual('/api/nova/keypairs/keypairName/');
     });
 
-    it("defines .cache", function() {
-      expect(factory.cache).toBeDefined();
+    it('returns a WEBROOT link to download the private key for an existing keypair', function() {
+      $window.WEBROOT = '/myroot/';
+      var link = service.getCreateKeypairUrl("keypairName");
+      expect(link).toEqual('/myroot/api/nova/keypairs/keypairName/');
     });
 
-    it("defines .get", function() {
-      expect(factory.get).toBeDefined();
-      var postAction = {then: angular.noop};
-      spyOn(novaAPI, 'getExtensions').and.returnValue(postAction);
-      spyOn(postAction, 'then');
-      factory.get();
-      expect(novaAPI.getExtensions).toHaveBeenCalledWith({cache: factory.cache});
-      expect(postAction.then).toHaveBeenCalled();
-      var func = postAction.then.calls.argsFor(0)[0];
-      var testData = {data: {items: [1, 2, 3]}};
-      expect(func(testData)).toEqual([1, 2, 3]);
+    it('returns a link to redownload the private key for an existing keypair', function() {
+      var link = service.getRegenerateKeypairUrl("keypairName");
+      expect(link).toEqual('/api/nova/keypairs/keypairName/?regenerate=true');
     });
 
-    it("defines .ifNameEnabled", function() {
-      expect(factory.ifNameEnabled).toBeDefined();
-      var postAction = {then: angular.noop};
-      var deferred = {reject: angular.noop, resolve: angular.noop};
-      spyOn(q, 'defer').and.returnValue(deferred);
-      spyOn(factory, 'get').and.returnValue(postAction);
-      spyOn(postAction, 'then');
-      factory.ifNameEnabled("desired");
-      expect(factory.get).toHaveBeenCalled();
-      var func1 = postAction.then.calls.argsFor(0)[0];
-      var func2 = postAction.then.calls.argsFor(0)[1];
-      spyOn(deferred, 'reject');
-      func1();
-      expect(deferred.reject).toHaveBeenCalled();
-
-      spyOn(deferred, 'resolve');
-      var extensions = [{name: "desired"}];
-      func1(extensions);
-      expect(deferred.resolve).toHaveBeenCalled();
-
-      deferred.reject.calls.reset();
-      func2();
-      expect(deferred.reject).toHaveBeenCalledWith('Cannot get the Nova extension list.');
+    it('returns a WEBROOT link to redownload the private key for an existing keypair', function() {
+      $window.WEBROOT = '/myroot/';
+      var link = service.getRegenerateKeypairUrl("keypairName");
+      expect(link).toEqual('/myroot/api/nova/keypairs/keypairName/?regenerate=true');
     });
 
-    it("defines .ifEnabled", function() {
-      expect(factory.ifEnabled).toBeDefined();
-    });
   });
+
 })();

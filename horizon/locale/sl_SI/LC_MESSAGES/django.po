@@ -1,34 +1,19 @@
-# Translations template for PROJECT.
-# Copyright (C) 2015 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-#
-# Translators:
+# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: Horizon\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-04 04:10+0000\n"
-"PO-Revision-Date: 2015-07-11 05:32+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
-"Language-Team: Slovenian (Slovenia) (http://www.transifex.com/openstack/"
-"horizon/language/sl_SI/)\n"
+"Project-Id-Version: horizon 9.0.1.dev356\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-05-24 18:48+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
-"Language: sl_SI\n"
-"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
-"%100==4 ? 2 : 3);\n"
-
-msgid ""
-"\n"
-"      If you are not sure which authentication method to use, contact your "
-"administrator.\n"
-"    "
-msgstr ""
-"\n"
-"Če niste prepričani, katero metodo uporabiti za avtentikacijo, se obrnite na "
-"skrbnika storitve."
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Slovenian (Slovenia)\n"
+"Language: sl-SI\n"
+"X-Generator: Zanata 3.7.3\n"
+"Plural-Forms: nplurals=4; plural=(n%100==1 ? 1 : n%100==2 ? 2 : n%100==3 || n"
+"%100==4 ? 3 : 0)\n"
 
 #, python-format
 msgctxt "past"
@@ -135,27 +120,14 @@ msgstr "Neveljavna različica IP-naslova"
 msgid "Limit Summary"
 msgstr "Povzetek omejitev"
 
-msgid "Log In"
-msgstr "Prijava"
-
 msgid "Login"
 msgstr "Prijava"
-
-#, python-format
-msgid ""
-"Login as different user or go back to <a href=\"%(home_url)s\"> home page</a>"
-msgstr ""
-"Prijavite se kot drug uporabnik ali pojdite nazaj na <a href=\"%(home_url)s"
-"\"> domačo stran</a>"
 
 msgid "Members"
 msgstr "Člani"
 
 msgid "More Actions"
 msgstr "Več operacij"
-
-msgid "N/A"
-msgstr "N/A"
 
 msgid "Navigation Item"
 msgstr "Navigacijska postavka"
@@ -200,9 +172,6 @@ msgstr "Za nadaljevanje se prijavite."
 msgid "Please select a row before taking that action."
 msgstr "Izberite vrstico preden izberte opravilo."
 
-msgid "Port number must be integer"
-msgstr "Vrata navedite s številko."
-
 msgid "Processing..."
 msgstr "Obdelava..."
 
@@ -212,9 +181,6 @@ msgstr "Shrani"
 #, python-format
 msgid "Select a %s to browse."
 msgstr "Izberite %s za iskanje"
-
-msgid "Session timed out."
-msgstr "Seja je potekla."
 
 msgid "Sign In"
 msgstr "Prijava"
@@ -227,10 +193,6 @@ msgstr "Uspešno:"
 
 msgid "Summary"
 msgstr "Povzetek"
-
-#, python-format
-msgid "The attribute %(attr)s doesn't exist on %(obj)s."
-msgstr "Atribut  %(attr)s za %(obj)s ne obstaja."
 
 msgid "The date should be in YYYY-mm-dd format."
 msgstr "Datum mora biti v obliki YYYY-mm-dd"
@@ -254,12 +216,6 @@ msgstr "Neavtoriziran dostop. Poskusite se prijaviti in poskusite znova."
 #, python-format
 msgid "Unauthorized: %s"
 msgstr "Niste avtorizirani: %s"
-
-msgid "Update"
-msgstr "Posodobi"
-
-msgid "Updated"
-msgstr "Posodobljeno"
 
 msgid "Usage Summary"
 msgstr "Povzetek porabe"

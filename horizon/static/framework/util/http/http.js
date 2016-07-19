@@ -17,18 +17,21 @@ limitations under the License.
 (function () {
   'use strict';
 
+  /* eslint-disable angular/no-service-method */
   angular
-    .module('horizon.framework.util.http', [])
+    .module('horizon.framework.util.http', ['ngFileUpload'])
     .service('horizon.framework.util.http.service', ApiService);
+  /* eslint-enable angular/no-service-method */
 
-  ApiService.$inject = ['$http', '$window'];
+  ApiService.$inject = ['$http', '$window', 'Upload'];
 
-  function ApiService($http, $window) {
+  function ApiService($http, $window, uploadService) {
 
     var httpCall = function (method, url, data, config) {
-      /* eslint-disable angular/ng_window_service */
+      var backend = $http;
+      /* eslint-disable angular/window-service */
       url = $window.WEBROOT + url;
-      /* eslint-enable angular/ng_window_service */
+      /* eslint-enable angular/window-service */
 
       url = url.replace(/\/+/g, '/');
 
@@ -41,12 +44,20 @@ limitations under the License.
       if (angular.isDefined(data)) {
         config.data = data;
       }
+      if (angular.isObject(config.data)) {
+        for (var key in config.data) {
+          if (config.data.hasOwnProperty(key) && uploadService.isFile(config.data[key])) {
+            backend = uploadService.upload;
+            break;
+          }
+        }
+      }
 
-      return $http(config);
+      return backend(config);
     };
 
     this.get = function(url, config) {
-      return httpCall('GET', url, undefined, config);
+      return httpCall('GET', url, null, config);
     };
 
     this.post = function(url, data, config) {

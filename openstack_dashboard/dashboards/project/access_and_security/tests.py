@@ -21,13 +21,12 @@ from copy import deepcopy  # noqa
 from django.core.urlresolvers import reverse
 from django import http
 from mox3.mox import IsA  # noqa
+import six
 
 from horizon.workflows import views
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.project.access_and_security \
     import api_access
-from openstack_dashboard.dashboards.project.access_and_security \
-    .security_groups import tables
 from openstack_dashboard.test import helpers as test
 from openstack_dashboard.usage import quotas
 
@@ -40,45 +39,48 @@ class AccessAndSecurityTests(test.TestCase):
 
     @test.create_stubs({api.network: ('floating_ip_supported',
                                       'tenant_floating_ip_list',
+                                      'floating_ip_pools_list',
                                       'security_group_list',),
                         api.nova: ('keypair_list',
                                    'server_list',),
                         api.base: ('is_service_enabled',),
-                        quotas: ('tenant_quota_usages',)})
-    def _test_index(self, ec2_enabled):
+                        quotas: ('tenant_quota_usages',),
+                        api.keystone: ('list_ec2_credentials',)})
+    def _test_index(self, ec2_enabled=True, instanceless_ips=False):
         keypairs = self.keypairs.list()
         sec_groups = self.security_groups.list()
         floating_ips = self.floating_ips.list()
+        floating_pools = self.pools.list()
+        if instanceless_ips:
+            for fip in floating_ips:
+                fip.instance_id = None
         quota_data = self.quota_usages.first()
         quota_data['security_groups']['available'] = 10
 
-        api.nova.server_list(
-            IsA(http.HttpRequest)) \
-            .AndReturn([self.servers.list(), False])
-        api.nova.keypair_list(
-            IsA(http.HttpRequest)) \
-            .AndReturn(keypairs)
-        api.network.floating_ip_supported(
-            IsA(http.HttpRequest)) \
+        api.network.floating_ip_supported(IsA(http.HttpRequest)) \
             .AndReturn(True)
-        api.network.tenant_floating_ip_list(
-            IsA(http.HttpRequest)) \
+        if not instanceless_ips:
+            api.nova.server_list(IsA(http.HttpRequest)) \
+                .AndReturn([self.servers.list(), False])
+        api.nova.keypair_list(IsA(http.HttpRequest)) \
+            .AndReturn(keypairs)
+        api.network.tenant_floating_ip_list(IsA(http.HttpRequest)) \
             .AndReturn(floating_ips)
-        api.network.security_group_list(
-            IsA(http.HttpRequest)) \
+        api.network.floating_ip_pools_list(IsA(http.HttpRequest)) \
+            .AndReturn(floating_pools)
+        api.network.security_group_list(IsA(http.HttpRequest)) \
             .AndReturn(sec_groups)
-        quotas.tenant_quota_usages(
-            IsA(http.HttpRequest)).MultipleTimes() \
+        quotas.tenant_quota_usages(IsA(http.HttpRequest)).MultipleTimes() \
             .AndReturn(quota_data)
 
-        api.base.is_service_enabled(
-            IsA(http.HttpRequest),
-            'network').MultipleTimes() \
-            .AndReturn(True)
-        api.base.is_service_enabled(
-            IsA(http.HttpRequest),
-            'ec2').MultipleTimes() \
-            .AndReturn(ec2_enabled)
+        api.base.is_service_enabled(IsA(http.HttpRequest), 'network') \
+            .MultipleTimes().AndReturn(True)
+        api.base.is_service_enabled(IsA(http.HttpRequest), 'ec2') \
+            .MultipleTimes().AndReturn(ec2_enabled)
+        if ec2_enabled:
+            api.keystone.list_ec2_credentials(IsA(http.HttpRequest),
+                                              self.user.id)\
+                .AndReturn(self.ec2.list())
 
         self.mox.ReplayAll()
 
@@ -86,10 +88,22 @@ class AccessAndSecurityTests(test.TestCase):
 
         self.assertTemplateUsed(res, 'project/access_and_security/index.html')
         self.assertItemsEqual(res.context['keypairs_table'].data, keypairs)
-        self.assertItemsEqual(res.context['security_groups_table'].data,
-                              sec_groups)
         self.assertItemsEqual(res.context['floating_ips_table'].data,
                               floating_ips)
+
+        # Security groups
+        sec_groups_from_ctx = res.context['security_groups_table'].data
+        # Context data needs to contains all items from the test data.
+        self.assertItemsEqual(sec_groups_from_ctx,
+                              sec_groups)
+        # Sec groups in context need to be sorted by their ``name`` attribute.
+        # This assertion is somewhat weak since it's only meaningful as long as
+        # the sec groups in the test data are *not* sorted by name (which is
+        # the case as of the time of this addition).
+        self.assertTrue(
+            all([sec_groups_from_ctx[i].name <= sec_groups_from_ctx[i + 1].name
+                 for i in range(len(sec_groups_from_ctx) - 1)]))
+
         if ec2_enabled:
             self.assertTrue(any(map(
                 lambda x: isinstance(x, api_access.tables.DownloadEC2),
@@ -106,6 +120,9 @@ class AccessAndSecurityTests(test.TestCase):
 
     def test_index_with_ec2_disabled(self):
         self._test_index(ec2_enabled=False)
+
+    def test_index_with_instanceless_fips(self):
+        self._test_index(instanceless_ips=True)
 
     @test.create_stubs({api.network: ('floating_ip_target_list',
                                       'tenant_floating_ip_list',)})
@@ -149,6 +166,70 @@ class AccessAndSecurityNeutronProxyTests(AccessAndSecurityTests):
 class SecurityGroupTabTests(test.TestCase):
     def setUp(self):
         super(SecurityGroupTabTests, self).setUp()
+
+    @test.create_stubs({api.network: ('floating_ip_supported',
+                                      'tenant_floating_ip_list',
+                                      'security_group_list',
+                                      'floating_ip_pools_list',),
+                        api.nova: ('keypair_list',
+                                   'server_list',),
+                        quotas: ('tenant_quota_usages',),
+                        api.base: ('is_service_enabled',)})
+    def test_create_button_attributes(self):
+        keypairs = self.keypairs.list()
+        floating_ips = self.floating_ips.list()
+        floating_pools = self.pools.list()
+        sec_groups = self.security_groups.list()
+        quota_data = self.quota_usages.first()
+        quota_data['security_groups']['available'] = 10
+
+        api.network.floating_ip_supported(
+            IsA(http.HttpRequest)) \
+            .AndReturn(True)
+        api.network.tenant_floating_ip_list(
+            IsA(http.HttpRequest)) \
+            .AndReturn(floating_ips)
+        api.network.floating_ip_pools_list(
+            IsA(http.HttpRequest)) \
+            .AndReturn(floating_pools)
+        api.network.security_group_list(
+            IsA(http.HttpRequest)) \
+            .AndReturn(sec_groups)
+        api.nova.keypair_list(
+            IsA(http.HttpRequest)) \
+            .AndReturn(keypairs)
+        api.nova.server_list(
+            IsA(http.HttpRequest)) \
+            .AndReturn([self.servers.list(), False])
+        quotas.tenant_quota_usages(
+            IsA(http.HttpRequest)).MultipleTimes() \
+            .AndReturn(quota_data)
+
+        api.base.is_service_enabled(
+            IsA(http.HttpRequest), 'network').MultipleTimes() \
+            .AndReturn(True)
+        api.base.is_service_enabled(
+            IsA(http.HttpRequest), 'ec2').MultipleTimes() \
+            .AndReturn(False)
+
+        self.mox.ReplayAll()
+
+        res = self.client.get(INDEX_URL +
+                              "?tab=access_security_tabs__security_groups_tab")
+
+        security_groups = res.context['security_groups_table'].data
+        self.assertItemsEqual(security_groups, self.security_groups.list())
+
+        create_action = self.getAndAssertTableAction(res, 'security_groups',
+                                                     'create')
+
+        self.assertEqual('Create Security Group',
+                         six.text_type(create_action.verbose_name))
+        self.assertIsNone(create_action.policy_rules)
+        self.assertEqual(set(['ajax-modal']), set(create_action.classes))
+
+        url = 'horizon:project:access_and_security:security_groups:create'
+        self.assertEqual(url, create_action.url)
 
     @test.create_stubs({api.network: ('floating_ip_supported',
                                       'tenant_floating_ip_list',
@@ -204,18 +285,10 @@ class SecurityGroupTabTests(test.TestCase):
         security_groups = res.context['security_groups_table'].data
         self.assertItemsEqual(security_groups, self.security_groups.list())
 
-        create_link = tables.CreateGroup()
-        url = create_link.get_link_url()
-        classes = (list(create_link.get_default_classes())
-                   + list(create_link.classes))
-        link_name = "%s (%s)" % (unicode(create_link.verbose_name),
-                                 "Quota exceeded")
-        expected_string = "<a href='%s' title='%s'  class='%s disabled' "\
-            "id='security_groups__action_create'>" \
-            "<span class='fa fa-plus'></span>%s</a>" \
-            % (url, link_name, " ".join(classes), link_name)
-        self.assertContains(res, expected_string, html=True,
-                            msg_prefix="The create button is not disabled")
+        create_action = self.getAndAssertTableAction(res, 'security_groups',
+                                                     'create')
+        self.assertTrue('disabled' in create_action.classes,
+                        'The create button should be disabled')
 
     def test_create_button_disabled_when_quota_exceeded_neutron_disabled(self):
         self._test_create_button_disabled_when_quota_exceeded(False)

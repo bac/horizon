@@ -78,14 +78,9 @@ class EditNetwork(policy.PolicyTargetMixin, tables.LinkAction):
     policy_rules = (("network", "update_network"),)
 
 
-# def _get_subnets(network):
-#    cidrs = [subnet.get('cidr') for subnet in network.subnets]
-#    return ','.join(cidrs)
-
-
 DISPLAY_CHOICES = (
-    ("UP", pgettext_lazy("Admin state of a Network", u"UP")),
-    ("DOWN", pgettext_lazy("Admin state of a Network", u"DOWN")),
+    ("up", pgettext_lazy("Admin state of a Network", u"UP")),
+    ("down", pgettext_lazy("Admin state of a Network", u"DOWN")),
 )
 
 
@@ -99,6 +94,9 @@ class NetworksTable(tables.DataTable):
                                verbose_name=_("DHCP Agents"))
     shared = tables.Column("shared", verbose_name=_("Shared"),
                            filters=(filters.yesno, filters.capfirst))
+    external = tables.Column("router:external",
+                             verbose_name=_("External"),
+                             filters=(filters.yesno, filters.capfirst))
     status = tables.Column(
         "status", verbose_name=_("Status"),
         display_choices=project_tables.STATUS_DISPLAY_CHOICES)
@@ -118,6 +116,12 @@ class NetworksTable(tables.DataTable):
             request, data=data,
             needs_form_wrapper=needs_form_wrapper,
             **kwargs)
-        if not api.neutron.is_extension_supported(request,
-                                                  'dhcp_agent_scheduler'):
+        try:
+            if not api.neutron.is_extension_supported(request,
+                                                      'dhcp_agent_scheduler'):
+                del self.columns['num_agents']
+        except Exception:
+            msg = _("Unable to check if DHCP agent scheduler "
+                    "extension is supported")
+            exceptions.handle(self.request, msg)
             del self.columns['num_agents']

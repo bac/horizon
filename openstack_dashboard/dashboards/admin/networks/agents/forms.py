@@ -12,8 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
@@ -24,15 +22,12 @@ from horizon import messages
 from openstack_dashboard import api
 
 
-LOG = logging.getLogger(__name__)
-
-
 class AddDHCPAgent(forms.SelfHandlingForm):
     network_id = forms.CharField(widget=forms.HiddenInput())
     network_name = forms.CharField(label=_("Network Name"),
                                    widget=forms.TextInput(
                                    attrs={'readonly': 'readonly'}))
-    agent = forms.ChoiceField(
+    agent = forms.ThemableChoiceField(
         label=_("New DHCP Agent"),
         help_text=_("Choose an DHCP Agent to attach to."))
 

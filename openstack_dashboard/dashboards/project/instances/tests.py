@@ -16,20 +16,22 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from collections import OrderedDict
 import json
+import logging
 import sys
 
 import django
 from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME  # noqa
 from django.core.urlresolvers import reverse
 from django.forms import widgets
 from django import http
 import django.test
-from django.utils.datastructures import SortedDict
-from django.utils import encoding
 from django.utils.http import urlencode
 from mox3.mox import IgnoreArg  # noqa
 from mox3.mox import IsA  # noqa
+import six
 
 from horizon import exceptions
 from horizon import forms
@@ -48,7 +50,7 @@ INDEX_URL = reverse('horizon:project:instances:index')
 SEC_GROUP_ROLE_PREFIX = \
     workflows.update_instance.INSTANCE_SEC_GROUP_SLUG + "_role_"
 AVAILABLE = api.cinder.VOLUME_STATE_AVAILABLE
-VOLUME_SEARCH_OPTS = dict(status=AVAILABLE, bootable=1)
+VOLUME_SEARCH_OPTS = dict(status=AVAILABLE, bootable=True)
 SNAPSHOT_SEARCH_OPTS = dict(status=AVAILABLE)
 
 
@@ -71,6 +73,8 @@ class InstanceTests(helpers.TestCase):
         servers = self.servers.list()
         api.nova.extension_supported('AdminActions',
                                      IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
@@ -130,10 +134,12 @@ class InstanceTests(helpers.TestCase):
     def test_index_flavor_list_exception(self):
         servers = self.servers.list()
         flavors = self.flavors.list()
-        full_flavors = SortedDict([(f.id, f) for f in flavors])
+        full_flavors = OrderedDict([(f.id, f) for f in flavors])
         search_opts = {'marker': None, 'paginate': True}
         api.nova.extension_supported('AdminActions',
                                      IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
         api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
             .AndReturn([servers, False])
@@ -178,6 +184,8 @@ class InstanceTests(helpers.TestCase):
 
         api.nova.extension_supported('AdminActions',
                                      IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
@@ -233,7 +241,7 @@ class InstanceTests(helpers.TestCase):
                                       'server_delete',),
                            api.glance: ('image_list_detailed',),
                            api.network: ('servers_update_addresses',)})
-    def test_terminate_instance(self):
+    def test_delete_instance(self):
         servers = self.servers.list()
         server = servers[0]
 
@@ -247,7 +255,7 @@ class InstanceTests(helpers.TestCase):
         api.nova.server_delete(IsA(http.HttpRequest), server.id)
         self.mox.ReplayAll()
 
-        formData = {'action': 'instances__terminate__%s' % server.id}
+        formData = {'action': 'instances__delete__%s' % server.id}
         res = self.client.post(INDEX_URL, formData)
 
         self.assertRedirectsNoFollow(res, INDEX_URL)
@@ -257,7 +265,32 @@ class InstanceTests(helpers.TestCase):
                                       'server_delete',),
                            api.glance: ('image_list_detailed',),
                            api.network: ('servers_update_addresses',)})
-    def test_terminate_instance_exception(self):
+    def test_delete_instance_error_state(self):
+        servers = self.servers.list()
+        server = servers[0]
+        server.status = 'ERROR'
+
+        search_opts = {'marker': None, 'paginate': True}
+        api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
+            .AndReturn([servers, False])
+        api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
+        api.nova.flavor_list(IgnoreArg()).AndReturn(self.flavors.list())
+        api.glance.image_list_detailed(IgnoreArg()) \
+            .AndReturn((self.images.list(), False, False))
+        api.nova.server_delete(IsA(http.HttpRequest), server.id)
+        self.mox.ReplayAll()
+
+        formData = {'action': 'instances__delete__%s' % server.id}
+        res = self.client.post(INDEX_URL, formData)
+
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
+    @helpers.create_stubs({api.nova: ('server_list',
+                                      'flavor_list',
+                                      'server_delete',),
+                           api.glance: ('image_list_detailed',),
+                           api.network: ('servers_update_addresses',)})
+    def test_delete_instance_exception(self):
         servers = self.servers.list()
         server = servers[0]
 
@@ -273,7 +306,7 @@ class InstanceTests(helpers.TestCase):
 
         self.mox.ReplayAll()
 
-        formData = {'action': 'instances__terminate__%s' % server.id}
+        formData = {'action': 'instances__delete__%s' % server.id}
         res = self.client.post(INDEX_URL, formData)
 
         self.assertRedirectsNoFollow(res, INDEX_URL)
@@ -503,7 +536,8 @@ class InstanceTests(helpers.TestCase):
         api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
             .AndReturn([servers, False])
         api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
-        api.nova.server_suspend(IsA(http.HttpRequest), unicode(server.id))
+        api.nova.server_suspend(IsA(http.HttpRequest),
+                                six.text_type(server.id))
 
         self.mox.ReplayAll()
 
@@ -533,7 +567,7 @@ class InstanceTests(helpers.TestCase):
         api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
             .AndReturn([servers, False])
         api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
-        api.nova.server_suspend(IsA(http.HttpRequest), unicode(server.id)) \
+        api.nova.server_suspend(IsA(http.HttpRequest), six.text_type(server.id)) \
             .AndRaise(self.exceptions.nova)
 
         self.mox.ReplayAll()
@@ -565,7 +599,7 @@ class InstanceTests(helpers.TestCase):
         api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
             .AndReturn([servers, False])
         api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
-        api.nova.server_resume(IsA(http.HttpRequest), unicode(server.id))
+        api.nova.server_resume(IsA(http.HttpRequest), six.text_type(server.id))
 
         self.mox.ReplayAll()
 
@@ -597,7 +631,7 @@ class InstanceTests(helpers.TestCase):
             .AndReturn([servers, False])
         api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
         api.nova.server_resume(IsA(http.HttpRequest),
-                               unicode(server.id)) \
+                               six.text_type(server.id)) \
             .AndRaise(self.exceptions.nova)
 
         self.mox.ReplayAll()
@@ -607,8 +641,132 @@ class InstanceTests(helpers.TestCase):
 
         self.assertRedirectsNoFollow(res, INDEX_URL)
 
+    @helpers.create_stubs({api.nova: ('server_shelve',
+                                      'server_list',
+                                      'flavor_list',
+                                      'extension_supported',),
+                           api.glance: ('image_list_detailed',),
+                           api.network: ('servers_update_addresses',)})
+    def test_shelve_instance(self):
+        servers = self.servers.list()
+        server = servers[0]
+
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
+        api.glance.image_list_detailed(IgnoreArg()) \
+            .AndReturn((self.images.list(), False, False))
+        search_opts = {'marker': None, 'paginate': True}
+        api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
+            .AndReturn([servers, False])
+        api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
+        api.nova.server_shelve(IsA(http.HttpRequest), six.text_type(server.id))
+
+        self.mox.ReplayAll()
+
+        formData = {'action': 'instances__shelve__%s' % server.id}
+        res = self.client.post(INDEX_URL, formData)
+
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
+    @helpers.create_stubs({api.nova: ('server_shelve',
+                                      'server_list',
+                                      'flavor_list',
+                                      'extension_supported',),
+                           api.glance: ('image_list_detailed',),
+                           api.network: ('servers_update_addresses',)})
+    def test_shelve_instance_exception(self):
+        servers = self.servers.list()
+        server = servers[0]
+
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
+        api.glance.image_list_detailed(IgnoreArg()) \
+            .AndReturn((self.images.list(), False, False))
+        search_opts = {'marker': None, 'paginate': True}
+        api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
+            .AndReturn([servers, False])
+        api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
+        api.nova.server_shelve(IsA(http.HttpRequest),
+                               six.text_type(server.id)) \
+            .AndRaise(self.exceptions.nova)
+
+        self.mox.ReplayAll()
+
+        formData = {'action': 'instances__shelve__%s' % server.id}
+        res = self.client.post(INDEX_URL, formData)
+
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
+    @helpers.create_stubs({api.nova: ('server_unshelve',
+                                      'server_list',
+                                      'flavor_list',
+                                      'extension_supported',),
+                           api.glance: ('image_list_detailed',),
+                           api.network: ('servers_update_addresses',)})
+    def test_unshelve_instance(self):
+        servers = self.servers.list()
+        server = servers[0]
+        server.status = "SHELVED_OFFLOADED"
+
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
+        api.glance.image_list_detailed(IgnoreArg()) \
+            .AndReturn((self.images.list(), False, False))
+        search_opts = {'marker': None, 'paginate': True}
+        api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
+            .AndReturn([servers, False])
+        api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
+        api.nova.server_unshelve(IsA(http.HttpRequest),
+                                 six.text_type(server.id))
+
+        self.mox.ReplayAll()
+
+        formData = {'action': 'instances__shelve__%s' % server.id}
+        res = self.client.post(INDEX_URL, formData)
+
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
+    @helpers.create_stubs({api.nova: ('server_unshelve',
+                                      'server_list',
+                                      'flavor_list',
+                                      'extension_supported',),
+                           api.glance: ('image_list_detailed',),
+                           api.network: ('servers_update_addresses',)})
+    def test_unshelve_instance_exception(self):
+        servers = self.servers.list()
+        server = servers[0]
+        server.status = "SHELVED_OFFLOADED"
+
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
+        api.glance.image_list_detailed(IgnoreArg()) \
+            .AndReturn((self.images.list(), False, False))
+        search_opts = {'marker': None, 'paginate': True}
+        api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
+            .AndReturn([servers, False])
+        api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
+        api.nova.server_unshelve(IsA(http.HttpRequest),
+                                 six.text_type(server.id)) \
+            .AndRaise(self.exceptions.nova)
+
+        self.mox.ReplayAll()
+
+        formData = {'action': 'instances__shelve__%s' % server.id}
+        res = self.client.post(INDEX_URL, formData)
+
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
     @helpers.create_stubs({api.nova: ('server_lock',
                                       'server_list',
+                                      'flavor_list',
                                       'extension_supported',),
                            api.glance: ('image_list_detailed',),
                            api.network: ('servers_update_addresses',)})
@@ -620,6 +778,8 @@ class InstanceTests(helpers.TestCase):
             http.HttpRequest)).MultipleTimes().AndReturn(True)
         api.glance.image_list_detailed(IgnoreArg()).AndReturn((
             self.images.list(), False, False))
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
         search_opts = {'marker': None, 'paginate': True}
         api.nova.server_list(
             IsA(http.HttpRequest),
@@ -636,6 +796,7 @@ class InstanceTests(helpers.TestCase):
 
     @helpers.create_stubs({api.nova: ('server_lock',
                                       'server_list',
+                                      'flavor_list',
                                       'extension_supported',),
                            api.glance: ('image_list_detailed',),
                            api.network: ('servers_update_addresses',)})
@@ -647,6 +808,8 @@ class InstanceTests(helpers.TestCase):
             http.HttpRequest)).MultipleTimes().AndReturn(True)
         api.glance.image_list_detailed(IgnoreArg()).AndReturn((
             self.images.list(), False, False))
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
         search_opts = {'marker': None, 'paginate': True}
         api.nova.server_list(
             IsA(http.HttpRequest),
@@ -664,6 +827,7 @@ class InstanceTests(helpers.TestCase):
 
     @helpers.create_stubs({api.nova: ('server_unlock',
                                       'server_list',
+                                      'flavor_list',
                                       'extension_supported',),
                            api.glance: ('image_list_detailed',),
                            api.network: ('servers_update_addresses',)})
@@ -672,6 +836,8 @@ class InstanceTests(helpers.TestCase):
         server = servers[0]
         api.nova.extension_supported('AdminActions', IsA(
             http.HttpRequest)).MultipleTimes().AndReturn(True)
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
         api.glance.image_list_detailed(IgnoreArg()).AndReturn((
             self.images.list(), False, False))
         search_opts = {'marker': None, 'paginate': True}
@@ -690,6 +856,7 @@ class InstanceTests(helpers.TestCase):
 
     @helpers.create_stubs({api.nova: ('server_unlock',
                                       'server_list',
+                                      'flavor_list',
                                       'extension_supported',),
                            api.glance: ('image_list_detailed',),
                            api.network: ('servers_update_addresses',)})
@@ -702,6 +869,8 @@ class InstanceTests(helpers.TestCase):
         api.glance.image_list_detailed(IgnoreArg()).AndReturn((
             self.images.list(), False, False))
         search_opts = {'marker': None, 'paginate': True}
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
         api.nova.server_list(
             IsA(http.HttpRequest),
             search_opts=search_opts).AndReturn([servers, False])
@@ -767,6 +936,8 @@ class InstanceTests(helpers.TestCase):
             .MultipleTimes().AndReturn(True)
         api.nova.extension_supported('AdminActions', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
 
         self.mox.ReplayAll()
 
@@ -780,8 +951,6 @@ class InstanceTests(helpers.TestCase):
         res = self._get_instance_details(
             server, volumes_return=volumes,
             security_groups_return=security_groups)
-
-        self.assertItemsEqual(res.context['instance'].volumes, volumes)
 
         self.assertItemsEqual(res.context['instance'].volumes, volumes)
 
@@ -814,8 +983,7 @@ class InstanceTests(helpers.TestCase):
                             1)
         self.assertContains(res, "<dd>&lt;!--</dd>", 1)
         self.assertContains(res, "<dt>empty</dt>", 1)
-        # TODO(david-lyle): uncomment when fixed with Django 1.6
-        # self.assertContains(res, "<dd><em>N/A</em></dd>", 1)
+        self.assertContains(res, "<dd><em>N/A</em></dd>", 1)
 
     def test_instance_details_fault(self):
         server = self.servers.first()
@@ -834,8 +1002,18 @@ class InstanceTests(helpers.TestCase):
         res = self._get_instance_details(server)
         self.assertItemsEqual(res.context['instance'].fault, server.fault)
 
+    @helpers.create_stubs({console: ('get_console',)})
     def test_instance_details_console_tab(self):
         server = self.servers.first()
+        CONSOLE_OUTPUT = '/vncserver'
+        CONSOLE_TITLE = '&title=%s(%s)' % (server.name, server.id)
+        CONSOLE_URL = CONSOLE_OUTPUT + CONSOLE_TITLE
+
+        console_mock = self.mox.CreateMock(api.nova.VNCConsole)
+        console_mock.url = CONSOLE_OUTPUT
+
+        console.get_console(IgnoreArg(), 'AUTO', server) \
+            .AndReturn(('VNC', CONSOLE_URL))
 
         tg = tabs.InstanceDetailTabs(self.request, instance=server)
         qs = "?%s=%s" % (tg.param_name, tg.get_tab("console").get_id())
@@ -887,9 +1065,18 @@ class InstanceTests(helpers.TestCase):
 
         url = reverse('horizon:project:instances:detail',
                       args=[server.id])
-        res = self.client.get(url)
 
-        self.assertRedirectsNoFollow(res, INDEX_URL)
+        # Avoid the log message in the test
+        # when unauthorized exception will be logged
+        logging.disable(logging.ERROR)
+        res = self.client.get(url)
+        logging.disable(logging.NOTSET)
+
+        self.assertEqual(302, res.status_code)
+        self.assertEqual(('Location', settings.TESTSERVER +
+                          settings.LOGIN_URL + '?' +
+                          REDIRECT_FIELD_NAME + '=' + url),
+                         res._headers.get('location', None),)
 
     def test_instance_details_flavor_not_found(self):
         server = self.servers.first()
@@ -1090,8 +1277,9 @@ class InstanceTests(helpers.TestCase):
                                  "snapshot1").AndReturn(self.snapshots.first())
 
         api.glance.image_list_detailed(IsA(http.HttpRequest),
-                                       marker=None).AndReturn([[], False,
-                                                               False])
+                                       marker=None,
+                                       paginate=True) \
+            .AndReturn([[], False, False])
 
         self.mox.ReplayAll()
 
@@ -1126,6 +1314,8 @@ class InstanceTests(helpers.TestCase):
         servers = self.servers.list()
         api.nova.extension_supported('AdminActions',
                                      IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
@@ -1307,13 +1497,15 @@ class InstanceTests(helpers.TestCase):
     @helpers.create_stubs({api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
+                                      'server_group_list',
                                       'tenant_absolute_limits',
                                       'availability_zone_list',),
                            api.network: ('security_group_list',),
                            cinder: ('volume_snapshot_list',
                                     'volume_list',),
                            api.neutron: ('network_list',
-                                         'profile_list',),
+                                         'profile_list',
+                                         'port_list'),
                            api.glance: ('image_list_detailed',)})
     def test_launch_instance_get(self,
                                  expect_password_fields=True,
@@ -1322,6 +1514,7 @@ class InstanceTests(helpers.TestCase):
                                  only_one_network=False,
                                  disk_config=True,
                                  config_drive=True,
+                                 config_drive_default=False,
                                  test_with_profile=False):
         image = self.images.first()
 
@@ -1354,6 +1547,19 @@ class InstanceTests(helpers.TestCase):
             api.neutron.network_list(IsA(http.HttpRequest),
                                      shared=True) \
                 .AndReturn(self.networks.list()[1:])
+
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
+
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             api.neutron.profile_list(IsA(http.HttpRequest),
@@ -1363,7 +1569,11 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(disk_config)
         api.nova.extension_supported(
             'ConfigDrive', IsA(http.HttpRequest)).AndReturn(config_drive)
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest))\
+        api.nova.extension_supported(
+            'ServerGroups', IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.server_group_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.server_groups.list())
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True)\
             .AndReturn(self.limits['absolute'])
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
@@ -1394,6 +1604,7 @@ class InstanceTests(helpers.TestCase):
             ['<SetInstanceDetails: setinstancedetailsaction>',
              '<SetAccessControls: setaccesscontrolsaction>',
              '<SetNetwork: setnetworkaction>',
+             '<SetNetworkPorts: setnetworkportsaction>',
              '<PostCreationStep: customizeaction>',
              '<SetAdvanced: setadvancedaction>'])
 
@@ -1428,7 +1639,7 @@ class InstanceTests(helpers.TestCase):
                 ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'm1.metadata'),
             )
 
-        select_options = '\n'.join([
+        select_options = ''.join([
             '<option value="%s">%s</option>' % (f[0], f[1])
             for f in sorted_flavors
         ])
@@ -1446,11 +1657,11 @@ class InstanceTests(helpers.TestCase):
         else:
             self.assertNotContains(res, boot_from_image_field_label)
 
-        checked_label = '<label for="id_network_0"><input checked="checked"'
+        checked_box = '<input checked="checked" id="id_network_0"'
         if only_one_network:
-            self.assertContains(res, checked_label)
+            self.assertContains(res, checked_box)
         else:
-            self.assertNotContains(res, checked_label)
+            self.assertNotContains(res, checked_box)
 
         disk_config_field_label = 'Disk Partition'
         if disk_config:
@@ -1464,10 +1675,29 @@ class InstanceTests(helpers.TestCase):
         else:
             self.assertNotContains(res, config_drive_field_label)
 
+        step = workflow.get_step("setadvancedaction")
+        self.assertEqual(step.action.initial['config_drive'],
+                         config_drive_default)
+
     @django.test.utils.override_settings(
         OPENSTACK_HYPERVISOR_FEATURES={'can_set_password': False})
     def test_launch_instance_get_without_password(self):
         self.test_launch_instance_get(expect_password_fields=False)
+
+    @django.test.utils.override_settings(
+        OPENSTACK_HYPERVISOR_FEATURES={'requires_keypair': True})
+    def test_launch_instance_required_key(self):
+        flavor = self.flavors.first()
+        image = self.images.first()
+        image.min_ram = flavor.ram
+        image.min_disk = flavor.disk
+        self._test_launch_form_instance_requirement_error(image, flavor,
+                                                          keypair_require=True)
+
+    @django.test.utils.override_settings(
+        LAUNCH_INSTANCE_DEFAULTS={'config_drive': True})
+    def test_launch_instance_get_with_config_drive_default(self):
+        self.test_launch_instance_get(config_drive_default=True)
 
     def test_launch_instance_get_no_block_device_mapping_v2_supported(self):
         self.test_launch_instance_get(block_device_mapping_v2=False)
@@ -1522,13 +1752,15 @@ class InstanceTests(helpers.TestCase):
     @helpers.create_stubs({api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
+                                      'server_group_list',
                                       'tenant_absolute_limits',
                                       'availability_zone_list',),
                            api.network: ('security_group_list',),
                            cinder: ('volume_snapshot_list',
                                     'volume_list',),
                            api.neutron: ('network_list',
-                                         'profile_list',),
+                                         'profile_list',
+                                         'port_list'),
                            api.glance: ('image_list_detailed',)})
     def test_launch_instance_get_bootable_volumes(self,
                                                   block_device_mapping_v2=True,
@@ -1567,7 +1799,17 @@ class InstanceTests(helpers.TestCase):
             api.neutron.network_list(IsA(http.HttpRequest),
                                      shared=True) \
                 .AndReturn(self.networks.list()[1:])
-
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             api.neutron.profile_list(IsA(http.HttpRequest),
@@ -1577,7 +1819,11 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(disk_config)
         api.nova.extension_supported(
             'ConfigDrive', IsA(http.HttpRequest)).AndReturn(config_drive)
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest))\
+        api.nova.extension_supported(
+            'ServerGroups', IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.server_group_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.server_groups.list())
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True)\
             .AndReturn(self.limits['absolute'])
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
@@ -1620,11 +1866,13 @@ class InstanceTests(helpers.TestCase):
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
                                          'profile_list',
-                                         'port_create',),
+                                         'port_create',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
                                       'availability_zone_list',
+                                      'server_group_list',
                                       'server_create',),
                            api.network: ('security_group_list',),
                            cinder: ('volume_list',
@@ -1644,6 +1892,7 @@ class InstanceTests(helpers.TestCase):
         customization_script = 'user data'
         nics = [{"net-id": self.networks.first().id, "v4-fixed-ip": ''}]
         quota_usages = self.quota_usages.first()
+        scheduler_hints = {"group": self.server_groups.first().id}
 
         api.nova.extension_supported('BlockDeviceMappingV2Boot',
                                      IsA(http.HttpRequest)) \
@@ -1672,6 +1921,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             policy_profile_id = self.policy_profiles.first().id
@@ -1698,6 +1958,10 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(disk_config)
         api.nova.extension_supported(
             'ConfigDrive', IsA(http.HttpRequest)).AndReturn(config_drive)
+        api.nova.extension_supported(
+            'ServerGroups', IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.server_group_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.server_groups.list())
         cinder.volume_list(IsA(http.HttpRequest),
                            search_opts=VOLUME_SEARCH_OPTS) \
             .AndReturn([])
@@ -1718,7 +1982,7 @@ class InstanceTests(helpers.TestCase):
                                flavor.id,
                                keypair.name,
                                customization_script,
-                               [sec_group.name],
+                               [str(sec_group.id)],
                                block_device_mapping=None,
                                block_device_mapping_v2=None,
                                nics=nics,
@@ -1726,7 +1990,8 @@ class InstanceTests(helpers.TestCase):
                                instance_count=IsA(int),
                                admin_pass=u'',
                                disk_config=disk_config_value,
-                               config_drive=config_drive_value)
+                               config_drive=config_drive_value,
+                               scheduler_hints=scheduler_hints)
         quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
             .AndReturn(quota_usages)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
@@ -1743,11 +2008,12 @@ class InstanceTests(helpers.TestCase):
                      'script_data': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'availability_zone': avail_zone.zoneName,
                      'volume_type': '',
                      'network': self.networks.first().id,
-                     'count': 1}
+                     'count': 1,
+                     'server_group': self.server_groups.first().id}
         if disk_config:
             form_data['disk_config'] = 'AUTO'
         if config_drive:
@@ -1820,7 +2086,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
-
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         policy_profiles = self.policy_profiles.list()
         policy_profile_id = self.policy_profiles.first().id
         port_one = self.ports.first()
@@ -1850,6 +2126,8 @@ class InstanceTests(helpers.TestCase):
                 .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
         cinder.volume_list(IsA(http.HttpRequest),
                            search_opts=VOLUME_SEARCH_OPTS) \
               .AndReturn([])
@@ -1872,7 +2150,7 @@ class InstanceTests(helpers.TestCase):
                      'script_data': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'availability_zone': avail_zone.zoneName,
                      'volume_type': '',
                      'network': self.networks.first().id,
@@ -1895,7 +2173,8 @@ class InstanceTests(helpers.TestCase):
                            api.neutron: ('network_list',
                                          'profile_list',
                                          'port_create',
-                                         'port_delete',),
+                                         'port_delete',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
@@ -1913,7 +2192,8 @@ class InstanceTests(helpers.TestCase):
                            api.neutron: ('network_list',
                                          'profile_list',
                                          'port_create',
-                                         'port_delete',),
+                                         'port_delete',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
@@ -1929,7 +2209,8 @@ class InstanceTests(helpers.TestCase):
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
                                          'profile_list',
-                                         'port_create',),
+                                         'port_create',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
@@ -1960,14 +2241,14 @@ class InstanceTests(helpers.TestCase):
                 {'device_name': u'vda',
                  'source_type': 'volume',
                  'destination_type': 'volume',
-                 'delete_on_termination': 0,
+                 'delete_on_termination': False,
                  'uuid': volume_source_id,
                  'boot_index': '0',
                  'volume_size': 1
                  }
             ]
         else:
-            block_device_mapping = {device_name: u"%s::0" % volume_choice}
+            block_device_mapping = {device_name: u"%s::False" % volume_choice}
             block_device_mapping_2 = None
 
         nics = [{"net-id": self.networks.first().id, "v4-fixed-ip": ''}]
@@ -2000,6 +2281,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
         if test_with_profile:
@@ -2019,6 +2311,8 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
         volumes = [v for v in self.volumes.list()
                    if (v.status == AVAILABLE and v.bootable == 'true')]
         cinder.volume_list(IsA(http.HttpRequest),
@@ -2037,7 +2331,7 @@ class InstanceTests(helpers.TestCase):
                                flavor.id,
                                keypair.name,
                                customization_script,
-                               [sec_group.name],
+                               [str(sec_group.id)],
                                block_device_mapping=block_device_mapping,
                                block_device_mapping_v2=block_device_mapping_2,
                                nics=nics,
@@ -2045,7 +2339,8 @@ class InstanceTests(helpers.TestCase):
                                instance_count=IsA(int),
                                admin_pass=u'',
                                disk_config=u'AUTO',
-                               config_drive=True)
+                               config_drive=True,
+                               scheduler_hints={})
         quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
             .AndReturn(quota_usages)
 
@@ -2060,7 +2355,7 @@ class InstanceTests(helpers.TestCase):
                      'script_data': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'availability_zone': avail_zone.zoneName,
                      'volume_size': '1',
                      'volume_id': volume_choice,
@@ -2088,12 +2383,14 @@ class InstanceTests(helpers.TestCase):
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
                                          'profile_list',
-                                         'port_create'),
+                                         'port_create',
+                                         'port_list'),
                            api.nova: ('server_create',
                                       'extension_supported',
                                       'flavor_list',
                                       'keypair_list',
                                       'availability_zone_list',
+                                      'server_group_list',
                                       'tenant_absolute_limits',),
                            api.network: ('security_group_list',),
                            cinder: ('volume_list',
@@ -2112,7 +2409,7 @@ class InstanceTests(helpers.TestCase):
         customization_script = 'user data'
         device_name = u'vda'
         volume_choice = "%s:vol" % volume.id
-        block_device_mapping = {device_name: u"%s::0" % volume_choice}
+        block_device_mapping = {device_name: u"%s::False" % volume_choice}
         nics = [{"net-id": self.networks.first().id, "v4-fixed-ip": ''}]
         quota_usages = self.quota_usages.first()
 
@@ -2143,6 +2440,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
         if test_with_profile:
@@ -2162,6 +2470,9 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.server_group_list(IsA(http.HttpRequest)).AndReturn([])
         volumes = [v for v in self.volumes.list()
                    if (v.status == AVAILABLE and v.bootable == 'true')]
         cinder.volume_list(IsA(http.HttpRequest),
@@ -2182,7 +2493,7 @@ class InstanceTests(helpers.TestCase):
                                flavor.id,
                                keypair.name,
                                customization_script,
-                               [sec_group.name],
+                               [str(sec_group.id)],
                                block_device_mapping=block_device_mapping,
                                block_device_mapping_v2=None,
                                nics=nics,
@@ -2190,7 +2501,8 @@ class InstanceTests(helpers.TestCase):
                                instance_count=IsA(int),
                                admin_pass=u'',
                                disk_config='MANUAL',
-                               config_drive=True)
+                               config_drive=True,
+                               scheduler_hints={})
 
         self.mox.ReplayAll()
 
@@ -2203,7 +2515,7 @@ class InstanceTests(helpers.TestCase):
                      'script_data': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'availability_zone': avail_zone.zoneName,
                      'network': self.networks.first().id,
                      'volume_type': 'volume_id',
@@ -2228,7 +2540,8 @@ class InstanceTests(helpers.TestCase):
 
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
-                                         'profile_list',),
+                                         'profile_list',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
@@ -2253,7 +2566,7 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
            .AndReturn(self.limits['absolute'])
         api.glance.image_list_detailed(IsA(http.HttpRequest),
                                        filters={'is_public': True,
@@ -2271,6 +2584,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
         if test_with_profile:
@@ -2282,6 +2606,8 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
         api.nova.keypair_list(IsA(http.HttpRequest)) \
@@ -2310,7 +2636,7 @@ class InstanceTests(helpers.TestCase):
                      'script_data': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'availability_zone': avail_zone.zoneName,
                      'volume_type': '',
                      'count': 1}
@@ -2330,35 +2656,68 @@ class InstanceTests(helpers.TestCase):
         api.glance: ('image_list_detailed',),
         api.neutron: ('network_list',
                       'profile_list',
-                      'port_create',),
+                      'port_create',
+                      'port_list'),
         api.nova: ('extension_supported',
                    'flavor_list',
                    'keypair_list',
                    'availability_zone_list',
+                   'server_group_list',
                    'server_create',),
         api.network: ('security_group_list',),
         cinder: ('volume_list',
                  'volume_snapshot_list',),
         quotas: ('tenant_quota_usages',)})
     def test_launch_instance_post_boot_from_snapshot(
-        self,
-        test_with_profile=False,
+            self,
+            test_with_profile=False,
+            test_with_bdmv2=False
     ):
         flavor = self.flavors.first()
         keypair = self.keypairs.first()
         server = self.servers.first()
+        snapshot = self.cinder_volume_snapshots.first()
+        sec_group = self.security_groups.first()
         avail_zone = self.availability_zones.first()
+        customization_script = 'user data'
+        device_name = u'vda'
+        snapshot_choice = "%s:snap" % snapshot.id
+        if test_with_bdmv2:
+            snapshot_source_id = snapshot.id.split(':')[0]
+            block_device_mapping = None
+            block_device_mapping_2 = [
+                {'device_name': u'vda',
+                 'source_type': 'snapshot',
+                 'destination_type': 'volume',
+                 'delete_on_termination': 0,
+                 'uuid': snapshot_source_id,
+                 'boot_index': '0',
+                 'volume_size': 1
+                 }
+            ]
+        else:
+            block_device_mapping = {device_name:
+                                    u"%s::False" % snapshot_choice}
+            block_device_mapping_2 = None
+
+        nics = [{"net-id": self.networks.first().id, "v4-fixed-ip": ''}]
         quota_usages = self.quota_usages.first()
 
         api.nova.extension_supported('BlockDeviceMappingV2Boot',
                                      IsA(http.HttpRequest)) \
-            .AndReturn(True)
+            .AndReturn(test_with_bdmv2)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
-        api.glance.image_list_detailed(IsA(http.HttpRequest),
-                                       filters={'is_public': True,
-                                                'status': 'active'}) \
-            .AndReturn([[], False, False])
+        api.nova.keypair_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.keypairs.list())
+        api.network.security_group_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.security_groups.list())
+        api.nova.availability_zone_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.availability_zones.list())
+        api.glance.image_list_detailed(
+            IsA(http.HttpRequest),
+            filters={'is_public': True, 'status': 'active'}) \
+            .AndReturn([self.images.list(), False, False])
         api.glance.image_list_detailed(
             IsA(http.HttpRequest),
             filters={'property-owner_id': self.tenant.id,
@@ -2371,30 +2730,175 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
-        api.nova.keypair_list(IsA(http.HttpRequest)) \
-            .AndReturn(self.keypairs.list())
-        api.network.security_group_list(IsA(http.HttpRequest)) \
-            .AndReturn(self.security_groups.list())
-        api.nova.availability_zone_list(IsA(http.HttpRequest)) \
-            .AndReturn(self.availability_zones.list())
+        if test_with_profile:
+            policy_profiles = self.policy_profiles.list()
+            policy_profile_id = self.policy_profiles.first().id
+            port = self.ports.first()
+            api.neutron.profile_list(
+                IsA(http.HttpRequest),
+                'policy').AndReturn(policy_profiles)
+            api.neutron.port_create(
+                IsA(http.HttpRequest),
+                self.networks.first().id,
+                policy_profile_id=policy_profile_id).AndReturn(port)
+            nics = [{"port-id": port.id}]
+        api.nova.extension_supported('DiskConfig',
+                                     IsA(http.HttpRequest)) \
+            .AndReturn(True)
+        api.nova.extension_supported('ConfigDrive',
+                                     IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.server_group_list(IsA(http.HttpRequest)).AndReturn([])
+        snapshots = [v for v in self.cinder_volume_snapshots.list()
+                     if (v.status == AVAILABLE)]
+        cinder.volume_list(IsA(http.HttpRequest),
+                           search_opts=VOLUME_SEARCH_OPTS) \
+            .AndReturn([])
+        cinder.volume_snapshot_list(IsA(http.HttpRequest),
+                                    search_opts=SNAPSHOT_SEARCH_OPTS) \
+            .AndReturn(snapshots)
+        api.nova.extension_supported('BlockDeviceMappingV2Boot',
+                                     IsA(http.HttpRequest)) \
+            .AndReturn(test_with_bdmv2)
+
+        api.nova.server_create(IsA(http.HttpRequest),
+                               server.name,
+                               '',
+                               flavor.id,
+                               keypair.name,
+                               customization_script,
+                               [str(sec_group.id)],
+                               block_device_mapping=block_device_mapping,
+                               block_device_mapping_v2=block_device_mapping_2,
+                               nics=nics,
+                               availability_zone=avail_zone.zoneName,
+                               instance_count=IsA(int),
+                               admin_pass=u'',
+                               disk_config=u'AUTO',
+                               config_drive=True,
+                               scheduler_hints={})
+        quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
+              .AndReturn(quota_usages)
+
+        self.mox.ReplayAll()
+
+        form_data = {'flavor': flavor.id,
+                     'source_type': 'volume_snapshot_id',
+                     'source_id': snapshot_choice,
+                     'keypair': keypair.name,
+                     'name': server.name,
+                     'script_source': 'raw',
+                     'script_data': customization_script,
+                     'project_id': self.tenants.first().id,
+                     'user_id': self.user.id,
+                     'groups': str(sec_group.id),
+                     'availability_zone': avail_zone.zoneName,
+                     'volume_size': '1',
+                     'volume_snapshot_id': snapshot_choice,
+                     'device_name': device_name,
+                     'network': self.networks.first().id,
+                     'count': 1,
+                     'disk_config': 'AUTO',
+                     'config_drive': True}
+        if test_with_profile:
+            form_data['profile'] = self.policy_profiles.first().id
+        url = reverse('horizon:project:instances:launch')
+        res = self.client.post(url, form_data)
+
+        self.assertNoFormErrors(res)
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
+    def test_launch_instance_post_boot_from_snapshot_with_bdmv2(self):
+        self.test_launch_instance_post_boot_from_snapshot(test_with_bdmv2=True)
+
+    @helpers.update_settings(
+        OPENSTACK_NEUTRON_NETWORK={'profile_support': 'cisco'})
+    def test_launch_instance_post_boot_from_snapshot_with_profile(self):
+        self.test_launch_instance_post_boot_from_snapshot(
+            test_with_profile=True)
+
+    @helpers.create_stubs({
+        api.glance: ('image_list_detailed',),
+        api.neutron: ('network_list',
+                      'profile_list',
+                      'port_create',
+                      'port_list',
+                      'is_port_profiles_supported'),
+        api.nova: ('extension_supported',
+                   'flavor_list',
+                   'keypair_list',
+                   'availability_zone_list',
+                   'server_create',
+                   'tenant_absolute_limits'),
+        api.network: ('security_group_list',),
+        cinder: ('volume_list',
+                 'volume_snapshot_list',),
+        quotas: ('tenant_quota_usages',)})
+    def test_launch_instance_post_boot_from_snapshot_error(
+        self,
+        test_with_profile=False,
+    ):
+        flavor = self.flavors.first()
+        keypair = self.keypairs.first()
+        server = self.servers.first()
+        avail_zone = self.availability_zones.first()
+        quota_usages = self.quota_usages.first()
+
+        api.glance.image_list_detailed(IsA(http.HttpRequest),
+                                       filters={'is_public': True,
+                                                'status': 'active'}) \
+            .AndReturn([[], False, False])
+        api.glance.image_list_detailed(
+            IsA(http.HttpRequest),
+            filters={'property-owner_id': self.tenant.id,
+                     'status': 'active'}) \
+            .AndReturn([[], False, False])
+
+        quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
+            .AndReturn(quota_usages)
+
+        api.neutron.is_port_profiles_supported()\
+            .MultipleTimes().AndReturn(test_with_profile)
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         api.nova.extension_supported('DiskConfig',
                                      IsA(http.HttpRequest)) \
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
 
-        cinder.volume_list(IsA(http.HttpRequest),
-                           search_opts=VOLUME_SEARCH_OPTS) \
-            .AndReturn([])
-        cinder.volume_snapshot_list(IsA(http.HttpRequest),
-                                    search_opts=SNAPSHOT_SEARCH_OPTS) \
-            .AndReturn([])
-
-        quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
-            .AndReturn(quota_usages)
-
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(self.limits['absolute'])
         self.mox.ReplayAll()
 
         bad_snapshot_id = 'a-bogus-id'
@@ -2418,11 +2922,12 @@ class InstanceTests(helpers.TestCase):
         url = reverse('horizon:project:instances:launch')
         res = self.client.post(url, form_data)
 
-        self.assertFormErrors(res, 1, "You must select a snapshot.")
+        self.assertFormErrors(res, 3, "You must select a snapshot.")
 
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
-                                         'profile_list',),
+                                         'profile_list',
+                                         'port_list'),
                            cinder: ('volume_list',
                                     'volume_snapshot_list',),
                            api.network: ('security_group_list',),
@@ -2458,6 +2963,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             api.neutron.profile_list(IsA(http.HttpRequest),
@@ -2467,7 +2983,9 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
             .AndReturn(self.limits['absolute'])
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndRaise(self.exceptions.nova)
@@ -2495,11 +3013,14 @@ class InstanceTests(helpers.TestCase):
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
                                          'profile_list',
-                                         'port_create',),
+                                         'port_create',
+                                         'port_delete',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
                                       'availability_zone_list',
+                                      'server_group_list',
                                       'server_create',),
                            api.network: ('security_group_list',),
                            cinder: ('volume_list',
@@ -2552,6 +3073,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             policy_profile_id = self.policy_profiles.first().id
@@ -2569,13 +3101,15 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
         api.nova.server_create(IsA(http.HttpRequest),
                                server.name,
                                image.id,
                                flavor.id,
                                keypair.name,
                                customization_script,
-                               [sec_group.name],
+                               [str(sec_group.id)],
                                block_device_mapping=None,
                                block_device_mapping_v2=None,
                                nics=nics,
@@ -2583,8 +3117,11 @@ class InstanceTests(helpers.TestCase):
                                instance_count=IsA(int),
                                admin_pass='password',
                                disk_config='AUTO',
-                               config_drive=False) \
+                               config_drive=False,
+                               scheduler_hints={}) \
             .AndRaise(self.exceptions.keystone)
+        if test_with_profile:
+            api.neutron.port_delete(IsA(http.HttpRequest), port.id)
         quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
             .AndReturn(quota_usages)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
@@ -2604,7 +3141,7 @@ class InstanceTests(helpers.TestCase):
                      'script_data': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'volume_type': '',
                      'network': self.networks.first().id,
                      'count': 1,
@@ -2626,7 +3163,8 @@ class InstanceTests(helpers.TestCase):
 
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
-                                         'profile_list',),
+                                         'profile_list',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
@@ -2677,6 +3215,18 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             api.neutron.profile_list(IsA(http.HttpRequest),
@@ -2686,6 +3236,8 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
         volumes = [v for v in self.volumes.list()
                    if (v.status == AVAILABLE and v.bootable == 'true')]
         cinder.volume_list(IsA(http.HttpRequest),
@@ -2697,7 +3249,7 @@ class InstanceTests(helpers.TestCase):
 
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
            .AndReturn(self.limits['absolute'])
         quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
             .AndReturn(quota_usages)
@@ -2716,7 +3268,7 @@ class InstanceTests(helpers.TestCase):
                      'script_data': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'volume_type': 'volume_id',
                      'volume_id': volume_choice,
                      'device_name': device_name,
@@ -2728,10 +3280,12 @@ class InstanceTests(helpers.TestCase):
 
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
-                                         'profile_list',),
+                                         'profile_list',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
+                                      'server_group_list',
                                       'tenant_absolute_limits',
                                       'availability_zone_list',),
                            api.network: ('security_group_list',),
@@ -2784,6 +3338,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             api.neutron.profile_list(IsA(http.HttpRequest),
@@ -2793,6 +3358,10 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.server_group_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.server_groups.list())
         volumes = [v for v in self.volumes.list()
                    if (v.status == AVAILABLE and v.bootable == 'true')]
         cinder.volume_list(IsA(http.HttpRequest),
@@ -2804,7 +3373,7 @@ class InstanceTests(helpers.TestCase):
 
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
            .AndReturn(self.limits['absolute'])
         quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
             .AndReturn(quota_usages)
@@ -2823,7 +3392,7 @@ class InstanceTests(helpers.TestCase):
                      'script_data': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'volume_type': 'volume_id',
                      'volume_id': volume_choice,
                      'device_name': device_name,
@@ -2859,7 +3428,8 @@ class InstanceTests(helpers.TestCase):
 
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
-                                         'profile_list',),
+                                         'profile_list',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
@@ -2870,7 +3440,8 @@ class InstanceTests(helpers.TestCase):
                                     'volume_snapshot_list',),
                            quotas: ('tenant_quota_usages',)})
     def _test_launch_form_instance_requirement_error(self, image, flavor,
-                                                     test_with_profile=False):
+                                                     test_with_profile=False,
+                                                     keypair_require=False):
         keypair = self.keypairs.first()
         server = self.servers.first()
         volume = self.volumes.first()
@@ -2908,6 +3479,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             api.neutron.profile_list(IsA(http.HttpRequest),
@@ -2917,6 +3499,8 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
         volumes = [v for v in self.volumes.list()
                    if (v.status == AVAILABLE and v.bootable == 'true')]
         cinder.volume_list(IsA(http.HttpRequest),
@@ -2928,7 +3512,7 @@ class InstanceTests(helpers.TestCase):
 
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
            .AndReturn(self.limits['absolute'])
         quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
             .AndReturn(quota_usages)
@@ -2941,22 +3525,27 @@ class InstanceTests(helpers.TestCase):
                      'source_type': 'image_id',
                      'image_id': image.id,
                      'availability_zone': avail_zone.zoneName,
-                     'keypair': keypair.name,
                      'name': server.name,
                      'script_source': 'raw',
                      'script_data': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'volume_type': 'volume_id',
                      'volume_id': volume_choice,
                      'device_name': device_name,
                      'count': 1}
+        if not keypair_require:
+            form_data['keypair'] = keypair.name
 
         url = reverse('horizon:project:instances:launch')
         res = self.client.post(url, form_data)
-        msg = "The flavor &#39;%s&#39; is too small" % flavor.name
-        self.assertContains(res, msg)
+        if keypair_require:
+            msg = "This field is required"
+            self.assertContains(res, msg)
+        else:
+            msg = "The flavor &#39;%s&#39; is too small" % flavor.name
+            self.assertContains(res, msg)
 
     def test_launch_form_instance_requirement_error_disk(
         self,
@@ -2994,7 +3583,8 @@ class InstanceTests(helpers.TestCase):
 
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
-                                         'profile_list',),
+                                         'profile_list',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
@@ -3044,10 +3634,23 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(
             IsA(http.HttpRequest),
             shared=True).AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         api.nova.extension_supported(
             'DiskConfig', IsA(http.HttpRequest)).AndReturn(True)
         api.nova.extension_supported(
             'ConfigDrive', IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported(
+            'ServerGroups', IsA(http.HttpRequest)).AndReturn(False)
         volumes = [v for v in self.volumes.list()
                    if (v.status == AVAILABLE and v.bootable == 'true')]
         cinder.volume_list(IsA(http.HttpRequest),
@@ -3059,7 +3662,8 @@ class InstanceTests(helpers.TestCase):
         api.nova.flavor_list(
             IsA(http.HttpRequest)).AndReturn(self.flavors.list())
         api.nova.tenant_absolute_limits(
-            IsA(http.HttpRequest)).AndReturn(self.limits['absolute'])
+            IsA(http.HttpRequest), reserved=True
+        ).AndReturn(self.limits['absolute'])
         quotas.tenant_quota_usages(
             IsA(http.HttpRequest)).AndReturn(quota_usages)
         api.nova.flavor_list(
@@ -3076,11 +3680,11 @@ class InstanceTests(helpers.TestCase):
                      'customization_script': customization_script,
                      'project_id': self.tenants.first().id,
                      'user_id': self.user.id,
-                     'groups': sec_group.name,
+                     'groups': str(sec_group.id),
                      'volume_type': 'volume_id',
                      'volume_id': volume_choice,
                      'volume_size': max(
-                         image.min_disk, image.size / 1024 ** 3),
+                         image.min_disk, image.size // 1024 ** 3),
                      'device_name': device_name,
                      'count': 1}
 
@@ -3113,10 +3717,12 @@ class InstanceTests(helpers.TestCase):
 
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
                            api.neutron: ('network_list',
-                                         'profile_list',),
+                                         'profile_list',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
+                                      'server_group_list',
                                       'tenant_absolute_limits',
                                       'availability_zone_list',),
                            api.network: ('security_group_list',),
@@ -3166,6 +3772,17 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             api.neutron.profile_list(IsA(http.HttpRequest),
@@ -3175,6 +3792,10 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.server_group_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.server_groups.list())
         volumes = [v for v in self.volumes.list()
                    if (v.status == AVAILABLE and v.bootable == 'true')]
         cinder.volume_list(IsA(http.HttpRequest),
@@ -3186,7 +3807,7 @@ class InstanceTests(helpers.TestCase):
 
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
             .AndReturn(self.limits['absolute'])
         quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
             .AndReturn(quota_usages)
@@ -3206,7 +3827,7 @@ class InstanceTests(helpers.TestCase):
             'script_data': customization_script,
             'project_id': self.tenants.first().id,
             'user_id': self.user.id,
-            'groups': sec_group.name,
+            'groups': str(sec_group.id),
             'volume_size': volume_size,
             'device_name': device_name,
             'count': 1
@@ -3219,7 +3840,7 @@ class InstanceTests(helpers.TestCase):
     def test_launch_form_instance_volume_size_error(self,
                                                     test_with_profile=False):
         image = self.images.get(name='protected_images')
-        volume_size = image.min_disk / 2
+        volume_size = image.min_disk // 2
         msg = ("The Volume size is too small for the &#39;%s&#39; image" %
                image.name)
         self._test_launch_form_instance_volume_size(image, volume_size, msg,
@@ -3258,13 +3879,15 @@ class InstanceTests(helpers.TestCase):
                       'floating_ip_supported',
                       'servers_update_addresses',),
     })
-    def test_launch_button_disabled_when_quota_exceeded(self):
+    def test_launch_button_attributes(self):
         servers = self.servers.list()
         limits = self.limits['absolute']
-        limits['totalInstancesUsed'] = limits['maxTotalInstances']
+        limits['totalInstancesUsed'] = 0
 
         api.nova.extension_supported('AdminActions',
                                      IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
@@ -3283,34 +3906,72 @@ class InstanceTests(helpers.TestCase):
 
         self.mox.ReplayAll()
 
-        launch = tables.LaunchLink()
-        url = launch.get_link_url()
-        classes = list(launch.get_default_classes()) + list(launch.classes)
-        link_name = "%s (%s)" % (unicode(launch.verbose_name),
-                                 "Quota exceeded")
-
+        tables.LaunchLink()
         res = self.client.get(INDEX_URL)
-        if django.VERSION < (1, 8, 0):
-            resp_charset = res._charset
-        else:
-            resp_charset = res.charset
-        expected_string = encoding.smart_str(u'''
-            <a href="%s" title="%s" class="%s disabled"
-            data-update-url=
-            "/project/instances/?action=launch&amp;table=instances"
-            id="instances__action_launch">
-            <span class="fa fa-cloud-upload"></span>%s</a>
-            ''' % (url, link_name, " ".join(classes), link_name), resp_charset)
 
-        self.assertContains(res, expected_string, html=True,
-                            msg_prefix="The launch button is not disabled")
+        launch_action = self.getAndAssertTableAction(res, 'instances',
+                                                     'launch-ng')
+
+        self.assertEqual(set(['btn-launch']),
+                         set(launch_action.classes))
+        self.assertEqual('Launch Instance', launch_action.verbose_name)
+        self.assertEqual((('compute', 'compute:create'),),
+                         launch_action.policy_rules)
+
+    @helpers.create_stubs({
+        api.nova: ('flavor_list', 'server_list', 'tenant_absolute_limits',
+                   'extension_supported',),
+        api.glance: ('image_list_detailed',),
+        api.network: ('floating_ip_simple_associate_supported',
+                      'floating_ip_supported',
+                      'servers_update_addresses',),
+    })
+    def test_launch_button_disabled_when_quota_exceeded(self):
+        servers = self.servers.list()
+        limits = self.limits['absolute']
+        limits['totalInstancesUsed'] = limits['maxTotalInstances']
+
+        api.nova.extension_supported('AdminActions',
+                                     IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
+        api.glance.image_list_detailed(IgnoreArg()) \
+            .AndReturn((self.images.list(), False, False))
+        search_opts = {'marker': None, 'paginate': True}
+        api.nova.server_list(IsA(http.HttpRequest), search_opts=search_opts) \
+            .AndReturn([servers, False])
+        api.network.servers_update_addresses(IsA(http.HttpRequest), servers)
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
+            .MultipleTimes().AndReturn(limits)
+        api.network.floating_ip_supported(IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.network.floating_ip_simple_associate_supported(
+            IsA(http.HttpRequest)).MultipleTimes().AndReturn(True)
+
+        self.mox.ReplayAll()
+
+        tables.LaunchLink()
+        res = self.client.get(INDEX_URL)
+
+        launch_action = self.getAndAssertTableAction(
+            res, 'instances', 'launch-ng')
+
+        self.assertTrue('disabled' in launch_action.classes,
+                        'The launch button should be disabled')
+        self.assertEqual('Launch Instance (Quota exceeded)',
+                         six.text_type(launch_action.verbose_name))
 
     @helpers.create_stubs({api.glance: ('image_list_detailed',),
-                           api.neutron: ('network_list',),
+                           api.neutron: ('network_list',
+                                         'port_list'),
                            api.nova: ('extension_supported',
                                       'flavor_list',
                                       'keypair_list',
                                       'availability_zone_list',
+                                      'server_group_list',
                                       'tenant_absolute_limits',
                                       'server_create',),
                            api.network: ('security_group_list',),
@@ -3332,7 +3993,7 @@ class InstanceTests(helpers.TestCase):
         device_mapping_v2 = [{'device_name': None,  # device_name must be None
                               'source_type': 'image',
                               'destination_type': 'volume',
-                              'delete_on_termination': 0,
+                              'delete_on_termination': False,
                               'uuid': image.id,
                               'boot_index': '0',
                               'volume_size': image.size}]
@@ -3364,11 +4025,25 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         api.nova.extension_supported('DiskConfig',
                                      IsA(http.HttpRequest)) \
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.server_group_list(IsA(http.HttpRequest)).AndReturn([])
         volumes = [v for v in self.volumes.list()
                    if (v.status == AVAILABLE and v.bootable == 'true')]
         cinder.volume_list(IsA(http.HttpRequest),
@@ -3389,7 +4064,7 @@ class InstanceTests(helpers.TestCase):
                                flavor.id,
                                keypair.name,
                                customization_script,
-                               [sec_group.name],
+                               [str(sec_group.id)],
                                block_device_mapping=None,
                                block_device_mapping_v2=device_mapping_v2,
                                nics=nics,
@@ -3397,7 +4072,8 @@ class InstanceTests(helpers.TestCase):
                                instance_count=IsA(int),
                                admin_pass=u'',
                                config_drive=False,
-                               disk_config=u'')
+                               disk_config=u'',
+                               scheduler_hints={})
 
         self.mox.ReplayAll()
 
@@ -3412,7 +4088,7 @@ class InstanceTests(helpers.TestCase):
             'script_data': customization_script,
             'project_id': self.tenants.first().id,
             'user_id': self.user.id,
-            'groups': sec_group.name,
+            'groups': str(sec_group.id),
             'volume_size': image.size,
             'device_name': device_name,
             'network': self.networks.first().id,
@@ -3437,6 +4113,8 @@ class InstanceTests(helpers.TestCase):
         server.status = "VERIFY_RESIZE"
         api.nova.extension_supported('AdminActions',
                                      IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
@@ -3468,7 +4146,8 @@ class InstanceTests(helpers.TestCase):
                            cinder: ('volume_snapshot_list',
                                     'volume_list',),
                            api.neutron: ('network_list',
-                                         'profile_list'),
+                                         'profile_list',
+                                         'port_list'),
                            api.glance: ('image_list_detailed',)})
     def test_select_default_keypair_if_only_one(self,
                                                 test_with_profile=False):
@@ -3496,11 +4175,22 @@ class InstanceTests(helpers.TestCase):
         api.neutron.network_list(IsA(http.HttpRequest),
                                  shared=True) \
             .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
         if test_with_profile:
             policy_profiles = self.policy_profiles.list()
             api.neutron.profile_list(IsA(http.HttpRequest),
                                      'policy').AndReturn(policy_profiles)
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
            .AndReturn(self.limits['absolute'])
         api.nova.extension_supported('BlockDeviceMappingV2Boot',
                                      IsA(http.HttpRequest)) \
@@ -3510,6 +4200,8 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(True)
         api.nova.extension_supported('ConfigDrive',
                                      IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
         api.nova.flavor_list(IsA(http.HttpRequest)) \
@@ -3617,11 +4309,13 @@ class InstanceTests(helpers.TestCase):
             .AndReturn(self.flavors.list())
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .AndReturn(self.flavors.list())
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
            .AndReturn(self.limits['absolute'])
         api.nova.extension_supported('DiskConfig',
                                      IsA(http.HttpRequest)) \
             .AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
 
         self.mox.ReplayAll()
 
@@ -3689,11 +4383,13 @@ class InstanceTests(helpers.TestCase):
             .AndReturn([])
         api.nova.flavor_get(IsA(http.HttpRequest), server.flavor['id']) \
             .AndRaise(self.exceptions.nova)
-        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
            .AndReturn(self.limits['absolute'])
         api.nova.extension_supported('DiskConfig',
                                      IsA(http.HttpRequest)) \
             .AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
 
         self.mox.ReplayAll()
 
@@ -3729,6 +4425,8 @@ class InstanceTests(helpers.TestCase):
         api.nova.extension_supported('DiskConfig',
                                      IsA(http.HttpRequest)) \
             .AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
         api.nova.server_resize(IsA(http.HttpRequest), server.id, flavor.id,
                                'AUTO').AndReturn([])
 
@@ -3752,6 +4450,8 @@ class InstanceTests(helpers.TestCase):
         api.nova.extension_supported('DiskConfig',
                                      IsA(http.HttpRequest)) \
             .AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(False)
         api.nova.server_resize(IsA(http.HttpRequest), server.id, flavor.id,
                                'AUTO') \
             .AndRaise(self.exceptions.nova)
@@ -3906,7 +4606,8 @@ class InstanceTests(helpers.TestCase):
                                           confirm_password=pass2,
                                           disk_config='MANUAL')
 
-        self.assertContains(res, "Passwords do not match.")
+        self.assertEqual(res.context['form'].errors['__all__'],
+                         ["Passwords do not match."])
 
     @helpers.create_stubs(instance_rebuild_post_stubs)
     def test_rebuild_instance_post_with_empty_string(self):
@@ -3992,6 +4693,8 @@ class InstanceTests(helpers.TestCase):
         api.nova.extension_supported('AdminActions',
                                      IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
+            .MultipleTimes().AndReturn(True)
         api.nova.flavor_list(IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(self.flavors.list())
         api.glance.image_list_detailed(IgnoreArg()) \
@@ -4041,7 +4744,7 @@ class InstanceTests(helpers.TestCase):
                                       'server_delete',),
                            api.glance: ('image_list_detailed',),
                            api.network: ('servers_update_addresses',)})
-    def test_terminate_instance_with_pagination(self):
+    def test_delete_instance_with_pagination(self):
         """Instance should be deleted from
            the next page.
         """
@@ -4065,7 +4768,7 @@ class InstanceTests(helpers.TestCase):
                            servers[page_size - 1].id])
         next_page_url = "?".join([reverse('horizon:project:instances:index'),
                                   params])
-        formData = {'action': 'instances__terminate__%s' % server.id}
+        formData = {'action': 'instances__delete__%s' % server.id}
         res = self.client.post(next_page_url, formData)
 
         self.assertRedirectsNoFollow(res, next_page_url)
@@ -4096,7 +4799,7 @@ class InstanceTests(helpers.TestCase):
 
     def test_clean_file_upload_form_invalid_data(self):
         t = workflows.create_instance.CustomizeAction(self.request, {})
-        upload_str = '\x81'
+        upload_str = b'\x81'
         files = {'script_upload':
                  self.SimpleFile('script_name',
                                  upload_str,
@@ -4128,15 +4831,18 @@ class InstanceAjaxTests(helpers.TestCase):
     @helpers.create_stubs({api.nova: ("server_get",
                                       "flavor_get",
                                       "extension_supported"),
+                           api.network: ('servers_update_addresses',),
                            api.neutron: ("is_extension_supported",)})
     def test_row_update(self):
         server = self.servers.first()
         instance_id = server.id
         flavor_id = server.flavor["id"]
         flavors = self.flavors.list()
-        full_flavors = SortedDict([(f.id, f) for f in flavors])
+        full_flavors = OrderedDict([(f.id, f) for f in flavors])
 
         api.nova.extension_supported('AdminActions', IsA(http.HttpRequest))\
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
         api.neutron.is_extension_supported(IsA(http.HttpRequest),
                                            'security-group')\
@@ -4159,13 +4865,14 @@ class InstanceAjaxTests(helpers.TestCase):
     @helpers.create_stubs({api.nova: ("server_get",
                                       "flavor_get",
                                       "extension_supported"),
-                           api.neutron: ("is_extension_supported",)})
+                           api.neutron: ("is_extension_supported",),
+                           api.network: ('servers_update_addresses',)})
     def test_row_update_instance_error(self):
         server = self.servers.first()
         instance_id = server.id
         flavor_id = server.flavor["id"]
         flavors = self.flavors.list()
-        full_flavors = SortedDict([(f.id, f) for f in flavors])
+        full_flavors = OrderedDict([(f.id, f) for f in flavors])
 
         server.status = 'ERROR'
         server.fault = {"message": "NoValidHost",
@@ -4179,6 +4886,8 @@ class InstanceAjaxTests(helpers.TestCase):
                         "created": "2013-10-07T00:08:32Z"}
 
         api.nova.extension_supported('AdminActions', IsA(http.HttpRequest))\
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
         api.neutron.is_extension_supported(IsA(http.HttpRequest),
                                            'security-group')\
@@ -4211,12 +4920,15 @@ class InstanceAjaxTests(helpers.TestCase):
     @helpers.create_stubs({api.nova: ("server_get",
                                       "flavor_get",
                                       "extension_supported"),
-                           api.neutron: ("is_extension_supported",)})
+                           api.neutron: ("is_extension_supported",
+                                         "servers_update_addresses",)})
     def test_row_update_flavor_not_found(self):
         server = self.servers.first()
         instance_id = server.id
 
         api.nova.extension_supported('AdminActions', IsA(http.HttpRequest))\
+            .MultipleTimes().AndReturn(True)
+        api.nova.extension_supported('Shelve', IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(True)
         api.neutron.is_extension_supported(IsA(http.HttpRequest),
                                            'security-group')\
@@ -4243,7 +4955,7 @@ class ConsoleManagerTests(helpers.TestCase):
     def setup_consoles(self):
         # Need to refresh with mocks or will fail since mox do not detect
         # the api_call() as mocked.
-        console.CONSOLES = SortedDict([
+        console.CONSOLES = OrderedDict([
             ('VNC', api.nova.server_vnc_console),
             ('SPICE', api.nova.server_spice_console),
             ('RDP', api.nova.server_rdp_console),
@@ -4417,6 +5129,92 @@ class ConsoleManagerTests(helpers.TestCase):
         self.assertNoFormErrors(res)
         self.assertRedirectsNoFollow(res, INDEX_URL)
 
+    @helpers.create_stubs({api.cinder: ('volume_list',),
+                           api.nova: ('server_get',)})
+    def test_volume_attach_get(self):
+        server = self.servers.first()
+
+        api.cinder.volume_list(IsA(http.HttpRequest))\
+            .AndReturn(self.cinder_volumes.list())
+
+        self.mox.ReplayAll()
+
+        url = reverse('horizon:project:instances:attach_volume',
+                      args=[server.id])
+
+        res = self.client.get(url)
+
+        form = res.context['form']
+
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(form.fields['device'].required)
+        self.assertIsInstance(form.fields['volume'].widget,
+                              forms.Select)
+        self.assertTemplateUsed(res,
+                                'project/instances/attach_volume.html')
+
+    @helpers.create_stubs({api.nova: ('instance_volume_attach', 'server_get'),
+                           api.cinder: ('volume_list',)})
+    def test_volume_attach_post(self):
+        server = self.servers.first()
+        volume = api.cinder.volume_list(IsA(http.HttpRequest))\
+            .AndReturn(self.cinder_volumes.list())
+
+        self.mox.ReplayAll()
+
+        form_data = {"volume": volume[1].id,
+                     "instance_id": server.id,
+                     "device": None}
+
+        url = reverse('horizon:project:instances:attach_volume',
+                      args=[server.id])
+
+        res = self.client.post(url, form_data)
+        self.assertNoFormErrors(res)
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
+    @helpers.create_stubs({api.nova: ('server_get', 'instance_volumes_list')})
+    def test_volume_detach_get(self):
+        server = self.servers.first()
+
+        api.nova.instance_volumes_list(IsA(http.HttpRequest),
+                                       server.id)\
+            .AndReturn(self.cinder_volumes.list())
+
+        self.mox.ReplayAll()
+
+        url = reverse('horizon:project:instances:detach_volume',
+                      args=[server.id])
+
+        res = self.client.get(url)
+        form = res.context['form']
+
+        self.assertIsInstance(form.fields['volume'].widget,
+                              forms.Select)
+        self.assertEqual(res.status_code, 200)
+        self.assertTemplateUsed(res,
+                                'project/instances/detach_volume.html')
+
+    @helpers.create_stubs({api.nova: ('server_get', 'instance_volumes_list',
+                                      'instance_volume_detach')})
+    def test_volume_detach_post(self):
+        server = self.servers.first()
+
+        volume = api.nova.instance_volumes_list(IsA(http.HttpRequest),
+                                                server.id) \
+            .AndReturn(self.cinder_volumes.list())
+        self.mox.ReplayAll()
+
+        form_data = {"volume": volume[1].id,
+                     "instance_id": server.id}
+
+        url = reverse('horizon:project:instances:detach_volume',
+                      args=[server.id])
+
+        res = self.client.post(url, form_data)
+        self.assertNoFormErrors(res)
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
     @helpers.create_stubs({api.neutron: ('port_list',)})
     def test_interface_detach_get(self):
         server = self.servers.first()
@@ -4453,4 +5251,147 @@ class ConsoleManagerTests(helpers.TestCase):
         res = self.client.post(url, form_data)
 
         self.assertNoFormErrors(res)
+        self.assertRedirectsNoFollow(res, INDEX_URL)
+
+    @helpers.update_settings(
+        OPENSTACK_NEUTRON_NETWORK={'profile_support': 'cisco'})
+    @helpers.create_stubs({api.glance: ('image_list_detailed',),
+                           api.neutron: ('network_list',
+                                         'profile_list',
+                                         'port_create',
+                                         'port_delete',
+                                         'port_list'),
+                           api.nova: ('extension_supported',
+                                      'flavor_list',
+                                      'keypair_list',
+                                      'availability_zone_list',
+                                      'server_group_list',
+                                      'server_create',),
+                           api.network: ('security_group_list',),
+                           cinder: ('volume_list',
+                                    'volume_snapshot_list',),
+                           quotas: ('tenant_quota_usages',)})
+    def test_port_cleanup_called_on_failed_vm_launch(self):
+        flavor = self.flavors.first()
+        image = self.images.first()
+        keypair = self.keypairs.first()
+        server = self.servers.first()
+        sec_group = self.security_groups.first()
+        avail_zone = self.availability_zones.first()
+        customization_script = 'user data'
+        quota_usages = self.quota_usages.first()
+
+        api.nova.extension_supported('BlockDeviceMappingV2Boot',
+                                     IsA(http.HttpRequest)) \
+            .AndReturn(True)
+        volumes = [v for v in self.volumes.list() if (v.status == AVAILABLE
+                                                      and v.bootable ==
+                                                      'true')]
+        cinder.volume_list(IsA(http.HttpRequest),
+                           search_opts=VOLUME_SEARCH_OPTS) \
+            .AndReturn(volumes)
+        volumes = [v for v in self.volumes.list() if (v.status == AVAILABLE)]
+        cinder.volume_snapshot_list(IsA(http.HttpRequest),
+                                    search_opts=SNAPSHOT_SEARCH_OPTS) \
+            .AndReturn(volumes)
+        api.nova.flavor_list(IgnoreArg()).AndReturn(self.flavors.list())
+        api.nova.keypair_list(IgnoreArg()).AndReturn(self.keypairs.list())
+        api.network.security_group_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.security_groups.list())
+        api.nova.availability_zone_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.availability_zones.list())
+        api.glance.image_list_detailed(
+            IsA(http.HttpRequest),
+            filters={'is_public': True, 'status': 'active'}) \
+            .AndReturn([self.images.list(), False, False])
+        api.glance.image_list_detailed(
+            IsA(http.HttpRequest),
+            filters={'property-owner_id': self.tenant.id,
+                     'status': 'active'}) \
+            .AndReturn([[], False, False])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 tenant_id=self.tenant.id,
+                                 shared=False) \
+            .AndReturn(self.networks.list()[:1])
+        api.neutron.network_list(IsA(http.HttpRequest),
+                                 shared=True) \
+            .AndReturn(self.networks.list()[1:])
+        for net in self.networks.list():
+            api.neutron.port_list(IsA(http.HttpRequest),
+                                  network_id=net.id) \
+                .AndReturn(self.ports.list())
+        policy_profiles = self.policy_profiles.list()
+        policy_profile_id = self.policy_profiles.first().id
+        port = self.ports.first()
+        api.neutron.profile_list(
+            IsA(http.HttpRequest), 'policy').AndReturn(policy_profiles)
+        api.neutron.port_create(
+            IsA(http.HttpRequest),
+            self.networks.first().id,
+            policy_profile_id=policy_profile_id).AndReturn(port)
+        nics = [{"port-id": port.id}]
+        api.nova.extension_supported('DiskConfig',
+                                     IsA(http.HttpRequest)) \
+            .AndReturn(True)
+        api.nova.extension_supported('ConfigDrive',
+                                     IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.extension_supported('ServerGroups',
+                                     IsA(http.HttpRequest)).AndReturn(True)
+        api.nova.server_group_list(IsA(http.HttpRequest)).AndReturn([])
+        api.nova.server_create(IsA(http.HttpRequest),
+                               server.name,
+                               image.id,
+                               flavor.id,
+                               keypair.name,
+                               customization_script,
+                               [str(sec_group.id)],
+                               block_device_mapping=None,
+                               block_device_mapping_v2=None,
+                               nics=nics,
+                               availability_zone=avail_zone.zoneName,
+                               instance_count=IsA(int),
+                               admin_pass='password',
+                               disk_config='AUTO',
+                               config_drive=False,
+                               scheduler_hints={}) \
+            .AndRaise(self.exceptions.neutron)
+        api.neutron.port_delete(IsA(http.HttpRequest), port.id)
+        quotas.tenant_quota_usages(IsA(http.HttpRequest)) \
+            .AndReturn(quota_usages)
+        api.nova.flavor_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.flavors.list())
+
+        self.mox.ReplayAll()
+
+        form_data = {'flavor': flavor.id,
+                     'source_type': 'image_id',
+                     'source_id': image.id,
+                     'volume_size': '1',
+                     'image_id': image.id,
+                     'availability_zone': avail_zone.zoneName,
+                     'keypair': keypair.name,
+                     'name': server.name,
+                     'script_source': 'raw',
+                     'script_data': customization_script,
+                     'project_id': self.tenants.first().id,
+                     'user_id': self.user.id,
+                     'groups': [str(sec_group.id)],
+                     'volume_type': '',
+                     'network': self.networks.first().id,
+                     'count': 1,
+                     'admin_pass': 'password',
+                     'confirm_admin_pass': 'password',
+                     'disk_config': 'AUTO',
+                     'config_drive': False,
+                     'profile': self.policy_profiles.first().id}
+        url = reverse('horizon:project:instances:launch')
+        res = self.client.post(url, form_data)
+
         self.assertRedirectsNoFollow(res, INDEX_URL)

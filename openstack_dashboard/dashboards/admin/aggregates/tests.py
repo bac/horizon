@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-
 import mock
 
 from django.core.urlresolvers import reverse
@@ -113,7 +111,7 @@ class CreateAggregateWorkflowTests(BaseAggregateWorkflowTests):
         workflow_data = self._get_create_workflow_data(aggregate)
         workflow_data['name'] = ''
         workflow_data['availability_zone'] = ''
-        self._test_generic_create_aggregate(workflow_data, aggregate, 2,
+        self._test_generic_create_aggregate(workflow_data, aggregate, 1,
                                             u'This field is required')
 
     @test.create_stubs({api.nova: ('host_list',
@@ -181,16 +179,31 @@ class AggregatesViewTests(test.BaseAdminViewTests):
     @mock.patch('openstack_dashboard.api.nova.extension_supported',
                 mock.Mock(return_value=False))
     @test.create_stubs({api.nova: ('aggregate_details_list',
-                                   'availability_zone_list',),
-                        api.cinder: ('tenant_absolute_limits',)})
+                                   'availability_zone_list',
+                                   'tenant_absolute_limits',),
+                        api.cinder: ('tenant_absolute_limits',),
+                        api.neutron: ('list_extensions',),
+                        api.network: ('tenant_floating_ip_list',
+                                      'security_group_list'),
+                        api.keystone: ('tenant_list',)})
     def test_panel_not_available(self):
+        api.nova.tenant_absolute_limits(IsA(http.HttpRequest)). \
+            MultipleTimes().AndReturn(self.limits['absolute'])
         api.cinder.tenant_absolute_limits(IsA(http.HttpRequest)). \
             MultipleTimes().AndReturn(self.cinder_limits['absolute'])
+        api.neutron.list_extensions(IsA(http.HttpRequest)). \
+            AndReturn(self.api_extensions.list())
+        api.network.tenant_floating_ip_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.floating_ips.list())
+        api.network.security_group_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.security_groups.list())
+        api.keystone.tenant_list(IsA(http.HttpRequest)) \
+            .AndReturn(self.tenants.list())
         self.mox.ReplayAll()
 
         self.patchers['aggregates'].stop()
         res = self.client.get(reverse('horizon:admin:overview:index'))
-        self.assertNotIn('Host Aggregates', res.content)
+        self.assertNotIn(b'Host Aggregates', res.content)
 
     @test.create_stubs({api.nova: ('aggregate_details_list',
                                    'availability_zone_list',)})
@@ -245,7 +258,7 @@ class AggregatesViewTests(test.BaseAdminViewTests):
         aggregate = self.aggregates.first()
         form_data = {'id': aggregate.id}
 
-        self._test_generic_update_aggregate(form_data, aggregate, 2,
+        self._test_generic_update_aggregate(form_data, aggregate, 1,
                                             u'This field is required')
 
 
@@ -451,82 +464,3 @@ class ManageHostsTests(test.BaseAdminViewTests):
                                        form_data,
                                        addAggregate=False,
                                        cleanAggregates=True)
-
-
-class HostAggregateMetadataTests(test.BaseAdminViewTests):
-
-    @test.create_stubs({api.nova: ('aggregate_get',),
-                        api.glance: ('metadefs_namespace_list',
-                                     'metadefs_namespace_get')})
-    def test_host_aggregate_metadata_get(self):
-        aggregate = self.aggregates.first()
-        api.nova.aggregate_get(
-            IsA(http.HttpRequest),
-            str(aggregate.id)
-        ).AndReturn(aggregate)
-
-        namespaces = self.metadata_defs.list()
-
-        api.glance.metadefs_namespace_list(
-            IsA(http.HttpRequest),
-            filters={'resource_types': ['OS::Nova::Aggregate']}
-        ).AndReturn((namespaces, False, False))
-
-        for namespace in namespaces:
-            api.glance.metadefs_namespace_get(
-                IsA(http.HttpRequest),
-                namespace.namespace,
-                'OS::Nova::Aggregate'
-            ).AndReturn(namespace)
-
-        self.mox.ReplayAll()
-
-        res = self.client.get(
-            reverse(constants.AGGREGATES_UPDATE_METADATA_URL,
-                    args=[aggregate.id]))
-
-        self.assertEqual(res.status_code, 200)
-        self.assertTemplateUsed(
-            res,
-            constants.AGGREGATES_UPDATE_METADATA_TEMPLATE
-        )
-        self.assertTemplateUsed(
-            res,
-            constants.AGGREGATES_UPDATE_METADATA_SUBTEMPLATE
-        )
-        self.assertContains(res, 'namespace_1')
-        self.assertContains(res, 'namespace_2')
-        self.assertContains(res, 'namespace_3')
-        self.assertContains(res, 'namespace_4')
-
-    @test.create_stubs({api.nova: ('aggregate_get', 'aggregate_set_metadata')})
-    def test_host_aggregate_metadata_update(self):
-        aggregate = self.aggregates.first()
-        aggregate.metadata = {'key': 'test_key', 'value': 'test_value'}
-
-        api.nova.aggregate_get(
-            IsA(http.HttpRequest),
-            str(aggregate.id)
-        ).AndReturn(aggregate)
-
-        api.nova.aggregate_set_metadata(
-            IsA(http.HttpRequest),
-            str(aggregate.id),
-            {'value': None, 'key': None, 'test_key': 'test_value'}
-        ).AndReturn(None)
-
-        self.mox.ReplayAll()
-
-        form_data = {"metadata": json.dumps([aggregate.metadata])}
-
-        res = self.client.post(
-            reverse(constants.AGGREGATES_UPDATE_METADATA_URL,
-                    args=(aggregate.id,)), form_data)
-
-        self.assertEqual(res.status_code, 302)
-        self.assertNoFormErrors(res)
-        self.assertMessageCount(success=1)
-        self.assertRedirectsNoFollow(
-            res,
-            reverse(constants.AGGREGATES_INDEX_URL)
-        )

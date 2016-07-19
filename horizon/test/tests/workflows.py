@@ -14,6 +14,9 @@
 
 from django import forms
 from django import http
+import mock
+
+import six
 
 from horizon import exceptions
 from horizon.test import helpers as test
@@ -79,6 +82,15 @@ class AdminAction(workflows.Action):
         permissions = ("horizon.test",)
 
 
+class AdminForbiddenAction(workflows.Action):
+    admin_id = forms.CharField(label="Admin forbidden")
+
+    class Meta(object):
+        name = "Admin Action"
+        slug = "admin_action"
+        policy_rules = (('action', 'forbidden'),)
+
+
 class TestStepOne(workflows.Step):
     action_class = TestActionOne
     contributes = ("project_id", "user_id")
@@ -109,6 +121,10 @@ class AdminStep(workflows.Step):
     before = TestStepTwo
 
 
+class AdminForbiddenStep(workflows.Step):
+    action_class = AdminForbiddenAction
+
+
 class TestWorkflow(workflows.Workflow):
     slug = "test_workflow"
     default_steps = (TestStepOne, TestStepTwo)
@@ -133,6 +149,10 @@ class TestFullscreenWorkflowView(workflows.WorkflowView):
 class WorkflowsTests(test.TestCase):
     def setUp(self):
         super(WorkflowsTests, self).setUp()
+        self.policy_patcher = mock.patch(
+            'openstack_auth.policy.check', lambda action, request: True)
+        self.policy_check = self.policy_patcher.start()
+        self.addCleanup(mock.patch.stopall)
 
     def tearDown(self):
         super(WorkflowsTests, self).tearDown()
@@ -204,7 +224,7 @@ class WorkflowsTests(test.TestCase):
 
         # This should set the value without any errors, but trigger nothing
         flow.context['does_not_exist'] = False
-        self.assertEqual(False, flow.context['does_not_exist'])
+        self.assertFalse(flow.context['does_not_exist'])
 
         # The order here is relevant. Note that we inserted "extra" between
         # steps one and two, and one has no handlers, so we should see
@@ -267,10 +287,10 @@ class WorkflowsTests(test.TestCase):
         req = self.factory.get("/foo")
         flow = TestWorkflow(req)
         output = http.HttpResponse(flow.render())
-        self.assertContains(output, unicode(flow.name))
-        self.assertContains(output, unicode(TestActionOne.name))
-        self.assertContains(output, unicode(TestActionTwo.name))
-        self.assertContains(output, unicode(TestActionThree.name))
+        self.assertContains(output, six.text_type(flow.name))
+        self.assertContains(output, six.text_type(TestActionOne.name))
+        self.assertContains(output, six.text_type(TestActionTwo.name))
+        self.assertContains(output, six.text_type(TestActionThree.name))
 
     def test_has_permissions(self):
         self.assertQuerysetEqual(TestWorkflow._cls_registry, [])
@@ -292,6 +312,21 @@ class WorkflowsTests(test.TestCase):
                                   '<AdminStep: admin_action>',
                                   '<TestStepTwo: test_action_two>'])
 
+    def test_step_is_hidden_on_policy(self):
+        self.policy_patcher.stop()
+
+        def policy_check(action, request):
+            if action == (('action', 'forbidden'),):
+                return False
+            return True
+
+        with mock.patch('openstack_auth.policy.check', policy_check):
+            TestWorkflow.register(AdminForbiddenStep)
+            flow = TestWorkflow(self.request)
+            output = http.HttpResponse(flow.render())
+            self.assertNotContains(output,
+                                   six.text_type(AdminForbiddenAction.name))
+
     def test_entry_point(self):
         req = self.factory.get("/foo")
         flow = TestWorkflow(req)
@@ -299,21 +334,3 @@ class WorkflowsTests(test.TestCase):
 
         flow = TestWorkflow(req, entry_point="test_action_two")
         self.assertEqual("test_action_two", flow.get_entry_point())
-
-    def test_fullscreenworkflow_view(self):
-        view = TestFullscreenWorkflowView.as_view()
-        req = self.factory.get("/")
-        req.is_ajax = lambda: True
-        res = view(req)
-        output = res.render()
-        self.assertRegexpMatches(str(output),
-                                 'class="[^"]*\\bfullscreen\\b[^"]*"')
-
-    def test_notfullscreenworkflow_view(self):
-        view = TestWorkflowView.as_view()
-        req = self.factory.get("/")
-        req.is_ajax = lambda: True
-        res = view(req)
-        output = res.render()
-        self.assertNotRegexpMatches(str(output),
-                                    'class="[^"]*\\bfullscreen\\b[^"]*"')

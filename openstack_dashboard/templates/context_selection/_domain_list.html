@@ -1,12 +1,13 @@
 {% load i18n %}
-{% if domain_supported %}
-<ul>
+
+<ul class="dropdown-menu">
   <li class="dropdown-header">{% trans "Domains:" %}</li>
   <li>
-    <a class="disabled">
-      {{ domain_name }}
-      <span class="fa fa-check"></span>
+    <a class="disabled dropdown-selected">
+      <span class="fa fa-check dropdown-selected-icon"></span>
+      <span class="dropdown-title">
+        {{ domain_name }}
+      </span>
     </a>
   </li>
 </ul>
-{% endif %}

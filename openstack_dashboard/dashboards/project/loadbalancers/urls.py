@@ -12,15 +12,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls import patterns
 from django.conf.urls import url
 
 from openstack_dashboard.dashboards.project.loadbalancers import views
 
 
-urlpatterns = patterns(
-    'openstack_dashboard.dashboards.project.loadbalancers.views',
+urlpatterns = [
     url(r'^$', views.IndexView.as_view(), name='index'),
+    url(r'^\?tab=lbtabs__members$', views.IndexView.as_view(), name='members'),
+    url(r'^\?tab=lbtabs__monitors$',
+        views.IndexView.as_view(), name='monitors'),
     url(r'^addpool$', views.AddPoolView.as_view(), name='addpool'),
     url(r'^updatepool/(?P<pool_id>[^/]+)/$',
         views.UpdatePoolView.as_view(), name='updatepool'),
@@ -45,4 +46,5 @@ urlpatterns = patterns(
     url(r'^member/(?P<member_id>[^/]+)/$',
         views.MemberDetailsView.as_view(), name='memberdetails'),
     url(r'^monitor/(?P<monitor_id>[^/]+)/$',
-        views.MonitorDetailsView.as_view(), name='monitordetails'))
+        views.MonitorDetailsView.as_view(), name='monitordetails'),
+]

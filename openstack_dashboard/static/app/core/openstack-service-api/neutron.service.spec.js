@@ -1,4 +1,4 @@
-/*
+/**
  *    (c) Copyright 2015 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,15 +18,18 @@
   'use strict';
 
   describe('Neutron API', function() {
-    var service;
+    var testCall, service;
     var apiService = {};
     var toastService = {};
 
-    beforeEach(module('horizon.app.core.openstack-service-api'));
+    beforeEach(
+      module('horizon.mock.openstack-service-api',
+        function($provide, initServices) {
+          testCall = initServices($provide, apiService, toastService);
+        })
+    );
 
-    beforeEach(module(function($provide) {
-      window.apiTest.initServices($provide, apiService, toastService);
-    }));
+    beforeEach(module('horizon.app.core.openstack-service-api'));
 
     beforeEach(inject(['horizon.app.core.openstack-service-api.neutron', function(neutronAPI) {
       service = neutronAPI;
@@ -78,20 +81,58 @@
         "func": "getPorts",
         "method": "get",
         "path": "/api/neutron/ports/",
-        "data": 42,
+        "data": {
+          params: {
+            network_id: 42
+          }
+        },
         "error": "Unable to retrieve the ports.",
         "testInput": [
+          {
+            network_id: 42
+          }
+        ]
+      },
+      {
+        "func": "getAgents",
+        "method": "get",
+        "path": "/api/neutron/agents/",
+        "error": "Unable to retrieve the agents."
+      },
+      {
+        "func": "getExtensions",
+        "method": "get",
+        "path": "/api/neutron/extensions/",
+        "error": "Unable to retrieve the extensions."
+      },
+      {
+        "func": "getDefaultQuotaSets",
+        "method": "get",
+        "path": "/api/neutron/quota-sets/defaults/",
+        "error": "Unable to retrieve the default quotas."
+      },
+      {
+        "func": "updateProjectQuota",
+        "method": "patch",
+        "path": "/api/neutron/quotas-sets/42",
+        "data": {
+          "network": 42
+        },
+        "error": "Unable to update project quota data.",
+        "testInput": [
+          {
+            "network": 42
+          },
           42
         ]
       }
-
     ];
 
     // Iterate through the defined tests and apply as Jasmine specs.
     angular.forEach(tests, function(params) {
       it('defines the ' + params.func + ' call properly', function() {
         var callParams = [apiService, service, toastService, params];
-        window.apiTest.testCall.apply(this, callParams);
+        testCall.apply(this, callParams);
       });
     });
 

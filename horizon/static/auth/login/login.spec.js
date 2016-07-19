@@ -19,51 +19,33 @@
 
   describe('hzLoginFinder', function() {
 
-    var $compile, $rootScope, $timeout;
+    var $compile, $rootScope, $timeout, webssoMarkup, regularMarkup;
 
-    var webssoMarkup =
-    '<form>' +
-      '<p id="help_text">Some help text.</p>' +
-      '<fieldset hz-login-finder>' +
-        '<div>' +
-          '<select id="id_auth_type">' +
-            '<option value="credentials">Credentials</option>' +
-            '<option value="oidc">OpenID Connect</option>' +
-          '</select>' +
-        '</div>' +
-        '<div class="form-group"><input id="id_username"></div>' +
-        '<div class="form-group"><input id="id_password"></div>' +
-      '</fieldset>' +
-    '</form>';
-
-    var regularMarkup =
-    '<form>' +
-      '<p id="help_text">Some help text.</p>' +
-      '<fieldset hz-login-finder>' +
-        '<div class="form-group"><input id="id_username"></div>' +
-        '<div class="form-group"><input id="id_password"></div>' +
-      '</fieldset>' +
-    '</form>';
-
+    beforeEach(module('templates'));
     beforeEach(module('horizon.auth.login'));
-    beforeEach(inject(function(_$compile_, _$rootScope_, _$timeout_) {
+    beforeEach(inject(function(_$compile_, _$rootScope_, _$timeout_, $injector) {
       $compile = _$compile_;
       $rootScope = _$rootScope_;
       $timeout = _$timeout_;
+      var $templateCache = $injector.get('$templateCache');
+      var basePath = $injector.get('horizon.auth.login.basePath');
+
+      webssoMarkup = $templateCache.get(basePath + 'login.websso.mock.html');
+      regularMarkup = $templateCache.get(basePath + 'login.regular.mock.html');
 
       jasmine.addMatchers({
-        // jquery show is not consistent across different browsers
+        // jQuery show is not consistent across different browsers
         // on FF, it is 'block' while on chrome it is 'inline'
         // to reconcile this difference, we need a custom matcher
         toBeVisible: function() {
           return {
             compare: function(actual) {
-              var pass = (actual.css('display') !== 'none');
+              var pass = actual.css('display') !== 'none';
               var result = {
                 pass: pass,
-                message: pass ?
-                  'Expected element to be visible' :
-                  'Expected element to be visible, but it is hidden'
+                message: pass
+                  ? 'Expected element to be visible'
+                  : 'Expected element to be visible, but it is hidden'
               };
               return result;
             }
@@ -74,15 +56,15 @@
 
     describe('when websso is not enabled', function() {
       var element,
-      helpText, authType,
-      userInput, passwordInput;
+        helpText, authType,
+        userInput, passwordInput;
 
       beforeEach(function() {
         element = $compile(regularMarkup)($rootScope);
         authType = element.find('#id_auth_type');
         userInput = element.find("#id_username").parents('.form-group');
         passwordInput = element.find("#id_password").parents('.form-group');
-        helpText = element.find('#help_text');
+        helpText = element.find('.help_text');
         $rootScope.$apply();
       });
 
@@ -103,15 +85,18 @@
     describe('when websso is enabled', function() {
 
       var element,
-      helpText, authType,
-      userInput, passwordInput;
+        helpText, authType,
+        userInput, passwordInput,
+        domainInput, regionInput;
 
       beforeEach(function() {
         element = $compile(webssoMarkup)($rootScope);
         authType = element.find('#id_auth_type');
         userInput = element.find("#id_username").parents('.form-group');
         passwordInput = element.find("#id_password").parents('.form-group');
-        helpText = element.find('#help_text');
+        domainInput = element.find("#id_domain").parents('.form-group');
+        regionInput = element.find("#id_region").parents('.form-group');
+        helpText = element.find('.help_text');
         $rootScope.$apply();
       });
 
@@ -132,12 +117,22 @@
         expect(passwordInput).toBeVisible();
       });
 
-      it('should hide username and password when user picks oidc', function() {
+      it('should hide username and password when authentication type is oidc', function() {
         authType.val('oidc');
         authType.change();
         $timeout.flush();
         expect(userInput).not.toBeVisible();
         expect(passwordInput).not.toBeVisible();
+      });
+
+      it('should show input fields when authentication type is credentials', function() {
+        authType.val('credentials');
+        authType.change();
+        $timeout.flush();
+        expect(userInput).toBeVisible();
+        expect(passwordInput).toBeVisible();
+        expect(domainInput).toBeVisible();
+        expect(regionInput).toBeVisible();
       });
     });
   });

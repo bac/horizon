@@ -1,3 +1,4 @@
+# -*- encoding: UTF-8 -*-
 # Copyright 2015, Rackspace, US, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,6 +15,7 @@
 
 import re
 
+from django.utils.translation import trim_whitespace
 from six.moves import html_parser
 
 
@@ -21,6 +23,16 @@ from six.moves import html_parser
 filter_regex = re.compile(
     r"""{\$\s*('([^']|\\')+'|"([^"]|\\")+")\s*\|\s*translate\s*\$}"""
 )
+
+# browser innerHTML decodes some html entities automatically, so when
+# we extract the msgid and want to match what Javascript sees, we need
+# to leave some entities alone, but decode all the rest. Add entries
+# to HTML_ENTITIES as necessary.
+HTML_ENTITY_PASSTHROUGH = {'amp', 'gt', 'lt'}
+HTML_ENTITY_DECODED = {
+    'reg': u'®',
+    'times': u'×'
+}
 
 
 class AngularGettextHTMLParser(html_parser.HTMLParser):
@@ -37,19 +49,17 @@ class AngularGettextHTMLParser(html_parser.HTMLParser):
     {$ 'content' | translate $}
         The string will be translated, minus expression handling (i.e. just
         bare strings are allowed.)
-
-    Note: This will not cope with nested tags (which I don't think make any
-    sense)
     """
 
     def __init__(self):
         try:
-            super(html_parser.HTMLParser, self).__init__()
+            super(AngularGettextHTMLParser, self).__init__()
         except TypeError:
-            # handle HTMLParser not being a type in < Py3k
+            # handle HTMLParser not being a type on Python 2
             html_parser.HTMLParser.__init__(self)
 
         self.in_translate = False
+        self.inner_tags = []
         self.data = ''
         self.strings = []
         self.line = 0
@@ -69,6 +79,12 @@ class AngularGettextHTMLParser(html_parser.HTMLParser):
                         self.plural_form = value
                     if attr == 'translate-comment':
                         self.comments.append(value)
+        elif self.in_translate:
+            s = tag
+            if attrs:
+                s += ' ' + ' '.join('%s="%s"' % a for a in attrs)
+            self.data += '<%s>' % s
+            self.inner_tags.append(tag)
         else:
             for attr in attrs:
                 if not attr[1]:
@@ -88,16 +104,35 @@ class AngularGettextHTMLParser(html_parser.HTMLParser):
                     (self.line, u'gettext', match[0][1:-1], [])
                 )
 
+    def handle_entityref(self, name):
+        if self.in_translate:
+            if name in HTML_ENTITY_PASSTHROUGH:
+                self.data += '&%s;' % name
+            else:
+                self.data += HTML_ENTITY_DECODED[name]
+
+    def handle_charref(self, name):
+        if self.in_translate:
+            self.data += '&#%s;' % name
+
+    def handle_comment(self, comment):
+        if self.in_translate:
+            self.data += '<!--%s-->' % comment
+
     def handle_endtag(self, tag):
         if self.in_translate:
+            if len(self.inner_tags) > 0:
+                tag = self.inner_tags.pop()
+                self.data += "</%s>" % tag
+                return
             if self.plural_form:
                 messages = (
-                    self.data,
-                    self.plural_form
+                    trim_whitespace(self.data.strip()),
+                    trim_whitespace(self.plural_form)
                 )
                 func_name = u'ngettext'
             else:
-                messages = self.data
+                messages = trim_whitespace(self.data.strip())
                 func_name = u'gettext'
             self.strings.append(
                 (self.line, func_name, messages, self.comments)
@@ -122,12 +157,6 @@ def extract_angular(fileobj, keywords, comment_tags, options):
     :return: an iterator over ``(lineno, funcname, message, comments)``
              tuples
     :rtype: ``iterator``
-
-    This particular extractor is quite simple because it is intended to only
-    deal with angular templates which do not need comments, or the more
-    complicated forms of translations.
-
-    A later version will address pluralization.
     """
 
     parser = AngularGettextHTMLParser()

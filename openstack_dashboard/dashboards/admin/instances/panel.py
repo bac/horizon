@@ -24,4 +24,5 @@ import horizon
 class Instances(horizon.Panel):
     name = _("Instances")
     slug = 'instances'
-    permissions = ('openstack.roles.admin', 'openstack.services.compute')
+    permissions = ('openstack.services.compute',)
+    policy_rules = (("compute", "compute:get_all"),)

@@ -35,7 +35,17 @@ http_errors = exceptions.UNAUTHORIZED + exceptions.NOT_FOUND + \
     exceptions.RECOVERABLE + (AjaxError, )
 
 
-class CreatedResponse(http.HttpResponse):
+class _RestResponse(http.HttpResponse):
+    @property
+    def json(self):
+        content_type = self['Content-Type']
+        if content_type != 'application/json':
+            raise ValueError("content type is %s" % content_type)
+        body = self.content.decode('utf-8')
+        return json.loads(body)
+
+
+class CreatedResponse(_RestResponse):
     def __init__(self, location, data=None):
         if data is not None:
             content = jsonutils.dumps(data, sort_keys=settings.DEBUG)
@@ -48,12 +58,13 @@ class CreatedResponse(http.HttpResponse):
         self['Location'] = location
 
 
-class JSONResponse(http.HttpResponse):
-    def __init__(self, data, status=200):
+class JSONResponse(_RestResponse):
+    def __init__(self, data, status=200, json_encoder=json.JSONEncoder):
         if status == 204:
             content = ''
         else:
-            content = jsonutils.dumps(data, sort_keys=settings.DEBUG)
+            content = jsonutils.dumps(data, sort_keys=settings.DEBUG,
+                                      cls=json_encoder)
 
         super(JSONResponse, self).__init__(
             status=status,
@@ -62,7 +73,8 @@ class JSONResponse(http.HttpResponse):
         )
 
 
-def ajax(authenticated=True, data_required=False):
+def ajax(authenticated=True, data_required=False,
+         json_encoder=json.JSONEncoder):
     '''Provide a decorator to wrap a view method so that it may exist in an
     entirely AJAX environment:
 
@@ -116,13 +128,13 @@ def ajax(authenticated=True, data_required=False):
                     return data
                 elif data is None:
                     return JSONResponse('', status=204)
-                return JSONResponse(data)
+                return JSONResponse(data, json_encoder=json_encoder)
             except http_errors as e:
                 # exception was raised with a specific HTTP status
-                if hasattr(e, 'http_status'):
-                    http_status = e.http_status
-                elif hasattr(e, 'code'):
-                    http_status = e.code
+                for attr in ['http_status', 'code', 'status_code']:
+                    if hasattr(e, attr):
+                        http_status = getattr(e, attr)
+                        break
                 else:
                     log.exception('HTTP exception with no status/code')
                     return JSONResponse(str(e), 500)
@@ -135,7 +147,7 @@ def ajax(authenticated=True, data_required=False):
     return decorator
 
 
-def parse_filters_kwargs(request, client_keywords={}):
+def parse_filters_kwargs(request, client_keywords=None):
     """Extract REST filter parameters from the request GET args.
 
     Client processes some keywords separately from filters and takes
@@ -144,6 +156,7 @@ def parse_filters_kwargs(request, client_keywords={}):
     """
     filters = {}
     kwargs = {}
+    client_keywords = client_keywords or {}
     for param in request.GET:
         if param in client_keywords:
             kwargs[param] = request.GET[param]

@@ -31,12 +31,13 @@ from openstack_dashboard.dashboards.project.networks.ports \
 
 STATE_DICT = dict(project_tables.DISPLAY_CHOICES)
 STATUS_DICT = dict(project_tables.STATUS_DISPLAY_CHOICES)
+VNIC_TYPES = dict(project_forms.VNIC_TYPES)
 
 
-class DetailView(tabs.TabView):
+class DetailView(tabs.TabbedTableView):
     tab_group_class = project_tabs.PortDetailTabs
-    template_name = 'project/networks/ports/detail.html'
-    page_title = _("Port Details")
+    template_name = 'horizon/common/_detail.html'
+    page_title = "{{ port.name|default:port.id }}"
 
     @memoized.memoized_method
     def get_data(self):
@@ -48,6 +49,9 @@ class DetailView(tabs.TabView):
                                                     port.admin_state)
             port.status_label = STATUS_DICT.get(port.status,
                                                 port.status)
+            if port.get('binding__vnic_type'):
+                port.binding__vnic_type = VNIC_TYPES.get(
+                    port.binding__vnic_type, port.binding__vnic_type)
         except Exception:
             port = []
             redirect = self.get_redirect_url()
@@ -60,11 +64,34 @@ class DetailView(tabs.TabView):
 
         return port
 
+    @memoized.memoized_method
+    def get_network(self, network_id):
+        try:
+            network = api.neutron.network_get(self.request, network_id)
+        except Exception:
+            network = {}
+            msg = _('Unable to retrieve network details.')
+            exceptions.handle(self.request, msg)
+
+        return network
+
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
         port = self.get_data()
+        network_url = "horizon:project:networks:detail"
+        subnet_url = "horizon:project:networks:subnets:detail"
+        network = self.get_network(port.network_id)
+        port.network_name = network.get('name')
+        port.network_url = reverse(network_url, args=[port.network_id])
+        for ip in port.fixed_ips:
+            ip['subnet_url'] = reverse(subnet_url, args=[ip['subnet_id']])
         table = project_tables.PortsTable(self.request,
                                           network_id=port.network_id)
+        # TODO(robcresswell) Add URL for "Ports" crumb after bug/1416838
+        breadcrumb = [
+            ((port.network_name or port.network_id), port.network_url),
+            (_("Ports"),), ]
+        context["custom_breadcrumb"] = breadcrumb
         context["port"] = port
         context["url"] = self.get_redirect_url()
         context["actions"] = table.render_row_actions(port)

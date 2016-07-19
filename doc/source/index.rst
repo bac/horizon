@@ -42,6 +42,7 @@ How to use Horizon in your own projects.
    topics/deployment
    topics/settings
    topics/customizing
+   topics/packaging
 
 Developer Docs
 ==============
@@ -60,9 +61,23 @@ Brief guides to areas of interest and importance when developing Horizon.
 
    intro
    quickstart
-   topics/tutorial
    contributing
    testing
+   plugin_registry
+
+Tutorials
+---------
+
+Detailed tutorials to help you get started.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/plugin
+   tutorials/dashboard
+   tutorials/table_actions
+   tutorials/workflow_extend
+
 
 Topic Guides
 ------------
@@ -77,9 +92,9 @@ the following topic guides.
    topics/tables
    topics/policy
    topics/testing
-   topics/table_actions
    topics/angularjs
    topics/javascript_testing
+   topics/styling
 
 API Reference
 -------------

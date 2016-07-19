@@ -1,52 +1,21 @@
-# Translations template for PROJECT.
-# Copyright (C) 2015 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-#
-# Translators:
-# Mücahit Büyükyılmaz <mucahit@konya.edu.tr>, 2015
-# Orçun Karaman <ferfeit@gmail.com>, 2015
-# sercanaydogan <sercanaydogan@gmail.com>, 2014
+# Mücahit Büyükyılmaz <mucahit@deltanoc.com>, 2015. #zanata
+# Steve Kowalik <steven@wedontsleep.org>, 2015. #zanata
+# Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
+# Mücahit Büyükyılmaz <mucahit@deltanoc.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: Horizon\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-04 04:10+0000\n"
-"PO-Revision-Date: 2015-07-21 08:21+0000\n"
-"Last-Translator: Mücahit Büyükyılmaz <mucahit@konya.edu.tr>\n"
-"Language-Team: Turkish (Turkey) (http://www.transifex.com/openstack/horizon/"
-"language/tr_TR/)\n"
+"Project-Id-Version: horizon 9.0.1.dev356\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-05-24 18:48+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
-"Language: tr_TR\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-
-#, python-format
-msgid ""
-"\n"
-"      <label>From:</label> %(start)s"
-msgstr ""
-"\n"
-"<label>Başlangıç:</label> %(start)s"
-
-#, python-format
-msgid ""
-"\n"
-"      <label>To:</label>%(end)s"
-msgstr ""
-"\n"
-"<label>Bitiş:</label>%(end)s"
-
-msgid ""
-"\n"
-"      If you are not sure which authentication method to use, contact your "
-"administrator.\n"
-"    "
-msgstr ""
-"\n"
-"Hangi kimlik doğrulama yöntemini kullanıcağınızdan emin değilseniz , "
-"yöneticinize başvurunuz."
+"PO-Revision-Date: 2016-03-25 08:57+0000\n"
+"Last-Translator: Mücahit Büyükyılmaz <mucahit@deltanoc.com>\n"
+"Language-Team: Turkish (Turkey)\n"
+"Language: tr-TR\n"
+"X-Generator: Zanata 3.7.3\n"
+"Plural-Forms: nplurals=2; plural=(n>1)\n"
 
 #, python-format
 msgctxt "past"
@@ -74,6 +43,7 @@ msgstr "%(name)s: %(error)s"
 msgid "%(size)d Byte"
 msgid_plural "%(size)d Bytes"
 msgstr[0] "%(size)d Byte"
+msgstr[1] "%(size)d Byte"
 
 #, python-format
 msgid "%s GB"
@@ -123,7 +93,7 @@ msgid "Actions"
 msgstr "İşlemler"
 
 msgid "Active Instances:"
-msgstr "Aktif Sunucular"
+msgstr "Aktif Instancelar:"
 
 msgid "Active RAM:"
 msgstr "Aktif RAM:"
@@ -140,6 +110,18 @@ msgstr "Uygun"
 msgid "Back"
 msgstr "Geri"
 
+#. Translators: test code, don't really have to translate
+msgid "Batch Item"
+msgid_plural "Batch Items"
+msgstr[0] "Toplu Öğe"
+msgstr[1] "Toplu Öğeler"
+
+#. Translators: test code, don't really have to translate
+msgid "Batched Item"
+msgid_plural "Batched Items"
+msgstr[0] "İzlenen Öğe"
+msgstr[1] "İzlenen Öğeler"
+
 msgid "Cancel"
 msgstr "İptal"
 
@@ -150,22 +132,41 @@ msgid "Delete"
 msgstr "Sil"
 
 msgid "Deleted"
-msgstr "Silinmiş"
+msgstr "Silindi"
 
 #, python-format
 msgid "Displaying %(content_items)s item"
 msgid_plural "Displaying %(content_items)s items"
 msgstr[0] "%(content_items)s öge görüntüleniyor"
+msgstr[1] "%(content_items)s öge görüntüleniyor"
 
 #, python-format
 msgid "Displaying %(counter)s item"
 msgid_plural "Displaying %(counter)s items"
 msgstr[0] "%(counter)s öge görüntüleniyor"
+msgstr[1] "%(counter)s öge görüntüleniyor"
 
 #, python-format
 msgid "Displaying %(nav_items)s item"
 msgid_plural "Displaying %(nav_items)s items"
 msgstr[0] "%(nav_items)s öge görüntüleniyor"
+msgstr[1] "%(nav_items)s öge görüntüleniyor"
+
+#. Translators: test code, don't really have to translate
+msgid "Down Item"
+msgid_plural "Down Items"
+msgstr[0] "Öğeyi Duraklat"
+msgstr[1] ""
+
+#. Translators: test code, don't really have to translate
+msgid "Downed Item"
+msgid_plural "Downed Items"
+msgstr[0] "Duraklatılan Öğe"
+msgstr[1] ""
+
+#, python-format
+msgid "Error processing message json file '%(path)s': %(exception)s"
+msgstr "Json mesaj dosyası işlenirken hata oluştu. '%(path)s': %(exception)s "
 
 msgid "Error: "
 msgstr "Hata:"
@@ -198,27 +199,21 @@ msgstr "Geçersiz IP adres versiyonu"
 msgid "Limit Summary"
 msgstr "Özeti Sınırla"
 
-msgid "Log In"
-msgstr "Oturum Aç"
+msgid "Log in"
+msgstr "Giriş"
 
 msgid "Login"
 msgstr "Giriş"
 
-#, python-format
-msgid ""
-"Login as different user or go back to <a href=\"%(home_url)s\"> home page</a>"
-msgstr ""
-"Başka bir kullanıcı ile giriş yapın veya  <a href=\"%(home_url)s\"> Ana "
-"Sayfa</a>'ya gidin"
-
 msgid "Members"
 msgstr "Üyeler"
 
+#, python-format
+msgid "Message json file '%(path)s' is malformed. %(exception)s"
+msgstr "Json mesaj dosyası '%(path)s' hatalı. %(exception)s"
+
 msgid "More Actions"
 msgstr "Diğer İşlemler"
-
-msgid "N/A"
-msgstr "N/A"
 
 msgid "Navigation Item"
 msgstr "Gezinme öğesi"
@@ -243,7 +238,7 @@ msgid "No members."
 msgstr "Üye yok."
 
 msgid "None available."
-msgstr "Hiçbiri uygun değil"
+msgstr "Hiçbiri uygun değil."
 
 msgid "Not a valid IP protocol number"
 msgstr "Geçersiz IP Protokol numarası"
@@ -258,16 +253,13 @@ msgid "Other"
 msgstr "Diğer"
 
 msgid "Password is not accepted"
-msgstr "Şifre kabul edilmedi"
+msgstr "Parola kabul edilmedi"
 
 msgid "Please log in to continue."
-msgstr "Devam etmek için lütfen oturum açın."
+msgstr "Devam etmek için lütfen oturum açınız."
 
 msgid "Please select a row before taking that action."
 msgstr "Bir işlem yapmadan önce lütfen bir satır seçin."
-
-msgid "Port number must be integer"
-msgstr "Port numarası bir tam sayı olmalıdır"
 
 msgid "Processing..."
 msgstr "İşleniyor..."
@@ -282,19 +274,20 @@ msgstr "Göz atmak için bir %s seçin."
 msgid "Select a period of time to query its usage:"
 msgstr "Kullanımı listelemek için zaman aralığı seçin."
 
+#. Translators: test code, don't really have to translate
 msgid "Sell Puppy"
 msgid_plural "Sell Puppies"
 msgstr[0] "Köpek Yavrusu Sat"
-
-msgid "Session timed out."
-msgstr "Oturum sona erdi."
+msgstr[1] "Köpek Yavrularını Sat"
 
 msgid "Sign In"
 msgstr "Oturum Aç"
 
+#. Translators: test code, don't really have to translate
 msgid "Sold Puppy"
 msgid_plural "Sold Puppies"
 msgstr[0] "Satılan Yavru"
+msgstr[1] "Satılan Yavrular"
 
 msgid "Submit"
 msgstr "Gönder"
@@ -307,19 +300,28 @@ msgstr "Özet"
 
 #, python-format
 msgid "The attribute %(attr)s doesn't exist on %(obj)s."
-msgstr " %(obj)s objesinde %(attr)s özniteliği yer almıyor."
+msgstr "%(attr)s özelliği %(obj)s üzerinde bulunamadı ."
 
 msgid "The date should be in YYYY-mm-dd format."
 msgstr "Tarih YYYY-AA-GG formatında olmalı."
 
 msgid "The string may only contain ASCII printable characters."
-msgstr "Dizi sadece yazdırılabilir ASCII karakterleri içerebilir."
+msgstr "Metin sadece yazdırılabilir ASCII karakterleri içerebilir."
+
+#, python-format
+msgid ""
+"The value of %(resource)s is %(name)s inside the template. When launching a "
+"stack from this interface, the value must start with \"http://\" or "
+"\"https://\""
+msgstr ""
+"Bu arayüz üzerinde yeni bir küme başlatırken, template içerisindeki %(name)s "
+"isimli %(resource)s \"http://\" veya \"https://\" ile başlamalıdır."
 
 msgid "This Period's GB-Hours:"
 msgstr "Bu periyodda kullanılan GB-Saat"
 
 msgid "This Period's RAM-Hours:"
-msgstr "Bu periyodda kullanılan GB-Saat"
+msgstr "Bu periyodda kullanılan RAM-Saat"
 
 msgid "This Period's VCPU-Hours:"
 msgstr "Bu periyodda kullanılan VCPU-Saat"
@@ -332,23 +334,36 @@ msgid "Unable to %(action)s: %(objs)s"
 msgstr "%(action)s: %(objs)s işlemi yapılamıyor."
 
 msgid "Unauthorized. Please try logging in again."
-msgstr "Yetkisiz Giriş. Lütfen tekrar giriş yapın. "
+msgstr "Yetkisiz Giriş. Lütfen tekrar oturum açınız. "
 
 #, python-format
 msgid "Unauthorized: %s"
 msgstr "Yetkisiz: %s"
 
-msgid "Update"
-msgstr "Güncelle"
+#. Translators: test code, don't really have to translate
+msgid "Up Item"
+msgid_plural "Up Items"
+msgstr[0] "Öğeyi Sürdür"
+msgstr[1] ""
 
-msgid "Updated"
-msgstr "Güncellendi"
+msgid "Update Item"
+msgid_plural "Update Items"
+msgstr[0] "Öğeyi Güncelle"
+msgstr[1] ""
+
+msgid "Updated Item"
+msgid_plural "Updated Items"
+msgstr[0] "Güncellenen Öğe"
+msgstr[1] ""
+
+#. Translators: test code, don't really have to translate
+msgid "Upped Item"
+msgid_plural "Upped Items"
+msgstr[0] "Sürdürülen Öğe"
+msgstr[1] ""
 
 msgid "Usage Summary"
 msgstr "Kullanım Özeti"
-
-msgid "Used"
-msgstr "Kullanımda"
 
 msgid "Warning: "
 msgstr "Uyarı:"
@@ -363,6 +378,3 @@ msgstr "%s e erişim yetkiniz bulunmuyor"
 
 msgid "You do not have permission to access the resource:"
 msgstr "Kaynağa erişim için yetkiniz bulunmuyor:"
-
-msgid "of"
-msgstr "/"

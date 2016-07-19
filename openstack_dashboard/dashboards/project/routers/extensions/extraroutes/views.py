@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
@@ -26,16 +24,14 @@ from openstack_dashboard import api
 from openstack_dashboard.dashboards.project.routers.extensions.extraroutes\
     import forms as erforms
 
-LOG = logging.getLogger(__name__)
-
 
 class AddRouterRouteView(forms.ModalFormView):
     form_class = erforms.AddRouterRoute
     template_name = 'project/routers/extensions/routerroutes/create.html'
-    url = 'horizon:project:routers:detail'
+    success_url = 'horizon:project:routers:detail'
 
     def get_success_url(self):
-        return reverse(self.url,
+        return reverse(self.success_url,
                        args=(self.kwargs['router_id'],))
 
     @memoized.memoized_method
@@ -56,4 +52,4 @@ class AddRouterRouteView(forms.ModalFormView):
     def get_initial(self):
         router = self.get_object()
         return {"router_id": self.kwargs['router_id'],
-                "router_name": router.name}
+                "router_name": router.name_or_id}

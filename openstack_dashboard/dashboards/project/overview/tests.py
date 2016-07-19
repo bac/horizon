@@ -17,9 +17,13 @@
 #    under the License.
 
 import datetime
+import logging
 
+from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME  # noqa
 from django.core.urlresolvers import reverse
 from django import http
+from django.test.utils import override_settings
 from django.utils import timezone
 
 from mox3.mox import IsA  # noqa
@@ -39,7 +43,7 @@ class UsageViewTests(test.TestCase):
                                    'extension_supported')})
     def _stub_nova_api_calls(self, nova_stu_enabled=True,
                              tenant_limits_exception=False,
-                             stu_exception=False):
+                             stu_exception=False, overview_days_range=None):
         api.nova.extension_supported(
             'SimpleTenantUsage', IsA(http.HttpRequest)) \
             .AndReturn(nova_stu_enabled)
@@ -48,14 +52,15 @@ class UsageViewTests(test.TestCase):
             .AndReturn(nova_stu_enabled)
 
         if tenant_limits_exception:
-            api.nova.tenant_absolute_limits(IsA(http.HttpRequest))\
+            api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True)\
                 .AndRaise(tenant_limits_exception)
         else:
-            api.nova.tenant_absolute_limits(IsA(http.HttpRequest)) \
+            api.nova.tenant_absolute_limits(IsA(http.HttpRequest), reserved=True) \
                 .AndReturn(self.limits['absolute'])
 
         if nova_stu_enabled:
-            self._nova_stu_enabled(stu_exception)
+            self._nova_stu_enabled(stu_exception,
+                                   overview_days_range=overview_days_range)
 
     @test.create_stubs({api.cinder: ('tenant_absolute_limits',)})
     def _stub_cinder_api_calls(self):
@@ -78,9 +83,14 @@ class UsageViewTests(test.TestCase):
             api.network.security_group_list(IsA(http.HttpRequest)) \
                 .AndReturn(self.q_secgroups.list())
 
-    def _nova_stu_enabled(self, exception=False):
+    def _nova_stu_enabled(self, exception=False, overview_days_range=1):
         now = timezone.now()
-        start = datetime.datetime(now.year, now.month, 1, 0, 0, 0, 0)
+        if overview_days_range:
+            start_day = now - datetime.timedelta(days=overview_days_range)
+        else:
+            start_day = datetime.date(now.year, now.month, 1)
+        start = datetime.datetime(start_day.year, start_day.month,
+                                  start_day.day, 0, 0, 0, 0)
         end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59, 0)
 
         if exception:
@@ -97,7 +107,7 @@ class UsageViewTests(test.TestCase):
         res = self.client.get(reverse('horizon:project:overview:index'))
         usages = res.context['usage']
         self.assertTemplateUsed(res, 'project/overview/usage.html')
-        self.assertTrue(isinstance(usages, usage.ProjectUsage))
+        self.assertIsInstance(usages, usage.ProjectUsage)
         self.assertEqual(nova_stu_enabled,
                          res.context['simple_tenant_usage_enabled'])
         if nova_stu_enabled:
@@ -107,14 +117,20 @@ class UsageViewTests(test.TestCase):
         self.assertEqual(usages.limits['maxTotalFloatingIps'],
                          maxTotalFloatingIps)
 
+    @override_settings(OVERVIEW_DAYS_RANGE=None)
     def test_usage(self):
+        self._test_usage(nova_stu_enabled=True, overview_days_range=None)
+
+    def test_usage_1_day(self):
         self._test_usage(nova_stu_enabled=True)
 
+    @override_settings(OVERVIEW_DAYS_RANGE=None)
     def test_usage_disabled(self):
-        self._test_usage(nova_stu_enabled=False)
+        self._test_usage(nova_stu_enabled=False, overview_days_range=None)
 
-    def _test_usage(self, nova_stu_enabled):
-        self._stub_nova_api_calls(nova_stu_enabled)
+    def _test_usage(self, nova_stu_enabled, overview_days_range=1):
+        self._stub_nova_api_calls(nova_stu_enabled,
+                                  overview_days_range=overview_days_range)
         self._stub_neutron_api_calls()
         self._stub_cinder_api_calls()
         self.mox.ReplayAll()
@@ -127,47 +143,67 @@ class UsageViewTests(test.TestCase):
     def test_usage_nova_network_disabled(self):
         self._test_usage_nova_network(nova_stu_enabled=False)
 
-    @test.create_stubs({api.base: ('is_service_enabled',)})
+    @test.create_stubs({api.base: ('is_service_enabled',),
+                        api.cinder: ('is_volume_service_enabled',)})
     def _test_usage_nova_network(self, nova_stu_enabled):
         self._stub_nova_api_calls(nova_stu_enabled)
 
         api.base.is_service_enabled(IsA(http.HttpRequest), 'network') \
             .MultipleTimes().AndReturn(False)
-        api.base.is_service_enabled(IsA(http.HttpRequest), 'volume') \
+        api.cinder.is_volume_service_enabled(IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(False)
 
         self.mox.ReplayAll()
 
         self._common_assertions(nova_stu_enabled, maxTotalFloatingIps=10)
 
+    @test.create_stubs({api.nova: ('usage_get',
+                                   'extension_supported')})
+    def _stub_nova_api_calls_unauthorized(self, exception):
+        api.nova.extension_supported(
+            'SimpleTenantUsage', IsA(http.HttpRequest)) \
+            .AndReturn(True)
+        self._nova_stu_enabled(exception)
+
     def test_unauthorized(self):
-        self._stub_nova_api_calls(
-            stu_exception=self.exceptions.nova_unauthorized)
-        self._stub_neutron_api_calls()
-        self._stub_cinder_api_calls()
+        self._stub_nova_api_calls_unauthorized(
+            self.exceptions.nova_unauthorized)
         self.mox.ReplayAll()
 
         url = reverse('horizon:project:overview:index')
+
+        # Avoid the log message in the test
+        # when unauthorized exception will be logged
+        logging.disable(logging.ERROR)
         res = self.client.get(url)
-        self.assertTemplateUsed(res, 'project/overview/usage.html')
-        self.assertMessageCount(res, error=1)
-        self.assertContains(res, 'Unauthorized:')
+        logging.disable(logging.NOTSET)
+
+        self.assertEqual(302, res.status_code)
+        self.assertEqual(('Location', settings.TESTSERVER +
+                          settings.LOGIN_URL + '?' +
+                          REDIRECT_FIELD_NAME + '=' + url),
+                         res._headers.get('location', None),)
 
     def test_usage_csv(self):
         self._test_usage_csv(nova_stu_enabled=True)
 
+    @override_settings(OVERVIEW_DAYS_RANGE=1)
+    def test_usage_csv_1_day(self):
+        self._test_usage_csv(nova_stu_enabled=True, overview_days_range=1)
+
     def test_usage_csv_disabled(self):
         self._test_usage_csv(nova_stu_enabled=False)
 
-    def _test_usage_csv(self, nova_stu_enabled=True):
-        self._stub_nova_api_calls(nova_stu_enabled)
+    def _test_usage_csv(self, nova_stu_enabled=True, overview_days_range=None):
+        self._stub_nova_api_calls(nova_stu_enabled,
+                                  overview_days_range=overview_days_range)
         self._stub_neutron_api_calls()
         self._stub_cinder_api_calls()
         self.mox.ReplayAll()
         res = self.client.get(reverse('horizon:project:overview:index') +
                               "?format=csv")
         self.assertTemplateUsed(res, 'project/overview/usage.csv')
-        self.assertTrue(isinstance(res.context['usage'], usage.ProjectUsage))
+        self.assertIsInstance(res.context['usage'], usage.ProjectUsage)
 
     def test_usage_exception_usage(self):
         self._stub_nova_api_calls(stu_exception=self.exceptions.nova)
@@ -197,7 +233,7 @@ class UsageViewTests(test.TestCase):
 
         res = self.client.get(reverse('horizon:project:overview:index'))
         self.assertTemplateUsed(res, 'project/overview/usage.html')
-        self.assertTrue(isinstance(res.context['usage'], usage.ProjectUsage))
+        self.assertIsInstance(res.context['usage'], usage.ProjectUsage)
 
     @test.update_settings(OPENSTACK_NEUTRON_NETWORK={'enable_quotas': True})
     def test_usage_with_neutron(self):
@@ -290,7 +326,8 @@ class UsageViewTests(test.TestCase):
     def test_usage_without_cinder(self):
         self._test_usage_cinder(cinder_enabled=False)
 
-    @test.create_stubs({api.base: ('is_service_enabled',)})
+    @test.create_stubs({api.base: ('is_service_enabled',),
+                        api.cinder: ('is_volume_service_enabled',)})
     def _test_usage_cinder(self, cinder_enabled):
         self._stub_nova_api_calls(True)
 
@@ -299,14 +336,14 @@ class UsageViewTests(test.TestCase):
 
         api.base.is_service_enabled(IsA(http.HttpRequest), 'network') \
             .MultipleTimes().AndReturn(False)
-        api.base.is_service_enabled(IsA(http.HttpRequest), 'volume') \
+        api.cinder.is_volume_service_enabled(IsA(http.HttpRequest)) \
             .MultipleTimes().AndReturn(cinder_enabled)
         self.mox.ReplayAll()
 
         res = self.client.get(reverse('horizon:project:overview:index'))
         usages = res.context['usage']
         self.assertTemplateUsed(res, 'project/overview/usage.html')
-        self.assertTrue(isinstance(usages, usage.ProjectUsage))
+        self.assertIsInstance(usages, usage.ProjectUsage)
         if cinder_enabled:
             self.assertEqual(usages.limits['totalVolumesUsed'], 1)
             self.assertEqual(usages.limits['maxTotalVolumes'], 10)

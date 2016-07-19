@@ -12,13 +12,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from collections import OrderedDict
 import sys
 
 import six
 
 from django.template.loader import render_to_string
 from django.template import TemplateSyntaxError  # noqa
-from django.utils.datastructures import SortedDict
 
 from horizon import exceptions
 from horizon.utils import html
@@ -108,7 +108,7 @@ class TabGroup(html.HTMLElement):
         tab_instances = []
         for tab in self.tabs:
             tab_instances.append((tab.slug, tab(self, request)))
-        self._tabs = SortedDict(tab_instances)
+        self._tabs = OrderedDict(tab_instances)
         if self.sticky:
             self.attrs['data-sticky-tabs'] = 'sticky'
         if not self._set_active_tab():
@@ -177,7 +177,7 @@ class TabGroup(html.HTMLElement):
 
     def get_tabs(self):
         """Returns a list of the allowed tabs for this tab group."""
-        return filter(lambda tab: tab._allowed, self._tabs.values())
+        return [tab for tab in self._tabs.values() if tab._allowed]
 
     def get_tab(self, tab_name, allow_disabled=False):
         """Returns a specific tab from this tab group.
@@ -193,7 +193,7 @@ class TabGroup(html.HTMLElement):
         return None
 
     def get_loaded_tabs(self):
-        return filter(lambda t: self.get_tab(t.slug), self._tabs.values())
+        return [tab for tab in self._tabs.values() if self.get_tab(tab.slug)]
 
     def get_selected_tab(self):
         """Returns the tab specific by the GET request parameter.
@@ -263,7 +263,7 @@ class Tab(html.HTMLElement):
         # Priority: constructor, class-defined, fallback
         if not self.name:
             raise ValueError("%s must have a name." % self.__class__.__name__)
-        self.name = unicode(self.name)  # Force unicode.
+        self.name = six.text_type(self.name)  # Force unicode.
         if not self.slug:
             raise ValueError("%s must have a slug." % self.__class__.__name__)
         self.tab_group = tab_group
@@ -428,7 +428,7 @@ class TableTab(Tab):
         table_instances = [(table._meta.name,
                             table(request, **tab_group.kwargs))
                            for table in self.table_classes]
-        self._tables = SortedDict(table_instances)
+        self._tables = OrderedDict(table_instances)
         self._table_data_loaded = False
 
     def load_table_data(self):
@@ -443,8 +443,11 @@ class TableTab(Tab):
                 data_func = getattr(self, func_name, None)
                 if data_func is None:
                     cls_name = self.__class__.__name__
-                    raise NotImplementedError("You must define a %s method "
-                                              "on %s." % (func_name, cls_name))
+                    raise NotImplementedError(
+                        "You must define a %(func_name)s method on"
+                        " %(cls_name)s."
+                        % {'func_name': func_name, 'cls_name': cls_name})
+
                 # Load the data.
                 table.data = data_func()
                 table._meta.has_prev_data = self.has_prev_data(table)

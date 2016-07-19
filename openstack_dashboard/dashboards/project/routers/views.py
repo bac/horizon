@@ -17,9 +17,10 @@
 Views for managing Neutron Routers.
 """
 
+from collections import OrderedDict
+
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
-from django.utils.datastructures import SortedDict
 from django.utils.translation import pgettext_lazy
 from django.utils.translation import ugettext_lazy as _
 
@@ -29,7 +30,10 @@ from horizon import messages
 from horizon import tables
 from horizon import tabs
 from horizon.utils import memoized
+
 from openstack_dashboard import api
+from openstack_dashboard.utils import filters
+
 from openstack_dashboard.dashboards.project.routers\
     import forms as project_forms
 from openstack_dashboard.dashboards.project.routers import tables as rtables
@@ -68,8 +72,8 @@ class IndexView(tables.DataTableView):
             search_opts = {'router:external': True}
             ext_nets = api.neutron.network_list(self.request,
                                                 **search_opts)
-            ext_net_dict = SortedDict((n['id'], n.name_or_id)
-                                      for n in ext_nets)
+            ext_net_dict = OrderedDict((n['id'], n.name_or_id)
+                                       for n in ext_nets)
         except Exception as e:
             msg = _('Unable to retrieve a list of external networks "%s".') % e
             exceptions.handle(self.request, msg)
@@ -89,17 +93,18 @@ class IndexView(tables.DataTableView):
                 messages.error(self.request, msg)
                 # gateway_info['network'] is just the network name, so putting
                 # in a smallish error message in the table is reasonable.
+                # Translators: The usage is "<UUID of ext_net> (Not Found)"
                 gateway_info['network'] = pgettext_lazy(
                     'External network not found',
-                    # Translators: The usage is "<UUID of ext_net> (Not Found)"
                     u'%s (Not Found)') % ext_net_id
 
 
 class DetailView(tabs.TabbedTableView):
     tab_group_class = rdtabs.RouterDetailTabs
-    template_name = 'project/routers/detail.html'
+    template_name = 'horizon/common/_detail.html'
     failure_url = reverse_lazy('horizon:project:routers:index')
-    page_title = _("Router Details")
+    network_url = 'horizon:project:networks:detail'
+    page_title = "{{ router.name|default:router.id }}"
 
     @memoized.memoized_method
     def _get_data(self):
@@ -113,6 +118,8 @@ class DetailView(tabs.TabbedTableView):
             exceptions.handle(self.request, msg, redirect=self.failure_url)
         if router.external_gateway_info:
             ext_net_id = router.external_gateway_info['network_id']
+            router.external_gateway_info['network_url'] = reverse(
+                self.network_url, args=[ext_net_id])
             try:
                 ext_net = api.neutron.network_get(self.request, ext_net_id,
                                                   expand_subnet=False)
@@ -148,7 +155,11 @@ class DetailView(tabs.TabbedTableView):
             self.request, "dvr", "get")
         context['ha_supported'] = api.neutron.get_feature_permission(
             self.request, "l3-ha", "get")
-
+        choices = rtables.STATUS_DISPLAY_CHOICES
+        router.status_label = filters.get_display_label(choices, router.status)
+        choices = rtables.ADMIN_STATE_DISPLAY_CHOICES
+        router.admin_state_label = (
+            filters.get_display_label(choices, router.admin_state))
         return context
 
     def get_tabs(self, request, *args, **kwargs):

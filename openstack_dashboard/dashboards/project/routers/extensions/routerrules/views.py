@@ -12,8 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
@@ -24,9 +22,6 @@ from horizon.utils import memoized
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.project.routers.extensions.routerrules\
     import forms as rrforms
-
-
-LOG = logging.getLogger(__name__)
 
 
 class AddRouterRuleView(forms.ModalFormView):
@@ -61,4 +56,4 @@ class AddRouterRuleView(forms.ModalFormView):
         # to request it again from the API
         self.request.META['router'] = router
         return {"router_id": self.kwargs['router_id'],
-                "router_name": router.name}
+                "router_name": router.name_or_id}

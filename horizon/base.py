@@ -28,16 +28,15 @@ import os
 
 from django.conf import settings
 from django.conf.urls import include
-from django.conf.urls import patterns
 from django.conf.urls import url
 from django.core.exceptions import ImproperlyConfigured  # noqa
 from django.core.urlresolvers import reverse
-from django.utils.datastructures import SortedDict
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils.functional import empty
 from django.utils.functional import SimpleLazyObject  # noqa
-from django.utils.importlib import import_module  # noqa
 from django.utils.module_loading import module_has_submodule  # noqa
 from django.utils.translation import ugettext_lazy as _
+from importlib import import_module
 import six
 
 from horizon import conf
@@ -47,6 +46,8 @@ from horizon.decorators import require_perms  # noqa
 from horizon import loaders
 
 
+# Name of the panel group for panels to be displayed without a group.
+DEFAULT_PANEL_GROUP = 'default'
 LOG = logging.getLogger(__name__)
 
 
@@ -58,6 +59,10 @@ def _decorate_urlconf(urlpatterns, decorator, *args, **kwargs):
             _decorate_urlconf(pattern.url_patterns, decorator, *args, **kwargs)
 
 
+# FIXME(lhcheng): We need to find a better way to cache the result.
+# Rather than storing it in the session, we could leverage the Django
+# session. Currently, this has been causing issue with cookie backend,
+# adding 1600+ in the cookie size.
 def access_cached(func):
     def inner(self, context):
         session = context['request'].session
@@ -107,10 +112,13 @@ class HorizonComponent(object):
                 urls_mod = import_module('.urls', package_string)
                 urlpatterns = urls_mod.urlpatterns
             else:
-                urlpatterns = patterns('')
+                urlpatterns = []
         return urlpatterns
 
-    @access_cached
+    # FIXME(lhcheng): Removed the access_cached decorator for now until
+    # a better implementation has been figured out. This has been causing
+    # issue with cookie backend, adding 1600+ in the cookie size.
+    # @access_cached
     def can_access(self, context):
         """Return whether the user has role based access to this component.
 
@@ -306,6 +314,7 @@ class Panel(HorizonComponent):
         return urlpatterns, self.slug, self.slug
 
 
+@six.python_2_unicode_compatible
 class PanelGroup(object):
     """A container for a set of :class:`~horizon.Panel` classes.
 
@@ -328,7 +337,7 @@ class PanelGroup(object):
     """
     def __init__(self, dashboard, slug=None, name=None, panels=None):
         self.dashboard = dashboard
-        self.slug = slug or getattr(self, "slug", "default")
+        self.slug = slug or getattr(self, "slug", DEFAULT_PANEL_GROUP)
         self.name = name or getattr(self, "name", None)
         # Our panels must be mutable so it can be extended by others.
         self.panels = list(panels or getattr(self, "panels", []))
@@ -336,7 +345,7 @@ class PanelGroup(object):
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.slug)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def __iter__(self):
@@ -490,7 +499,7 @@ class Dashboard(Registry, HorizonComponent):
                                    name=_("Other"),
                                    panels=slugs)
             panel_groups.append((new_group.slug, new_group))
-        return SortedDict(panel_groups)
+        return collections.OrderedDict(panel_groups)
 
     def get_absolute_url(self):
         """Returns the default URL for this dashboard.
@@ -519,16 +528,13 @@ class Dashboard(Registry, HorizonComponent):
                 default_panel = panel
                 continue
             url_slug = panel.slug.replace('.', '/')
-            urlpatterns += patterns('',
-                                    url(r'^%s/' % url_slug,
-                                        include(panel._decorated_urls)))
+            urlpatterns.append(url(r'^%s/' % url_slug,
+                                   include(panel._decorated_urls)))
         # Now the default view, which should come last
         if not default_panel:
             raise NotRegistered('The default panel "%s" is not registered.'
                                 % self.default_panel)
-        urlpatterns += patterns('',
-                                url(r'',
-                                    include(default_panel._decorated_urls)))
+        urlpatterns.append(url(r'', include(default_panel._decorated_urls)))
 
         # Require login if not public.
         if not self.public:
@@ -554,6 +560,7 @@ class Dashboard(Registry, HorizonComponent):
             self.panels = [self.panels]
 
         # Now iterate our panel sets.
+        default_created = False
         for panel_set in self.panels:
             # Instantiate PanelGroup classes.
             if not isinstance(panel_set, collections.Iterable) and \
@@ -566,8 +573,15 @@ class Dashboard(Registry, HorizonComponent):
             # Put our results into their appropriate places
             panels_to_discover.extend(panel_group.panels)
             panel_groups.append((panel_group.slug, panel_group))
+            if panel_group.slug == DEFAULT_PANEL_GROUP:
+                default_created = True
 
-        self._panel_groups = SortedDict(panel_groups)
+        # Plugin panels can be added to a default panel group. Make sure such a
+        # default group exists.
+        if not default_created:
+            default_group = PanelGroup(self)
+            panel_groups.insert(0, (default_group.slug, default_group))
+        self._panel_groups = collections.OrderedDict(panel_groups)
 
         # Do the actual discovery
         package = '.'.join(self.__module__.split('.')[:-1])
@@ -633,12 +647,6 @@ class Dashboard(Registry, HorizonComponent):
 
 class Workflow(object):
     pass
-
-try:
-    from django.utils.functional import empty  # noqa
-except ImportError:
-    # Django 1.3 fallback
-    empty = None
 
 
 class LazyURLPattern(SimpleLazyObject):
@@ -734,14 +742,11 @@ class Site(Registry, HorizonComponent):
                 dashboards.append(dashboard)
                 registered.pop(dashboard.__class__)
             if len(registered):
-                extra = registered.values()
-                extra.sort()
+                extra = sorted(registered.values())
                 dashboards.extend(extra)
             return dashboards
         else:
-            dashboards = self._registry.values()
-            dashboards.sort()
-            return dashboards
+            return sorted(self._registry.values())
 
     def get_default_dashboard(self):
         """Returns the default :class:`~horizon.Dashboard` instance.
@@ -846,9 +851,8 @@ class Site(Registry, HorizonComponent):
 
         # Compile the dynamic urlconf.
         for dash in self._registry.values():
-            urlpatterns += patterns('',
-                                    url(r'^%s/' % dash.slug,
-                                        include(dash._decorated_urls)))
+            urlpatterns.append(url(r'^%s/' % dash.slug,
+                                   include(dash._decorated_urls)))
 
         # Return the three arguments to django.conf.urls.include
         return urlpatterns, self.namespace, self.slug

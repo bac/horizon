@@ -18,17 +18,16 @@ from horizon.test import helpers as test
 
 
 class BrowserTests(test.SeleniumTestCase):
-    def test_qunit(self):
-        self.selenium.get("%s%s" % (self.live_server_url, "/qunit/"))
-        wait = self.ui.WebDriverWait(self.selenium, 120)
+    def test_jasmine_legacy(self):
+        self.selenium.get("%s%s" % (self.live_server_url,
+                                    "/jasmine-legacy/"))
+        wait = self.ui.WebDriverWait(self.selenium, 30)
 
-        def qunit_done(driver):
-            text = driver.find_element_by_id("qunit-testresult").text
-            return "Tests completed" in text
+        def jasmine_legacy_done(driver):
+            failures = driver.find_element_by_class_name("jasmine-bar").text
+            return failures
 
-        wait.until(qunit_done)
-        failed = self.selenium.find_element_by_class_name("failed")
-        self.assertEqual(int(failed.text), 0)
+        self.assertTrue('0 failures' in wait.until(jasmine_legacy_done))
 
 
 @override_settings(
@@ -38,7 +37,7 @@ class LazyLoadedTabsTests(test.SeleniumTestCase):
     table_selector = 'div.tab-content > div#{0} > div.table_wrapper'.format(
         tab_id)
     button_selector = 'button#lazy_puppies__action_delete'
-    checkbox_selector = 'td.multi_select_column > input[type=checkbox]'
+    checkbox_selector = 'td.multi_select_column input[type=checkbox]'
     select_all_selector = 'th.multi_select_column input[type=checkbox]'
 
     def setUp(self):

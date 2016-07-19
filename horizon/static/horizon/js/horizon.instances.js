@@ -40,7 +40,7 @@ horizon.instances = {
    * network id for network_id.
    **/
   get_network_element: function(network_id) {
-    return $('li > label[for^="id_network_' + network_id + '"]');
+    return $('label[for^="id_network_' + network_id + '"]');
   },
 
   /*
@@ -51,9 +51,9 @@ horizon.instances = {
     horizon.instances.networks_selected = [];
     horizon.instances.networks_available = [];
     $(this.get_network_element("")).each(function () {
-      var $this = $(this);
+      var $this = $(this).parent();
       var $input = $this.children("input");
-      var name = horizon.escape_html($this.text().replace(/^\s+/, ""));
+      var name = horizon.string.escapeHtml($this.text().replace(/^\s+/, ""));
       var network_property = {
         "name": name,
         "id": $input.attr("id"),
@@ -182,13 +182,13 @@ horizon.addInitFunction(horizon.instances.init = function () {
         elements_list = "#id_instance_snapshot_id";
         break;
       case "volume_id":
-        elements_list = "#id_volume_id, #id_device_name, #id_delete_on_terminate";
+        elements_list = "#id_volume_id, #id_device_name, #id_vol_delete_on_instance_delete";
         break;
       case "volume_image_id":
-        elements_list = "#id_image_id, #id_volume_size, #id_device_name, #id_delete_on_terminate";
+        elements_list = "#id_image_id, #id_volume_size, #id_device_name, #id_vol_delete_on_instance_delete";
         break;
       case "volume_snapshot_id":
-        elements_list = "#id_volume_snapshot_id, #id_device_name, #id_delete_on_terminate";
+        elements_list = "#id_volume_snapshot_id, #id_device_name, #id_vol_delete_on_instance_delete";
         break;
     }
     var elements_list_group = $(elements_list).closest(".form-group");
@@ -212,16 +212,18 @@ horizon.addInitFunction(horizon.instances.init = function () {
    Update the device size value to reflect minimum allowed
    for selected image and flavor
    */
-  function update_device_size() {
+  function update_device_size(source_type) {
     var volume_size = horizon.Quota.getSelectedFlavor().disk;
-    var image = horizon.Quota.getSelectedImage();
     var size_field = $("#id_volume_size");
 
-    if (image !== undefined && image.min_disk > volume_size) {
-      volume_size = image.min_disk;
-    }
-    if (image !== undefined && image.size > volume_size) {
-      volume_size = image.size;
+    if (source_type === 'image') {
+      var image = horizon.Quota.getSelectedImageOrSnapshot(source_type);
+      if (image !== undefined && image.min_disk > volume_size) {
+        volume_size = image.min_disk;
+      }
+      if (image !== undefined && image.size > volume_size) {
+        volume_size = image.size;
+      }
     }
 
     // If the user has manually changed the volume size, do not override
@@ -246,7 +248,7 @@ horizon.addInitFunction(horizon.instances.init = function () {
   });
 
   $document.on('change', '.workflow #id_image_id', function () {
-    update_device_size();
+    update_device_size('image');
   });
 
   $document.on('input', '.workflow #id_volume_size', function () {

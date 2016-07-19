@@ -1,9 +1,8 @@
 {% extends "horizon/common/_modal_form.html" %}
 {% load i18n %}
-{% load url from future %}
 
 {% block form_id %}update_object_form{% endblock %}
-{% block ng_controller %}DummyCtrl{% endblock %}
+{% block ng_controller %}DummyController{% endblock %}
 {% block form_name %}updateForm{% endblock %}
 {% block form_action %}{% url 'horizon:project:containers:object_update' container_name subfolder_path object_path %}{% endblock %}
 {% block form_attrs %}enctype="multipart/form-data"{% endblock %}
@@ -24,6 +23,6 @@
 {% endblock %}
 
 {% block modal-footer %}
-  <input class="btn btn-primary pull-right" type="submit" ng-disabled="updateForm.$invalid" value="{% trans "Update Object" %}" />
-  <a href="{% url 'horizon:project:containers:index' container_name|add:'/' %}" class="btn btn-default secondary cancel close">{% trans "Cancel" %}</a>
+  <a href="{% url 'horizon:project:containers:index' container_name|add:'/' %}" class="btn btn-default cancel">{% trans "Cancel" %}</a>
+  <input class="btn btn-primary" type="submit" ng-disabled="updateForm.$invalid" value="{% trans "Update Object" %}" />
 {% endblock %}

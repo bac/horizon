@@ -1,28 +1,30 @@
-# Translations template for PROJECT.
-# Copyright (C) 2015 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-#
-# Translators:
-# Adriana Chisco Landazábal <achisco94@gmail.com>, 2015
-# Alberto Molina Coballes <alb.molina@gmail.com>, 2015
-# cametiope <aldohcasa@hotmail.com>, 2014
-# Marian Tort <marian.tort@gmail.com>, 2015
-# Sergio Cuellar Valdes <scuellarv@kionetworks.com>, 2015
+# Eduardo Gonzalez Gutierrez <dabarren@gmail.com>, 2015. #zanata
+# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
+# Eddie Ramirez <djedi.r@gmail.com>, 2016. #zanata
+# Pablo Caruana <pcaruana@redhat.com>, 2016. #zanata
+# Pablo Iranzo Gómez <Pablo.Iranzo@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: Horizon\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-04 04:10+0000\n"
-"PO-Revision-Date: 2015-07-03 18:02+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
-"Language-Team: Spanish (http://www.transifex.com/openstack/horizon/language/"
-"es/)\n"
+"Project-Id-Version: horizon 10.0.0.0b2.dev324\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-07-12 20:13+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
+"PO-Revision-Date: 2016-07-12 03:52+0000\n"
+"Last-Translator: Eddie Ramirez <djedi.r@gmail.com>\n"
+"Language-Team: Spanish\n"
 "Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Zanata 3.7.3\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#, python-format
+msgid "%(total)s Max"
+msgstr "Máx. %(total)s"
+
+#, python-format
+msgid "%(total)s Total"
+msgstr "Total %(total)s"
 
 #, python-format
 msgid "%s GB"
@@ -43,6 +45,18 @@ msgstr "%s TB"
 #, python-format
 msgid "%s bytes"
 msgstr "%s bytes"
+
+msgid "(Modified)"
+msgstr "(Modificado)"
+
+msgid "-"
+msgstr "-"
+
+msgid "0 GB"
+msgstr "0 GB"
+
+msgid "0 MB"
+msgstr "0 MB"
 
 msgid "Active"
 msgstr "Activo"
@@ -74,6 +88,12 @@ msgstr "Anterior"
 msgid "Cancel"
 msgstr "Cancelar "
 
+msgid "Click each item to get its description here."
+msgstr "Haga clic en cada punto para obtener su descripción aquí."
+
+msgid "Click here for filters."
+msgstr "Pulse aquí para filtros."
+
 msgid "Click here to expand the row and view the errors."
 msgstr "Haga click aquí para ver los errores."
 
@@ -93,6 +113,9 @@ msgstr "Cerrando"
 msgid "Confirm %s"
 msgstr "Confirmar %s"
 
+msgid "Confirm Delete Foobars"
+msgstr "Confirmar eliminación Foobars"
+
 msgid "Connecting"
 msgstr "Conectando"
 
@@ -102,11 +125,17 @@ msgstr "No se ha podido descifrar la contraseña"
 msgid "Could not read the file"
 msgstr "No se ha podido leer el fichero"
 
+msgid "Create Subnet"
+msgstr "Crear Subred"
+
 msgid "Current Usage"
 msgstr "Uso actual"
 
 msgid "Custom"
 msgstr "Personalizar"
+
+msgid "Customization Script"
+msgstr "Script de personalización"
 
 msgid "Danger"
 msgstr "Peligro"
@@ -120,14 +149,31 @@ msgstr "Decimal obligatorio"
 msgid "Delete"
 msgstr "Eliminar"
 
+msgid "Delete Instance"
+msgstr "Eliminar instancia"
+
 msgid "Delete Interface"
 msgstr "Eliminar interfaz"
+
+msgid "Delete Network"
+msgstr "Borrar Red"
 
 msgid "Delete Router"
 msgstr "Eliminar router"
 
+msgid "Delete Subnet"
+msgstr "Borrar Subred"
+
+#, python-format
+msgid "Deleted : %s."
+msgstr "Eliminado : %s."
+
 msgid "Detail Information"
 msgstr "Información detallada"
+
+#, python-format
+msgid "Displaying %(count)s of %(total)s items"
+msgstr "Mostrando %(count)s de %(total)s elementos"
 
 #, python-format
 msgid "Displaying %s item"
@@ -143,6 +189,9 @@ msgstr "Error"
 
 msgid "Error: "
 msgstr "Error: "
+
+msgid "Example"
+msgstr "Ejemplo"
 
 msgid "Existing Metadata"
 msgstr "Metadatos existentes"
@@ -162,8 +211,14 @@ msgstr "Finalizar"
 msgid "Flavor"
 msgstr "Sabor"
 
+msgid "Full Text Search"
+msgstr "Búsqueda de texto completo"
+
 msgid "ID"
 msgstr "ID"
+
+msgid "IP Addresses"
+msgstr "Direcciones IP"
 
 msgid "Info"
 msgstr "Info"
@@ -173,6 +228,9 @@ msgstr "Entero obligatorio"
 
 msgid "Interfaces"
 msgstr "Interfaces"
+
+msgid "Load script from a file"
+msgstr "Leer guión desde un fichero"
 
 msgid "Loading"
 msgstr "Cargando"
@@ -198,6 +256,9 @@ msgstr "Siguiente"
 msgid "No"
 msgstr "No"
 
+msgid "No Limit"
+msgstr "No limitar"
+
 msgid "No available items"
 msgstr "No hay ítems disponibles"
 
@@ -206,6 +267,9 @@ msgstr "Metadatos no disponibles"
 
 msgid "No data available."
 msgstr "No hay datos disponibles."
+
+msgid "No description available."
+msgstr "Descripción no disponible."
 
 msgid "No existing metadata"
 msgstr "No hay metadatos existentes"
@@ -237,6 +301,9 @@ msgstr "Las contraseñas no coinciden."
 msgid "Pattern mismatch"
 msgstr "Discrepancia en el patrón"
 
+msgid "Please Wait"
+msgstr "Por favor, espere"
+
 msgid "Please confirm your selection. "
 msgstr "Confirme su selección."
 
@@ -261,11 +328,25 @@ msgstr "Roles"
 msgid "STATUS"
 msgstr "ESTADO"
 
+#. Strings between {$ and $} should be left untranslated.
+msgid ""
+"Script size: {$ (scriptLength || 0) | bytes $} of {$ config.MAX_SCRIPT_SIZE "
+"| bytes $}"
+msgstr ""
+"Tamaño guión: {$ (scriptLength || 0) | bytes $} of {$ config.MAX_SCRIPT_SIZE "
+"| bytes $}"
+
+msgid "Search in current results"
+msgstr "Buscar entre los resultados"
+
 msgid "Select an item from Available items below"
 msgstr "Seleccione un ítem de los disponibles abajo"
 
 msgid "Select one"
 msgstr "Seleccione uno"
+
+msgid "Server Name"
+msgstr "Nombre del servidor"
 
 msgid "Shutdown"
 msgstr "Apagar"
@@ -280,14 +361,14 @@ msgstr "Estado: %s"
 msgid "Submit"
 msgstr "Enviar"
 
+msgid "Subnets"
+msgstr "Subredes"
+
 msgid "Success"
 msgstr "Éxito"
 
 msgid "Success: "
 msgstr "Correcto:"
-
-msgid "Terminate Instance"
-msgstr "Terminar instancia"
 
 msgid "Text"
 msgstr "Texto"
@@ -299,6 +380,9 @@ msgstr ""
 "Esta acción no se puede llevar a cabo. Esta columna contiene errores o "
 "carece de información."
 
+msgid "The script is larger than the maximum size"
+msgstr "El guión es mayor que el tamaño máximo"
+
 msgid "There was a problem communicating with the server, please try again."
 msgstr ""
 "Ha ocurrido un problema en la comunicación con el servidor, inténtelo de "
@@ -307,8 +391,18 @@ msgstr ""
 msgid "There was an error submitting the form. Please try again."
 msgstr "Ha ocurrido un error al enviar el formulario. Inténtelo de nuevo."
 
-msgid "Total"
-msgstr "Total"
+msgid "Toggle Dropdown"
+msgstr "Alternar desplegable"
+
+msgid "Toggle navigation"
+msgstr "Activar la navegación"
+
+#, python-format
+msgid "Unable to delete: %s."
+msgstr "No fue posible eliminar: %s."
+
+msgid "Unlimited"
+msgstr "Ilimitado"
 
 msgid "View Details"
 msgstr "Ver detalles"
@@ -333,21 +427,33 @@ msgstr "Sí"
 
 msgid ""
 "You can specify resource metadata by moving items from the left column to "
-"the right column. In the left columns there are metadata definitions from "
-"the Glance Metadata Catalog. Use the \"Other\" option to add metadata with "
+"the right column. In the left column there are metadata definitions from the "
+"Glance Metadata Catalog. Use the \"Custom\" option to add metadata with "
 "the key of your choice."
 msgstr ""
-"Puede especificar los metadatos de los recursos moviendo los ítems de la "
-"columna de la izquierda a la de la derecha. En las columnas de la izquierda "
-"hay definiciones de metadatos del Glance Metadata Catalog. Utilice la opcion "
-"\"Otro\" para añadir metadatos con la clave que desee. "
+"Puede especificar los metadatos para los recursos moviendo elementos de la "
+"columna izquierda a la derecha. En la columna izquierda aparecen las "
+"definiciones de metadatos del catálogo de Glance. Utilice la opción "
+"\"Personalizado\" para añadir metadatos con los valores que escoja."
 
-#, python-format
-msgid "You have selected %s. "
-msgstr "Ha seleccionado %s."
+msgid "description"
+msgstr "descripción"
 
 msgid "m1.small"
 msgstr "m1.small"
 
 msgid "m1.tiny"
 msgstr "m1.tiny"
+
+msgid "pool default"
+msgstr "Predeterminados del pool"
+
+#, python-format
+msgid "selected \"%s\""
+msgstr "seleccionado \"%s\""
+
+msgid "{$ column.title $}"
+msgstr "{$ column.title $}"
+
+msgid "{$ message || 'No items to display.' $}"
+msgstr "{$ message || 'No items to display.' $}"

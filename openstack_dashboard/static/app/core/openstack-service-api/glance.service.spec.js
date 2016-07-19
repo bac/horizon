@@ -18,19 +18,21 @@
   'use strict';
 
   describe('Glance API', function() {
-    var service;
+    var testCall, service;
     var apiService = {};
     var toastService = {};
 
-    beforeEach(module('horizon.app.core.openstack-service-api'));
+    beforeEach(function() {
+      module('horizon.mock.openstack-service-api', function($provide, initServices) {
+        testCall = initServices($provide, apiService, toastService);
+      });
 
-    beforeEach(module(function($provide) {
-      window.apiTest.initServices($provide, apiService, toastService);
-    }));
+      module('horizon.app.core.openstack-service-api');
 
-    beforeEach(inject(['horizon.app.core.openstack-service-api.glance', function(glanceAPI) {
-      service = glanceAPI;
-    }]));
+      inject(['horizon.app.core.openstack-service-api.glance', function(glanceAPI) {
+        service = glanceAPI;
+      }]);
+    });
 
     it('defines the service', function() {
       expect(service).toBeDefined();
@@ -38,12 +40,74 @@
 
     var tests = [
       {
+        "func": "getVersion",
+        "method": "get",
+        "path": "/api/glance/version/",
+        "error": "Unable to get the Glance service version."
+      },
+      {
         "func": "getImage",
         "method": "get",
-        "path": "/api/glance/images/42",
+        "path": "/api/glance/images/42/",
         "error": "Unable to retrieve the image.",
         "testInput": [
           42
+        ]
+      },
+      {
+        "func": "deleteImage",
+        "method": "delete",
+        "path": "/api/glance/images/42/",
+        "error": "Unable to delete the image with id: 42",
+        "testInput": [
+          42
+        ]
+      },
+      {
+        "func": "createImage",
+        "method": "post",
+        "path": "/api/glance/images/",
+        "data": {
+          name: '1'
+        },
+        "error": "Unable to create the image.",
+        "testInput": [
+          {name: '1'}
+        ]
+      },
+      {
+        "func": "updateImage",
+        "method": "patch",
+        "path": "/api/glance/images/1/",
+        "data": {
+          id: '1',
+          name: '1'
+        },
+        "error": "Unable to update the image.",
+        "testInput": [
+          {name: '1', id: '1'}
+        ]
+      },
+      {
+        "func": "getImageProps",
+        "method": "get",
+        "path": "/api/glance/images/42/properties/",
+        "error": "Unable to retrieve the image custom properties.",
+        "testInput": [
+          42
+        ]
+      },
+      {
+        "func": "editImageProps",
+        "method": "patch",
+        "path": "/api/glance/images/42/properties/",
+        "data": {
+          "updated": {a: '1', b: '2'},
+          "removed": ['c', 'd']
+        },
+        "error": "Unable to edit the image custom properties.",
+        "testInput": [
+          42, {a: '1', b: '2'}, ['c', 'd']
         ]
       },
       {
@@ -90,6 +154,15 @@
           "cache": true
         },
         "error": "Unable to retrieve the namespaces."
+      },
+      {
+        "func": "getResourceTypes",
+        "method": "get",
+        "path": "/api/glance/metadefs/resourcetypes/",
+        "data": {
+          "cache": true
+        },
+        "error": "Unable to retrieve the resource types."
       }
     ];
 
@@ -97,7 +170,7 @@
     angular.forEach(tests, function(params) {
       it('defines the ' + params.func + ' call properly', function() {
         var callParams = [apiService, service, toastService, params];
-        window.apiTest.testCall.apply(this, callParams);
+        testCall.apply(this, callParams);
       });
     });
 
@@ -106,5 +179,11 @@
       expect(service.getNamespaces("whatever", true)).toBe("promise");
     });
 
+    it('supresses the error if instructed for deleteImage', function() {
+      spyOn(apiService, 'delete').and.returnValue("promise");
+      expect(service.deleteImage("whatever", true)).toBe("promise");
+    });
+
   });
+
 })();

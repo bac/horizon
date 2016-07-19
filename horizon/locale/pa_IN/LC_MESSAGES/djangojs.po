@@ -1,24 +1,18 @@
-# Translations template for PROJECT.
-# Copyright (C) 2015 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-#
-# Translators:
-# Amandeep Singh Saini <jimidar@gmail.com>, 2015
+# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: Horizon\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-04 04:10+0000\n"
-"PO-Revision-Date: 2015-07-09 06:23+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
-"Language-Team: Panjabi (Punjabi) (India) (http://www.transifex.com/openstack/"
-"horizon/language/pa_IN/)\n"
+"Project-Id-Version: horizon 10.0.0.0b2.dev186\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-06-22 21:54+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
-"Language: pa_IN\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Punjabi (India)\n"
+"Language: pa-IN\n"
+"X-Generator: Zanata 3.7.3\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #, python-format
 msgid "%s GB"
@@ -261,9 +255,6 @@ msgstr "ਸਫਲਤਾ"
 msgid "Success: "
 msgstr "ਸਫਲਤਾ: "
 
-msgid "Terminate Instance"
-msgstr "ਇੰਸਟਾਂਸ ਨੂੰ ਖਤਮ ਕਰ ਦਿਉ"
-
 msgid ""
 "The action cannot be performed. The contents of this row have errors or are "
 "missing information."
@@ -295,17 +286,3 @@ msgstr "ਕੰਮ ਕਰ ਰਿਹਾ"
 
 msgid "Yes"
 msgstr "ਹਾਂ"
-
-msgid ""
-"You can specify resource metadata by moving items from the left column to "
-"the right column. In the left columns there are metadata definitions from "
-"the Glance Metadata Catalog. Use the \"Other\" option to add metadata with "
-"the key of your choice."
-msgstr ""
-"ਤੁਸੀਂ ਖੱਬੀ ਪੱਟੀ ਤੋਂ ਸੱਜੀ ਪੱਟੀ ਵਿੱਚ ਚੀਜ਼ਾਂ ਜੋੜ ਕੇ ਵਸੀਲਾ ਮੈਟਾਡਾਟਾ ਨਿਰਧਾਰਤ ਕਰ ਸਕਦੇ ਹੋ। ਖੱਬੀਆਂ "
-"ਪੱਟੀਆਂ ਵਿੱਚ ਗਲਾਂਸ ਮੈਟਾਡਾਟਾ ਕੈਟਾਲੌਗ ਤੋਂ ਮੈਟਾਡਾਟਾ ਪਰਿਭਾਸ਼ਾਵਾਂ ਦਿੱਤੀਆਂ ਹੋਈਆਂ ਹਨ। ਆਪਣੀ ਪਸੰਦ ਦੀ "
-"ਚਾਬੀ ਦੇ ਨਾਲ ਮੈਟਾਡਾਟਾ ਜੋੜਨ ਲਈ \"ਹੋਰ\" ਚੋਣ ਨੂੰ ਵਰਤੋ।"
-
-#, python-format
-msgid "You have selected %s. "
-msgstr "ਤੁਸੀਂ %s ਦੀ ਚੋਣ ਕੀਤੀ ਹੈ।"

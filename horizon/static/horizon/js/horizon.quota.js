@@ -66,12 +66,6 @@ horizon.Quota = {
       return ('#' + $(elm).attr('data-progress-indicator-for'));
     }));
 
-    // Draw the initial progress bars
-    this._initialCreation(this.user_value_progress_bars);
-    this._initialCreation(this.auto_value_progress_bars);
-    this._initialCreation(this.flavor_progress_bars);
-
-    this._initialAnimations();
     this._attachInputHandlers();
   },
 
@@ -106,8 +100,8 @@ horizon.Quota = {
    */
   noteDisabledFlavors: function(allDisabled) {
     if ($('#some_flavors_disabled').length === 0) {
-      var message = allDisabled ? horizon.Quota.allFlavorsDisabledMessage :
-        horizon.Quota.disabledFlavorMessage;
+      var message = allDisabled ? horizon.Quota.allFlavorsDisabledMessage
+        : horizon.Quota.disabledFlavorMessage;
       $('#id_flavor').parent().append("<span id='some_flavors_disabled'>" +
         message + '</span>');
     }
@@ -140,25 +134,25 @@ horizon.Quota = {
   },
 
   /*
-   Return an image Object based on which image ID is selected
+   Return an image/snapshot Object based on which image/snapshot ID is selected
    */
-  getSelectedImage: function() {
-    var selected = $('#id_image_id option:selected').val();
+  getSelectedImageOrSnapshot: function(source_type) {
+    var selected = $('#id_' + source_type + '_id option:selected').val();
     return horizon.Quota.findImageById(selected);
   },
 
   /*
-   Disable any flavors for a given image that do not meet
+   Disable any flavors for a given image/snapshot that do not meet
    its minimum RAM or disk requirements.
    */
-  disableFlavorsForImage: function(image) {
-    image = horizon.Quota.getSelectedImage();
+  disableFlavorsForImage: function(source_type) {
+    var source = horizon.Quota.getSelectedImageOrSnapshot(source_type);
     var to_disable = []; // an array of flavor names to disable
 
     horizon.Quota.resetFlavors(); // clear any previous messages
 
     $.each(horizon.Quota.flavors, function(i, flavor) {
-      if (!horizon.Quota.imageFitsFlavor(image, flavor)) {
+      if (!horizon.Quota.imageFitsFlavor(source, flavor)) {
         to_disable.push(flavor.name);
       }
     });
@@ -198,7 +192,7 @@ horizon.Quota = {
     this.disabledFlavorMessage = disabledMessage;
     this.allFlavorsDisabledMessage = allDisabledMessage;
     // Check if the image is pre-selected
-    horizon.Quota.disableFlavorsForImage();
+    horizon.Quota.disableFlavorsForImage('image');
   },
 
   /*
@@ -245,15 +239,14 @@ horizon.Quota = {
     this.getSelectedFlavor();
 
     if (this.selected_flavor) {
-      var name = horizon.utils.truncate(this.selected_flavor.name, 14, true);
-      var vcpus = horizon.utils.humanizeNumbers(this.selected_flavor.vcpus);
-      var disk = horizon.utils.humanizeNumbers(this.selected_flavor.disk);
-      var ephemeral = horizon.utils.humanizeNumbers(this.selected_flavor["OS-FLV-EXT-DATA:ephemeral"]);
+      var vcpus = horizon.Quota.humanizeNumbers(this.selected_flavor.vcpus);
+      var disk = horizon.Quota.humanizeNumbers(this.selected_flavor.disk);
+      var ephemeral = horizon.Quota.humanizeNumbers(this.selected_flavor["OS-FLV-EXT-DATA:ephemeral"]);
       var disk_total = this.selected_flavor.disk + this.selected_flavor["OS-FLV-EXT-DATA:ephemeral"];
-      var disk_total_display = horizon.utils.humanizeNumbers(disk_total);
-      var ram = horizon.utils.humanizeNumbers(this.selected_flavor.ram);
+      var disk_total_display = horizon.Quota.humanizeNumbers(disk_total);
+      var ram = horizon.Quota.humanizeNumbers(this.selected_flavor.ram);
 
-      $("#flavor_name").html(name);
+      $("#flavor_name").text(this.selected_flavor.name);
       $("#flavor_vcpus").text(vcpus);
       $("#flavor_disk").text(disk);
       $("#flavor_ephemeral").text(ephemeral);
@@ -268,6 +261,18 @@ horizon.Quota = {
       $("#flavor_disk_total").text('');
       $("#flavor_ram").text('');
     }
+  },
+
+  /*
+   * Adds commas to any integer or numbers within a string for human display.
+   *
+   * Example:
+   *  horizon.Quota.humanizeNumbers(1234); -> "1,234"
+   *  horizon.Quota.humanizeNumbers("My Total: 1234"); -> "My Total: 1,234"
+   *
+   */
+  humanizeNumbers: function (number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   },
 
   /*
@@ -325,99 +330,57 @@ horizon.Quota = {
 
   // Does the math to calculate what percentage to update a progress bar by.
   updateUsageFor: function(progress_element, increment_by) {
-    progress_element = $(progress_element);
+    var $progress_element = $(progress_element);
 
     //var update_indicator = progress_element.find('.progress_bar_selected');
-    var quota_limit = parseInt(progress_element.attr('data-quota-limit'), 10);
+    var quota_limit = parseInt($progress_element.attr('data-quota-limit'), 10);
     var percentage_to_update = ((increment_by / quota_limit) * 100);
 
-    this.update($(progress_element).attr('id'), percentage_to_update);
-  },
-
-  // Create a new d3 bar and populate it with the current amount used
-  drawUsed: function(element, used) {
-    var w = "100%";
-    var h = 20;
-    var lvl_curve = 4;
-    var bkgrnd = "#F2F2F2";
-    var frgrnd = "#006CCF";
-    var full = "#D0342B";
-    var addition = "#00D300";
-    var nearlyfull = "orange";
-
-    // Horizontal Bars
-    var bar = d3.select("#"+element).append("svg:svg")
-      .attr("class", "chart")
-      .attr("width", w)
-      .attr("height", h)
-      .style("background-color", "white")
-      .append("g");
-
-    // background - unused resources
-    bar.append("rect")
-      .attr("y", 0)
-      .attr("width", w)
-      .attr("height", h)
-      .attr("rx", lvl_curve)
-      .attr("ry", lvl_curve)
-      .style("fill", bkgrnd)
-      .style("stroke", "#CCCCCC")
-      .style("stroke-width", 1);
-
-    // new resources
-    bar.append("rect")
-      .attr("y",0)
-      .attr("class", "newbar")
-      .attr("width", 0)
-      .attr("height", h)
-      .attr("rx", lvl_curve)
-      .attr("ry", lvl_curve)
-      .style("fill", function () { return addition; });
-
-    // used resources
-    bar.insert("rect")
-      .attr("class", "usedbar")
-      .attr("y", 0)
-      .attr("id", "test")
-      .attr("width", 0)
-      .attr("height", h)
-      .attr("rx", lvl_curve)
-      .attr("ry", lvl_curve)
-      .style("fill", function () { return frgrnd; })
-      .attr("d", used)
-      .transition()
-      .duration(500)
-      .attr("width", used + "%")
-      .style("fill", function () {
-        if (used >= 100) { return full; }
-        else if (used >= 80) { return nearlyfull; }
-        else { return frgrnd; }
-      });
+    this.update($progress_element.attr('id'), percentage_to_update);
   },
 
   // Update the progress Bar
   update: function(element, value) {
-    var full = "#D0342B";
-    var addition = "#00D300";
-    var already_used = parseInt(d3.select("#"+element).select(".usedbar").attr("d"));
-    d3.select("#"+element).select(".newbar")
-      .transition()
-      .duration(500)
-      .attr("width", function () {
-        if ((value + already_used) >= 100) {
-          return "100%";
-        } else {
-          return (value + already_used)+ "%";
-        }
-      })
-      .style("fill", function() {
-        if (value > (100 - already_used)) {
-          return full;
-        } else {
-          return addition;
-        }
-      });
 
+    // Find Progress Bars, we'll need both of them
+    var bars = $('#' + element).find('.progress-bar');
+
+    // Determine how much is already used -> this is the first bar
+    // Also, convert it to an int ;)
+    var used_val = +$(bars[0]).attr('aria-valuenow');
+
+    // Calculate new total
+    var total = used_val + value;
+
+    // Make sure to normalize the value to 100 or less
+    if (total > 100) {
+      value = 100 - used_val;
+    }
+
+    // Turn percentage into a proper percentage string for style
+    var percent_str = value + '%';
+
+    // jQuery construct it and then cache it, we need it more than once
+    var $bar = $(bars[1]);
+
+    // Update the second progress bar
+    $bar.css('width', percent_str)
+      .attr('aria-valuenow', value)
+      .find('.sr-only')
+      .html(percent_str);
+
+    // If the value is going to set total to 100+, set danger class
+    if (total > 99) {
+      $bar.removeClass('progress-bar-warning').addClass('progress-bar-danger');
+    } else {
+      $bar.removeClass('progress-bar-danger');
+
+      /*eslint-disable */
+      total > 89 ?
+        $bar.addClass('progress-bar-warning') :
+        $bar.removeClass('progress-bar-warning');
+      /*eslint-enable */
+    }
   },
 
   /*
@@ -434,18 +397,24 @@ horizon.Quota = {
       };
 
       var imageChangeCallback = function() {
-        scope.disableFlavorsForImage();
+        scope.disableFlavorsForImage('image');
+      };
+
+      var snapshotChangeCallback = function() {
+        scope.disableFlavorsForImage('instance_snapshot');
       };
 
       $('#id_flavor').on('keyup change', eventCallback);
       $('#id_count').on('input', eventCallback);
       $('#id_image_id').on('change', imageChangeCallback);
+      $('#id_instance_snapshot_id').on('change', snapshotChangeCallback);
     }
 
     $(this.user_value_form_inputs).each(function(index, element) {
-      $(element).on('input', function(evt) {
-        var progress_element = $('div[data-progress-indicator-for=' + $(evt.target).attr('id') + ']');
-        var integers_in_input = $(evt.target).val().match(/\d+/g);
+      $(element).on('input', function() {
+        var $this = $(this);
+        var $progress_element = $('div[data-progress-indicator-for=' + $this.attr('id') + ']');
+        var integers_in_input = $this.val().match(/\d+/g);
         var user_integer;
 
         if(integers_in_input === null) {
@@ -463,44 +432,8 @@ horizon.Quota = {
 
         var progress_amount = parseInt(user_integer, 10);
 
-        scope.updateUsageFor(progress_element, progress_amount);
+        scope.updateUsageFor($progress_element, progress_amount);
       });
-    });
-  },
-
-  /*
-   Animate the progress bars of elements which indicate they should
-   automatically be incremented, as opposed to elements which trigger
-   progress updates based on form element input or changes.
-   */
-  _initialAnimations: function() {
-    var scope = this;
-
-    $(this.auto_value_progress_bars).each(function(index, element) {
-      var auto_progress = $(element);
-      var update_amount = parseInt(auto_progress.attr('data-progress-indicator-step-by'), 10);
-
-      scope.updateUsageFor(auto_progress, update_amount);
-    });
-  },
-
-  // Draw the initial d3 bars
-  _initialCreation: function(bars) {
-    // Draw the initial progress bars
-    var scope = this;
-    $(bars).each(function(index, element) {
-      var progress_element = $(element);
-
-      var quota_limit = parseInt(progress_element.attr('data-quota-limit'), 10);
-      var quota_used = parseInt(progress_element.attr('data-quota-used'), 10);
-      var percentage_used = 0;
-
-      if (!isNaN(quota_limit) && !isNaN(quota_used)) {
-        // If NaN percentage_used is 0
-        percentage_used = (quota_used / quota_limit) * 100;
-      }
-
-      scope.drawUsed($(element).attr('id'), percentage_used);
     });
   }
 };

@@ -42,7 +42,9 @@ def add_logout_reason(request, response, reason):
     # Store the translated string in the cookie
     lang = translation.get_language_from_request(request)
     with translation.override(lang):
-        reason = six.text_type(reason).encode('utf-8')
+        reason = six.text_type(reason)
+        if six.PY2:
+            reason = reason.encode('utf-8')
         response.set_cookie('logout_reason', reason, max_age=10)
 
 
@@ -145,4 +147,5 @@ def format_value(value):
     value = decimal.Decimal(str(value))
     if int(value) == value:
         return int(value)
-    return round(value, 1)
+    # On Python 3, an explicit cast to float is required
+    return float(round(value, 1))

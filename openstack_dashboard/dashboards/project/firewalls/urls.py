@@ -12,14 +12,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls import patterns
 from django.conf.urls import url
 
 from openstack_dashboard.dashboards.project.firewalls import views
 
-urlpatterns = patterns(
-    'openstack_dashboard.dashboards.project.firewalls.views',
+urlpatterns = [
     url(r'^$', views.IndexView.as_view(), name='index'),
+    url(r'^\?tab=fwtabs__firewalls$',
+        views.IndexView.as_view(), name='firewalls'),
+    url(r'^\?tab=fwtabs__rules$', views.IndexView.as_view(), name='rules'),
+    url(r'^\?tab=fwtabs__policies$',
+        views.IndexView.as_view(), name='policies'),
     url(r'^addrule$', views.AddRuleView.as_view(), name='addrule'),
     url(r'^addpolicy$', views.AddPolicyView.as_view(), name='addpolicy'),
     url(r'^addfirewall/(?P<policy_id>[^/]+)/$',
@@ -44,4 +47,5 @@ urlpatterns = patterns(
     url(r'^removerouter/(?P<firewall_id>[^/]+)/$',
         views.RemoveRouterFromFirewallView.as_view(), name='removerouter'),
     url(r'^firewall/(?P<firewall_id>[^/]+)/$',
-        views.FirewallDetailsView.as_view(), name='firewalldetails'))
+        views.FirewallDetailsView.as_view(), name='firewalldetails'),
+]

@@ -17,6 +17,7 @@ from django.utils import http
 from django.utils import safestring
 from django.utils.translation import pgettext_lazy
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext_lazy
 
 from horizon import tables
 
@@ -45,10 +46,24 @@ class BackupVolumeNameColumn(tables.Column):
 
 
 class DeleteBackup(tables.DeleteAction):
-    data_type_singular = _("Volume Backup")
-    data_type_plural = _("Volume Backups")
-    action_past = _("Scheduled deletion of %(data_type)s")
+    help_text = _("Deleted volume backups are not recoverable.")
     policy_rules = (("volume", "backup:delete"),)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Volume Backup",
+            u"Delete Volume Backups",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Volume Backup",
+            u"Scheduled deletion of Volume Backups",
+            count
+        )
 
     def delete(self, request, obj_id):
         api.cinder.volume_backup_delete(request, obj_id)
@@ -139,6 +154,8 @@ class BackupsTable(tables.DataTable):
     class Meta(object):
         name = "volume_backups"
         verbose_name = _("Volume Backups")
+        pagination_param = 'backup_marker'
+        prev_pagination_param = 'prev_backup_marker'
         status_columns = ("status",)
         row_class = UpdateRow
         table_actions = (DeleteBackup,)

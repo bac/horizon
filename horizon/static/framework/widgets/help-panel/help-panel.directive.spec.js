@@ -17,12 +17,11 @@
 
   describe('help-panel directive', function () {
     var $compile,
-        $scope,
-        element;
+      $scope,
+      element;
 
     beforeEach(module('templates'));
-    beforeEach(module('horizon.framework.widgets'));
-    beforeEach(module('horizon.framework.widgets.help-panel'));
+    beforeEach(module('horizon.framework'));
     beforeEach(inject(function ($injector) {
       $scope = $injector.get('$rootScope').$new();
       $compile = $injector.get('$compile');
@@ -36,21 +35,21 @@
     });
 
     it('should be closed by default', function () {
-      expect(element[0].querySelector('.help-panel').className).toBe('help-panel');
+      expect(element[0].querySelector('#help-panel').className).toBe('collapse width');
     });
 
-    it('should add "open" to class name if $scope.openHelp is true', function () {
+    it('should add "in" to class name if $scope.openHelp is true', function () {
       $scope.openHelp = true;
       $scope.$apply();
-      expect(element[0].querySelector('.help-panel').className).toBe('help-panel open');
+      expect(element[0].querySelector('#help-panel').className).toBe('collapse width in');
     });
 
-    it('should remove "open" from class name if $scope.openHelp is false', function () {
+    it('should remove "in" from class name if $scope.openHelp is false', function () {
       $scope.openHelp = true;
       $scope.$apply();
       $scope.openHelp = false;
       $scope.$apply();
-      expect(element[0].querySelector('.help-panel').className).toBe('help-panel');
+      expect(element[0].querySelector('#help-panel').className).toBe('collapse width');
     });
   });
 

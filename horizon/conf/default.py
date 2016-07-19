@@ -28,6 +28,9 @@ HORIZON_CONFIG = {
     'ajax_queue_limit': 10,
     'ajax_poll_interval': 2500,
 
+    # URL for reporting issue with this site.
+    'bug_url': None,
+
     # URL for additional help with this site.
     'help_url': None,
 
@@ -43,5 +46,8 @@ HORIZON_CONFIG = {
     'password_autocomplete': 'off',
 
     # Enable or disable simplified floating IP address management.
-    'simple_ip_management': True
+    'simple_ip_management': True,
+
+    'integration_tests_support':
+        getattr(settings, 'INTEGRATION_TESTS_SUPPORT', False)
 }

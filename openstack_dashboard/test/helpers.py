@@ -19,23 +19,24 @@
 import collections
 import copy
 from functools import wraps  # noqa
-import json
 import os
+import traceback
+import unittest
 
-
-from ceilometerclient.v2 import client as ceilometer_client
-from cinderclient import client as cinder_client
+import django
 from django.conf import settings
 from django.contrib.messages.storage import default_storage  # noqa
 from django.core.handlers import wsgi
 from django.core import urlresolvers
 from django.test.client import RequestFactory  # noqa
 from django.test import utils as django_test_utils
-from django.utils.importlib import import_module  # noqa
-from django.utils import unittest
+from django.utils import http
+
+from ceilometerclient.v2 import client as ceilometer_client
+from cinderclient import client as cinder_client
 import glanceclient
 from heatclient import client as heat_client
-import httplib2
+from importlib import import_module
 from keystoneclient.v2_0 import client as keystone_client
 import mock
 from mox3 import mox
@@ -43,8 +44,10 @@ from neutronclient.v2_0 import client as neutron_client
 from novaclient.v2 import client as nova_client
 from openstack_auth import user
 from openstack_auth import utils
+from requests.packages.urllib3.connection import HTTPConnection
+import six
+from six import moves
 from swiftclient import client as swift_client
-from troveclient import client as trove_client
 
 from horizon import base
 from horizon import conf
@@ -58,7 +61,7 @@ from openstack_dashboard.test.test_data import utils as test_utils
 wsgi.WSGIRequest.__repr__ = lambda self: "<class 'django.http.HttpRequest'>"
 
 
-def create_stubs(stubs_to_create={}):
+def create_stubs(stubs_to_create=None):
     """decorator to simplify setting up multiple stubs at once via mox
 
     :param stubs_to_create: methods to stub in one or more modules
@@ -70,7 +73,7 @@ def create_stubs(stubs_to_create={}):
 
         api.nova
 
-    The values are either a tuple of list of methods to mock in the module
+    The values are either a tuple or list of methods to mock in the module
     indicated by the key.
 
     For example::
@@ -89,7 +92,8 @@ def create_stubs(stubs_to_create={}):
         }
 
     """
-
+    if stubs_to_create is None:
+        stubs_to_create = {}
     if not isinstance(stubs_to_create, dict):
         raise TypeError("create_stub must be passed a dict, but a %s was "
                         "given." % type(stubs_to_create).__name__)
@@ -148,14 +152,21 @@ class TestCase(horizon_helpers.TestCase):
       * The ability to override specific time data controls for easier testing.
       * Several handy additional assertion methods.
     """
-    def setUp(self):
-        def fake_conn_request(*args, **kwargs):
-            raise Exception("An external URI request tried to escape through "
-                            "an httplib2 client. Args: %s, kwargs: %s"
-                            % (args, kwargs))
 
-        self._real_conn_request = httplib2.Http._conn_request
-        httplib2.Http._conn_request = fake_conn_request
+    # To force test failures when unmocked API calls are attempted, provide
+    # boolean variable to store failures
+    missing_mocks = False
+
+    def fake_conn_request(self):
+        # print a stacktrace to illustrate where the unmocked API call
+        # is being made from
+        traceback.print_stack()
+        # forcing a test failure for missing mock
+        self.missing_mocks = True
+
+    def setUp(self):
+        self._real_conn_request = HTTPConnection.connect
+        HTTPConnection.connect = self.fake_conn_request
 
         self._real_context_processor = context_processors.openstack
         context_processors.openstack = lambda request: self.context
@@ -174,16 +185,21 @@ class TestCase(horizon_helpers.TestCase):
         # For some magical reason we need a copy of this here.
         self.factory = RequestFactoryWithMessages()
 
-    def _setup_user(self):
+    def _setup_user(self, **kwargs):
         self._real_get_user = utils.get_user
         tenants = self.context['authorized_tenants']
-        self.setActiveUser(id=self.user.id,
-                           token=self.token,
-                           username=self.user.name,
-                           domain_id=self.domain.id,
-                           tenant_id=self.tenant.id,
-                           service_catalog=self.service_catalog,
-                           authorized_tenants=tenants)
+        base_kwargs = {
+            'id': self.user.id,
+            'token': self.token,
+            'username': self.user.name,
+            'domain_id': self.domain.id,
+            'user_domain_name': self.domain.name,
+            'tenant_id': self.tenant.id,
+            'service_catalog': self.service_catalog,
+            'authorized_tenants': tenants
+        }
+        base_kwargs.update(kwargs)
+        self.setActiveUser(**base_kwargs)
 
     def _setup_request(self):
         super(TestCase, self)._setup_request()
@@ -198,21 +214,28 @@ class TestCase(horizon_helpers.TestCase):
         self.patchers['aggregates'].start()
 
     def tearDown(self):
-        httplib2.Http._conn_request = self._real_conn_request
+        HTTPConnection.connect = self._real_conn_request
         context_processors.openstack = self._real_context_processor
         utils.get_user = self._real_get_user
         mock.patch.stopall()
         super(TestCase, self).tearDown()
 
+        # cause a test failure if an unmocked API call was attempted
+        if self.missing_mocks:
+            raise AssertionError("An unmocked API call was made.")
+
     def setActiveUser(self, id=None, token=None, username=None, tenant_id=None,
                       service_catalog=None, tenant_name=None, roles=None,
-                      authorized_tenants=None, enabled=True, domain_id=None):
+                      authorized_tenants=None, enabled=True, domain_id=None,
+                      user_domain_name=None):
         def get_user(request):
             return user.User(id=id,
                              token=token,
                              user=username,
                              domain_id=domain_id,
+                             user_domain_name=user_domain_name,
                              tenant_id=tenant_id,
+                             tenant_name=tenant_name,
                              service_catalog=service_catalog,
                              roles=roles,
                              enabled=enabled,
@@ -226,10 +249,14 @@ class TestCase(horizon_helpers.TestCase):
         Asserts that the given response issued a 302 redirect without
         processing the view which is redirected to.
         """
-        assert (response.status_code / 100 == 3), \
-            "The response did not return a redirect."
-        self.assertEqual(response._headers.get('location', None),
-                         ('Location', settings.TESTSERVER + expected_url))
+        if django.VERSION >= (1, 9):
+            loc = six.text_type(response._headers.get('location', None)[1])
+            loc = http.urlunquote(loc)
+            expected_url = http.urlunquote(expected_url)
+            self.assertEqual(loc, expected_url)
+        else:
+            self.assertEqual(response._headers.get('location', None),
+                             ('Location', settings.TESTSERVER + expected_url))
         self.assertEqual(response.status_code, 302)
 
     def assertNoFormErrors(self, response, context_name="form"):
@@ -261,7 +288,7 @@ class TestCase(horizon_helpers.TestCase):
             assert len(errors) == count, \
                 "%d errors were found on the form, %d expected" % \
                 (len(errors), count)
-            if message and message not in unicode(errors):
+            if message and message not in six.text_type(errors):
                 self.fail("Expected message not found, instead found: %s"
                           % ["%s: %s" % (key, [e for e in field_errors]) for
                              (key, field_errors) in errors.items()])
@@ -280,8 +307,47 @@ class TestCase(horizon_helpers.TestCase):
                                                 response.content))
 
     def assertItemsCollectionEqual(self, response, items_list):
-        self.assertEqual(response.content,
-                         '{"items": ' + json.dumps(items_list) + "}")
+        self.assertEqual(response.json, {"items": items_list})
+
+    def getAndAssertTableRowAction(self, response, table_name,
+                                   action_name, row_id):
+        table = response.context[table_name + '_table']
+        rows = list(moves.filter(lambda x: x.id == row_id,
+                                 table.data))
+        self.assertEqual(1, len(rows),
+                         "Did not find a row matching id '%s'" % row_id)
+        row_actions = table.get_row_actions(rows[0])
+        actions = list(moves.filter(lambda x: x.name == action_name,
+                                    row_actions))
+
+        msg_args = (action_name, table_name, row_id)
+        self.assertTrue(
+            len(actions) > 0,
+            "No action named '%s' found in '%s' table for id '%s'" % msg_args)
+
+        self.assertEqual(
+            1, len(actions),
+            "Multiple actions named '%s' found in '%s' table for id '%s'"
+            % msg_args)
+
+        return actions[0]
+
+    def getAndAssertTableAction(self, response, table_name, action_name):
+
+        table = response.context[table_name + '_table']
+        table_actions = table.get_table_actions()
+        actions = list(moves.filter(lambda x: x.name == action_name,
+                                    table_actions))
+        msg_args = (action_name, table_name)
+        self.assertTrue(
+            len(actions) > 0,
+            "No action named '%s' found in '%s' table" % msg_args)
+
+        self.assertEqual(
+            1, len(actions),
+            "More than one action named '%s' found in '%s' table" % msg_args)
+
+        return actions[0]
 
     @staticmethod
     def mock_rest_request(**args):
@@ -335,6 +401,14 @@ class APITestCase(TestCase):
             """
             return self.stub_keystoneclient()
 
+        def fake_glanceclient(request, version='1'):
+            """Returns the stub glanceclient.
+
+            Only necessary because the function takes too many arguments to
+            conveniently be a lambda.
+            """
+            return self.stub_glanceclient()
+
         # Store the original clients
         self._original_glanceclient = api.glance.glanceclient
         self._original_keystoneclient = api.keystone.keystoneclient
@@ -343,10 +417,9 @@ class APITestCase(TestCase):
         self._original_cinderclient = api.cinder.cinderclient
         self._original_heatclient = api.heat.heatclient
         self._original_ceilometerclient = api.ceilometer.ceilometerclient
-        self._original_troveclient = api.trove.troveclient
 
         # Replace the clients with our stubs.
-        api.glance.glanceclient = lambda request: self.stub_glanceclient()
+        api.glance.glanceclient = fake_glanceclient
         api.keystone.keystoneclient = fake_keystoneclient
         api.nova.novaclient = lambda request: self.stub_novaclient()
         api.neutron.neutronclient = lambda request: self.stub_neutronclient()
@@ -355,7 +428,6 @@ class APITestCase(TestCase):
                                self.stub_heatclient())
         api.ceilometer.ceilometerclient = (lambda request:
                                            self.stub_ceilometerclient())
-        api.trove.troveclient = lambda request: self.stub_troveclient()
 
     def tearDown(self):
         super(APITestCase, self).tearDown()
@@ -366,7 +438,6 @@ class APITestCase(TestCase):
         api.cinder.cinderclient = self._original_cinderclient
         api.heat.heatclient = self._original_heatclient
         api.ceilometer.ceilometerclient = self._original_ceilometerclient
-        api.trove.troveclient = self._original_troveclient
 
     def stub_novaclient(self):
         if not hasattr(self, "novaclient"):
@@ -434,12 +505,6 @@ class APITestCase(TestCase):
             self.ceilometerclient = self.mox.\
                 CreateMock(ceilometer_client.Client)
         return self.ceilometerclient
-
-    def stub_troveclient(self):
-        if not hasattr(self, "troveclient"):
-            self.mox.StubOutWithMock(trove_client, 'Client')
-            self.troveclient = self.mox.CreateMock(trove_client.Client)
-        return self.troveclient
 
 
 @unittest.skipUnless(os.environ.get('WITH_SELENIUM', False),
@@ -540,7 +605,7 @@ class PluginTestCase(TestCase):
         del base.Horizon
         base.Horizon = base.HorizonSite()
         # Reload the convenience references to Horizon stored in __init__
-        reload(import_module("horizon"))
+        moves.reload_module(import_module("horizon"))
         # Re-register our original dashboards and panels.
         # This is necessary because autodiscovery only works on the first
         # import, and calling reload introduces innumerable additional
@@ -560,7 +625,7 @@ class PluginTestCase(TestCase):
         only for testing and should never be used on a live site.
         """
         urlresolvers.clear_url_caches()
-        reload(import_module(settings.ROOT_URLCONF))
+        moves.reload_module(import_module(settings.ROOT_URLCONF))
         base.Horizon._urls()
 
 
@@ -587,3 +652,14 @@ class update_settings(django_test_utils.override_settings):
                     copied.update(new_value)
                     kwargs[key] = copied
         super(update_settings, self).__init__(**kwargs)
+
+
+def mock_obj_to_dict(r):
+    return mock.Mock(**{'to_dict.return_value': r})
+
+
+def mock_factory(r):
+    """mocks all the attributes as well as the to_dict """
+    mocked = mock_obj_to_dict(r)
+    mocked.configure_mock(**r)
+    return mocked

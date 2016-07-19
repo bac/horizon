@@ -1,11 +1,13 @@
-#topologyCanvasContainer {
+#topologyCanvasContainer, #flatTopologyCanvasContainer {
   @include box-sizing(border-box);
   width: 100%;
   height: auto;
   padding: 25px;
   padding-left: 50px;
-  background: #efefef;
+  background: #ffffff;
   min-height: 400px;
+  cursor: grab;
+  cursor: -webkit-grab;
   div.nodata {
     font-size: 150%;
     text-align: center;
@@ -22,10 +24,10 @@
   }
 }
 
-.topologyNavi {
+.topology-navi {
   overflow: hidden;
   margin: 10px 0;
-  .toggleView {
+  .toggle-view {
     float: left;
     span.glyphicon {
       margin-right: 4px;

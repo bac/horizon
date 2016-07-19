@@ -26,10 +26,13 @@ from django.conf import settings
 from django.utils.translation import pgettext_lazy
 from django.utils.translation import ugettext_lazy as _
 
+from cinderclient import exceptions as cinder_exception
 from cinderclient.v2.contrib import list_extensions as cinder_list_extensions
 
 from horizon import exceptions
+from horizon.utils import functions as utils
 from horizon.utils.memoized import memoized  # noqa
+from horizon.utils.memoized import memoized_with_request  # noqa
 
 from openstack_dashboard.api import base
 from openstack_dashboard.api import nova
@@ -78,8 +81,9 @@ class Volume(BaseCinderAPIResourceWrapper):
     _attrs = ['id', 'name', 'description', 'size', 'status', 'created_at',
               'volume_type', 'availability_zone', 'imageRef', 'bootable',
               'snapshot_id', 'source_volid', 'attachments', 'tenant_name',
-              'os-vol-host-attr:host', 'os-vol-tenant-attr:tenant_id',
-              'metadata', 'volume_image_metadata', 'encrypted', 'transfer']
+              'consistencygroup_id', 'os-vol-host-attr:host',
+              'os-vol-tenant-attr:tenant_id', 'metadata',
+              'volume_image_metadata', 'encrypted', 'transfer']
 
     @property
     def is_bootable(self):
@@ -90,13 +94,27 @@ class VolumeSnapshot(BaseCinderAPIResourceWrapper):
 
     _attrs = ['id', 'name', 'description', 'size', 'status',
               'created_at', 'volume_id',
-              'os-extended-snapshot-attributes:project_id']
+              'os-extended-snapshot-attributes:project_id',
+              'metadata']
 
 
 class VolumeType(BaseCinderAPIResourceWrapper):
 
-    _attrs = ['id', 'name', 'extra_specs', 'created_at',
+    _attrs = ['id', 'name', 'extra_specs', 'created_at', 'encryption',
+              'associated_qos_spec', 'description',
               'os-extended-snapshot-attributes:project_id']
+
+
+class VolumeConsistencyGroup(BaseCinderAPIResourceWrapper):
+
+    _attrs = ['id', 'name', 'description', 'status', 'availability_zone',
+              'created_at', 'volume_types']
+
+
+class VolumeCGSnapshot(BaseCinderAPIResourceWrapper):
+
+    _attrs = ['id', 'name', 'description', 'status',
+              'created_at', 'consistencygroup_id']
 
 
 class VolumeBackup(BaseCinderAPIResourceWrapper):
@@ -112,6 +130,11 @@ class VolumeBackup(BaseCinderAPIResourceWrapper):
     @volume.setter
     def volume(self, value):
         self._volume = value
+
+
+class QosSpecs(BaseCinderAPIResourceWrapper):
+
+    _attrs = ['id', 'name', 'consumer', 'specs']
 
 
 class VolTypeExtraSpec(object):
@@ -142,13 +165,10 @@ class VolumePool(base.APIResourceWrapper):
               'storage_protocol', 'extra_specs']
 
 
-@memoized
-def cinderclient(request):
+def get_auth_params_from_request(request):
     api_version = VERSIONS.get_active_version()
-
-    insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
-    cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
     cinder_url = ""
+    auth_url = base.url_for(request, 'identity')
     try:
         # The cinder client assumes that the v2 endpoint type will be
         # 'volumev2'.
@@ -161,14 +181,32 @@ def cinderclient(request):
     except exceptions.ServiceCatalogException:
         LOG.debug('no volume service configured.')
         raise
-    c = api_version['client'].Client(request.user.username,
-                                     request.user.token.id,
-                                     project_id=request.user.tenant_id,
-                                     auth_url=cinder_url,
+
+    return(
+        api_version,
+        request.user.username,
+        request.user.token.id,
+        request.user.tenant_id,
+        cinder_url,
+        auth_url,
+    )
+
+
+@memoized_with_request(get_auth_params_from_request)
+def cinderclient(request_auth_params):
+    insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
+    cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
+
+    api_version, username, token_id, tenant_id, cinder_url, auth_url =\
+        request_auth_params
+    c = api_version['client'].Client(username,
+                                     token_id,
+                                     project_id=tenant_id,
+                                     auth_url=auth_url,
                                      insecure=insecure,
                                      cacert=cacert,
                                      http_log_debug=settings.DEBUG)
-    c.client.auth_token = request.user.token.id
+    c.client.auth_token = token_id
     c.client.management_url = cinder_url
     return c
 
@@ -187,25 +225,67 @@ def version_get():
     return api_version['version']
 
 
-def volume_list(request, search_opts=None):
+def volume_list(request, search_opts=None, marker=None, sort_dir="desc"):
+    volumes, _, __ = volume_list_paged(
+        request, search_opts=search_opts, marker=marker, paginate=False,
+        sort_dir=sort_dir)
+    return volumes
+
+
+def update_pagination(entities, page_size, marker, sort_dir):
+    has_more_data, has_prev_data = False, False
+    if len(entities) > page_size:
+        has_more_data = True
+        entities.pop()
+        if marker is not None:
+            has_prev_data = True
+    # first page condition when reached via prev back
+    elif sort_dir == 'asc' and marker is not None:
+        has_more_data = True
+    # last page condition
+    elif marker is not None:
+        has_prev_data = True
+
+    return entities, has_more_data, has_prev_data
+
+
+def volume_list_paged(request, search_opts=None, marker=None, paginate=False,
+                      sort_dir="desc"):
     """To see all volumes in the cloud as an admin you can pass in a special
     search option: {'all_tenants': 1}
     """
+    has_more_data = False
+    has_prev_data = False
+    volumes = []
 
     c_client = cinderclient(request)
     if c_client is None:
-        return []
+        return volumes, has_more_data, has_prev_data
 
     # build a dictionary of volume_id -> transfer
     transfers = {t.volume_id: t
                  for t in transfer_list(request, search_opts=search_opts)}
 
-    volumes = []
-    for v in c_client.volumes.list(search_opts=search_opts):
-        v.transfer = transfers.get(v.id)
-        volumes.append(Volume(v))
+    if VERSIONS.active > 1 and paginate:
+        page_size = utils.get_page_size(request)
+        # sort_key and sort_dir deprecated in kilo, use sort
+        # if pagination is true, we use a single sort parameter
+        # by default, it is "created_at"
+        sort = 'created_at:' + sort_dir
+        for v in c_client.volumes.list(search_opts=search_opts,
+                                       limit=page_size + 1,
+                                       marker=marker,
+                                       sort=sort):
+            v.transfer = transfers.get(v.id)
+            volumes.append(Volume(v))
+        volumes, has_more_data, has_prev_data = update_pagination(
+            volumes, page_size, marker, sort_dir)
+    else:
+        for v in c_client.volumes.list(search_opts=search_opts):
+            v.transfer = transfers.get(v.id)
+            volumes.append(Volume(v))
 
-    return volumes
+    return volumes, has_more_data, has_prev_data
 
 
 def volume_get(request, volume_id):
@@ -292,10 +372,12 @@ def volume_get_encryption_metadata(request, volume_id):
     return cinderclient(request).volumes.get_encryption_metadata(volume_id)
 
 
-def volume_migrate(request, volume_id, host, force_host_copy=False):
+def volume_migrate(request, volume_id, host, force_host_copy=False,
+                   lock_volume=False):
     return cinderclient(request).volumes.migrate_volume(volume_id,
                                                         host,
-                                                        force_host_copy)
+                                                        force_host_copy,
+                                                        lock_volume)
 
 
 def volume_snapshot_get(request, snapshot_id):
@@ -304,11 +386,40 @@ def volume_snapshot_get(request, snapshot_id):
 
 
 def volume_snapshot_list(request, search_opts=None):
+    snapshots, _, __ = volume_snapshot_list_paged(request,
+                                                  search_opts=search_opts,
+                                                  paginate=False)
+    return snapshots
+
+
+def volume_snapshot_list_paged(request, search_opts=None, marker=None,
+                               paginate=False, sort_dir="desc"):
+    has_more_data = False
+    has_prev_data = False
+    snapshots = []
     c_client = cinderclient(request)
     if c_client is None:
-        return []
-    return [VolumeSnapshot(s) for s in c_client.volume_snapshots.list(
-        search_opts=search_opts)]
+        return snapshots, has_more_data, has_more_data
+
+    if VERSIONS.active > 1 and paginate:
+        page_size = utils.get_page_size(request)
+        # sort_key and sort_dir deprecated in kilo, use sort
+        # if pagination is true, we use a single sort parameter
+        # by default, it is "created_at"
+        sort = 'created_at:' + sort_dir
+        for s in c_client.volume_snapshots.list(search_opts=search_opts,
+                                                limit=page_size + 1,
+                                                marker=marker,
+                                                sort=sort):
+            snapshots.append(VolumeSnapshot(s))
+
+        snapshots, has_more_data, has_prev_data = update_pagination(
+            snapshots, page_size, marker, sort_dir)
+    else:
+        for s in c_client.volume_snapshots.list(search_opts=search_opts):
+            snapshots.append(VolumeSnapshot(s))
+
+    return snapshots, has_more_data, has_prev_data
 
 
 def volume_snapshot_create(request, volume_id, name,
@@ -339,6 +450,115 @@ def volume_snapshot_reset_state(request, snapshot_id, state):
         snapshot_id, state)
 
 
+def volume_cgroup_get(request, cgroup_id):
+    cgroup = cinderclient(request).consistencygroups.get(cgroup_id)
+    return VolumeConsistencyGroup(cgroup)
+
+
+def volume_cgroup_get_with_vol_type_names(request, cgroup_id):
+    cgroup = volume_cgroup_get(request, cgroup_id)
+    vol_types = volume_type_list(request)
+    cgroup.volume_type_names = []
+    for vol_type_id in cgroup.volume_types:
+        for vol_type in vol_types:
+            if vol_type.id == vol_type_id:
+                cgroup.volume_type_names.append(vol_type.name)
+                break
+    return cgroup
+
+
+def volume_cgroup_list(request, search_opts=None):
+    c_client = cinderclient(request)
+    if c_client is None:
+        return []
+    return [VolumeConsistencyGroup(s) for s in c_client.consistencygroups.list(
+        search_opts=search_opts)]
+
+
+def volume_cgroup_list_with_vol_type_names(request, search_opts=None):
+    cgroups = volume_cgroup_list(request, search_opts)
+    vol_types = volume_type_list(request)
+    for cgroup in cgroups:
+        cgroup.volume_type_names = []
+        for vol_type_id in cgroup.volume_types:
+            for vol_type in vol_types:
+                if vol_type.id == vol_type_id:
+                    cgroup.volume_type_names.append(vol_type.name)
+                    break
+
+    return cgroups
+
+
+def volume_cgroup_create(request, volume_types, name,
+                         description=None, availability_zone=None):
+    data = {'name': name,
+            'description': description,
+            'availability_zone': availability_zone}
+
+    cgroup = cinderclient(request).consistencygroups.create(volume_types,
+                                                            **data)
+    return VolumeConsistencyGroup(cgroup)
+
+
+def volume_cgroup_create_from_source(request, name, cg_snapshot_id=None,
+                                     source_cgroup_id=None,
+                                     description=None,
+                                     user_id=None, project_id=None):
+    return VolumeConsistencyGroup(
+        cinderclient(request).consistencygroups.create_from_src(
+            cg_snapshot_id,
+            source_cgroup_id,
+            name,
+            description,
+            user_id,
+            project_id))
+
+
+def volume_cgroup_delete(request, cgroup_id, force=False):
+    return cinderclient(request).consistencygroups.delete(cgroup_id, force)
+
+
+def volume_cgroup_update(request, cgroup_id, name=None, description=None,
+                         add_vols=None, remove_vols=None):
+    cgroup_data = {}
+    if name:
+        cgroup_data['name'] = name
+    if description:
+        cgroup_data['description'] = description
+    if add_vols:
+        cgroup_data['add_volumes'] = add_vols
+    if remove_vols:
+        cgroup_data['remove_volumes'] = remove_vols
+    return cinderclient(request).consistencygroups.update(cgroup_id,
+                                                          **cgroup_data)
+
+
+def volume_cg_snapshot_create(request, cgroup_id, name,
+                              description=None):
+    return VolumeCGSnapshot(
+        cinderclient(request).cgsnapshots.create(
+            cgroup_id,
+            name,
+            description))
+
+
+def volume_cg_snapshot_get(request, cg_snapshot_id):
+    cgsnapshot = cinderclient(request).cgsnapshots.get(cg_snapshot_id)
+    return VolumeCGSnapshot(cgsnapshot)
+
+
+def volume_cg_snapshot_list(request, search_opts=None):
+    c_client = cinderclient(request)
+    if c_client is None:
+        return []
+    return [VolumeCGSnapshot(s) for s in c_client.cgsnapshots.list(
+        search_opts=search_opts)]
+
+
+def volume_cg_snapshot_delete(request, cg_snapshot_id):
+    return cinderclient(request).cgsnapshots.delete(cg_snapshot_id)
+
+
 @memoized
 def volume_backup_supported(request):
     """This method will determine if cinder supports backup.
@@ -357,10 +577,38 @@ def volume_backup_get(request, backup_id):
 
 
 def volume_backup_list(request):
+    backups, _, __ = volume_backup_list_paged(request, paginate=False)
+    return backups
+
+
+def volume_backup_list_paged(request, marker=None, paginate=False,
+                             sort_dir="desc"):
+    has_more_data = False
+    has_prev_data = False
+    backups = []
+
     c_client = cinderclient(request)
     if c_client is None:
-        return []
-    return [VolumeBackup(b) for b in c_client.backups.list()]
+        return backups, has_more_data, has_prev_data
+
+    if VERSIONS.active > 1 and paginate:
+        page_size = utils.get_page_size(request)
+        # sort_key and sort_dir deprecated in kilo, use sort
+        # if pagination is true, we use a single sort parameter
+        # by default, it is "created_at"
+        sort = 'created_at:' + sort_dir
+        for b in c_client.backups.list(limit=page_size + 1,
+                                       marker=marker,
+                                       sort=sort):
+            backups.append(VolumeBackup(b))
+
+        backups, has_more_data, has_prev_data = update_pagination(
+            backups, page_size, marker, sort_dir)
+    else:
+        for b in c_client.backups.list():
+            backups.append(VolumeBackup(b))
+
+    return backups, has_more_data, has_prev_data
 
 
 def volume_backup_create(request,
@@ -448,6 +696,24 @@ def volume_type_list_with_qos_associations(request):
     return vol_types
 
 
+def volume_type_get_with_qos_association(request, volume_type_id):
+    vol_type = volume_type_get(request, volume_type_id)
+    vol_type.associated_qos_spec = ""
+
+    # get all currently defined qos specs
+    qos_specs = qos_spec_list(request)
+    for qos_spec in qos_specs:
+        # get all volume types this qos spec is associated with
+        assoc_vol_types = qos_spec_get_associations(request, qos_spec.id)
+        for assoc_vol_type in assoc_vol_types:
+            if vol_type.id == assoc_vol_type.id:
+                # update volume type to hold this association info
+                vol_type.associated_qos_spec = qos_spec.name
+                return vol_type
+
+    return vol_type
+
+
 def default_quota_update(request, **kwargs):
     cinderclient(request).quota_classes.update(DEFAULT_QUOTA_NAME, **kwargs)
 
@@ -456,12 +722,30 @@ def volume_type_list(request):
     return cinderclient(request).volume_types.list()
 
 
-def volume_type_create(request, name):
-    return cinderclient(request).volume_types.create(name)
+def volume_type_create(request, name, description=None, is_public=True):
+    return cinderclient(request).volume_types.create(name, description,
+                                                     is_public)
+
+
+def volume_type_update(request, volume_type_id, name=None, description=None,
+                       is_public=None):
+    return cinderclient(request).volume_types.update(volume_type_id,
+                                                     name,
+                                                     description,
+                                                     is_public)
+
+
+@memoized
+def volume_type_default(request):
+    return cinderclient(request).volume_types.default()
 
 
 def volume_type_delete(request, volume_type_id):
-    return cinderclient(request).volume_types.delete(volume_type_id)
+    try:
+        return cinderclient(request).volume_types.delete(volume_type_id)
+    except cinder_exception.BadRequest:
+        raise exceptions.BadRequest(_(
+            "This volume type is used by one or more volumes."))
 
 
 def volume_type_get(request, volume_type_id):
@@ -483,6 +767,11 @@ def volume_encryption_type_get(request, volume_type_id):
 
 def volume_encryption_type_list(request):
     return cinderclient(request).volume_encryption_types.list()
+
+
+def volume_encryption_type_update(request, volume_type_id, data):
+    return cinderclient(request).volume_encryption_types.update(volume_type_id,
+                                                                specs=data)
 
 
 def volume_type_extra_get(request, type_id, raw=False):
@@ -551,6 +840,10 @@ def qos_spec_get_associations(request, qos_spec_id):
     return cinderclient(request).qos_specs.get_associations(qos_spec_id)
 
 
+def qos_specs_list(request):
+    return [QosSpecs(s) for s in qos_spec_list(request)]
+
+
 @memoized
 def tenant_absolute_limits(request):
     limits = cinderclient(request).limits.get().absolute
@@ -579,17 +872,15 @@ def availability_zone_list(request, detailed=False):
     return cinderclient(request).availability_zones.list(detailed=detailed)
 
 
-@memoized
-def list_extensions(request):
-    return cinder_list_extensions.ListExtManager(cinderclient(request))\
-        .show_all()
+@memoized_with_request(cinderclient)
+def list_extensions(cinder_api):
+    return tuple(cinder_list_extensions.ListExtManager(cinder_api).show_all())
 
 
-@memoized
-def extension_supported(request, extension_name):
+@memoized_with_request(list_extensions)
+def extension_supported(extensions, extension_name):
     """This method will determine if Cinder supports a given extension name.
     """
-    extensions = list_extensions(request)
     for extension in extensions:
         if extension.name == extension_name:
             return True
@@ -601,8 +892,12 @@ def transfer_list(request, detailed=True, search_opts=None):
     search option: {'all_tenants': 1}
     """
     c_client = cinderclient(request)
-    return [VolumeTransfer(v) for v in c_client.transfers.list(
-        detailed=detailed, search_opts=search_opts)]
+    try:
+        return [VolumeTransfer(v) for v in c_client.transfers.list(
+            detailed=detailed, search_opts=search_opts)]
+    except cinder_exception.Forbidden as error:
+        LOG.error(error)
+        return []
 
 
 def transfer_get(request, transfer_id):
@@ -630,3 +925,10 @@ def pool_list(request, detailed=False):
 
     return [VolumePool(v) for v in c_client.pools.list(
         detailed=detailed)]
+
+
+def is_volume_service_enabled(request):
+    return bool(
+        base.is_service_enabled(request, 'volume') or
+        base.is_service_enabled(request, 'volumev2')
+    )

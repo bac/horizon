@@ -1,23 +1,28 @@
-# Translations template for PROJECT.
-# Copyright (C) 2015 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-#
-# Translators:
+# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: Horizon\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-06 03:02+0000\n"
-"PO-Revision-Date: 2015-08-05 14:56+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
-"Language-Team: Kashmiri (http://www.transifex.com/openstack/horizon/language/"
-"ks/)\n"
+"Project-Id-Version: horizon 10.0.0.0b2.dev324\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-07-12 20:13+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Kashmiri\n"
 "Language: ks\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Zanata 3.7.3\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+
+msgid " - End"
+msgstr "خَتم"
+
+msgid " : Next hop"
+msgstr " :بیاکھ ہاپ"
+
+msgid ""
+"\"Customization Script\" is analogous to \"User Data\" in other systems."
+msgstr "\"Customization Script\" چُھ ہیوی \"User Data\" بآقی سِسٹم مَنز"
 
 #, python-format
 msgid "%(field_name)s: Invalid IP address (value=%(ip)s)"
@@ -35,13 +40,18 @@ msgstr "%(instance_name)s %(fixed_ip)s"
 msgid "%(name)s - %(size)s GB (%(label)s)"
 msgstr "%(name)s - %(size)s GB (%(label)s)"
 
-#, python-format
-msgid "%(name)s | %(RAM)s RAM"
-msgstr "%(name)s | %(RAM)s RAM"
-
+#. Translators:  UTC offset and timezone label
 #, python-format
 msgid "%(offset)s: %(label)s"
 msgstr "%(offset)s: %(label)s"
+
+#, python-format
+msgid "%(resource_status)s: %(resource_status_reason)s"
+msgstr "%(resource_status)s: %(resource_status_reason)s"
+
+#, python-format
+msgid "%(stack_status_title)s: %(stack_status_reason)s"
+msgstr "%(stack_status_title)s: %(stack_status_reason)s"
 
 #, python-format
 msgid "%(type)s (%(backend)s backend)"
@@ -103,14 +113,27 @@ msgstr "اَپڈیٹ پروجیکٹ گروپ"
 msgid "-"
 msgstr "-"
 
-msgid "-- not selected --"
-msgstr "ژاریتھ نہ"
+msgid "--"
+msgstr "--"
 
 msgid "3des"
 msgstr "۳des"
 
-msgid "A image or external image location must be specified."
-msgstr " وَضاحت کریو دونوے شکل تہ نیبرِم شکل جٲے"
+msgid ""
+"A container is a storage compartment for your data and provides a way for "
+"you to organize your data. You can think of a container as a folder in "
+"Windows &reg; or a directory in UNIX &reg;. The primary difference between a "
+"container and these other file system concepts is that containers cannot be "
+"nested. You can, however, create an unlimited number of containers within "
+"your account. Data must be stored in a container so you must have at least "
+"one container defined in your account prior to uploading data."
+msgstr ""
+"اَکھ کنٹینر چُھ سِٹوریج  کنٹینر جآے تُہندِ ڈیٹا خآطرہ تہ دیوان اَکہ وتھ ڈیٹا شیرنہ "
+"خآطرہ۔ توہیہ ہیکو سونچیتھ  کنٹینر فولڈر پیٹہ  وینڈوز&reg;  مَنز؛یا اَکھ "
+"وایریکٹریUNIX &reg مَنز۔ گوڈنِچ فَرق  کنٹینر مَنز تہ بآقی فآیل سِسٹم کنسیپٹس چھ "
+"کہ کنٹینر ٖیکو نہ نیسٹ کریتھ ۔  توہیہ ہیکو بَناویتھ واریاہ تعداد  کنٹینر ہُند "
+"تُہندِس کھاتس مَنز۔ ڈیٹا گژہ آسون جمع ٲسُن کنٹینر مَنزتاکہ توہیہ آسہ اَکھ کنٹینر "
+"تُہندِس کھاتس مَنز ڈیٹا اَپلوڈ برونٹھ"
 
 msgid "A local environment to upload."
 msgstr "اَکھ لوکل ماحول اَپلوڈ کئرنہٕ خآطرہ"
@@ -122,17 +145,20 @@ msgid "A local template to upload."
 msgstr " اَکھ لوکل ٹیمپلیٹ  اَپلوڈ کئرنہٕ خآطرہ"
 
 msgid ""
+"A more specific rule affects a portion of this traffic so a rule cannot be "
+"automatically generated to control the behavior of the entire source/"
+"destination combination."
+msgstr ""
+"اَکھ زیادہ  وَضاحت کئورمُت رول کئرہ اثر اَکس حِصس یَتھ ٹریفِکس تہِ ہیکئو نہٕ پآنے "
+"بَناویتھ  آٹومیٹِک  کئنٹرول کئریتھ طریقہٕ  سئوری /ضریعہٖ مَنزل ئلہٕ"
+
+msgid "A new uploaded file will replace the content of the current object"
+msgstr "اَکھ نوہ اَپلوڈیو فآیل رَٹہ جآے حآلی ٲبجیکٹ کین کنٹینٹ ہِنز"
+
+msgid ""
 "A script or set of commands to be executed after the instance has been built "
 "(max 16kb)."
 msgstr "اَکھ سِکریپٹ یا کمانڈ سیت چھ ایکزیکوٹ کرین ا۳نسٹنس بَنہ پَتہ (max 16kb)."
-
-#, python-format
-msgid ""
-"A volume of %(req)iGB cannot be created as you only have %(avail)iGB of your "
-"quota available."
-msgstr ""
-"A volume of %(req)iGB cannot be created as you only have %(avail)iGB of your "
-"quota available."
 
 msgid "AKI - Amazon Kernel Image"
 msgstr "AKI - امیزان کئرنل شکل"
@@ -166,6 +192,12 @@ msgstr "ARI - امیزان ریئم ڈیسک شکل"
 msgid "Access & Security"
 msgstr "حِفآظتی  ایکسس تہ "
 
+msgid "Access &amp; Security"
+msgstr "حِفاظتی؛ ایکسس تہ ایمپ"
+
+msgid "Access: "
+msgstr "ایکسس"
+
 msgid "Action"
 msgstr "کئم"
 
@@ -175,9 +207,8 @@ msgstr "کئم لاگ"
 msgid "Action for the firewall rule"
 msgstr "کٔم فٲئر وال خٲظرہ"
 
-msgctxt "Current status of a Database Instance"
-msgid "Active"
-msgstr "چآلو"
+msgid "Action:"
+msgstr "کئم:"
 
 msgctxt "Current status of a Firewall"
 msgid "Active"
@@ -192,14 +223,6 @@ msgid "Active"
 msgstr "چآلو"
 
 msgctxt "Current status of a Pool"
-msgid "Active"
-msgstr "چآلو"
-
-msgctxt "Current status of a VPN Service"
-msgid "Active"
-msgstr "چآلو"
-
-msgctxt "Current status of an IPSec Site Connection"
 msgid "Active"
 msgstr "چآلو"
 
@@ -238,6 +261,9 @@ msgstr "جمع کئریو DHCP  ایجینٹ"
 
 msgid "Add Firewall"
 msgstr "فآئر وال کئریو جمع"
+
+msgid "Add Group Assignment"
+msgstr "جمع کئریو گروپ ایسٲنمینٹ"
 
 msgid "Add IKE Policy"
 msgstr "جمع کئریو IKE پآلیسی"
@@ -305,17 +331,14 @@ msgstr "جمع کئریو سب نیٹ"
 msgid "Add Subnet (Quota exceeded)"
 msgstr "جمع کئریو  سب نیٹ  (کئوٹا گئوہ زیادہ)"
 
+msgid "Add User to Group"
+msgstr "جمع کئریو یوزر گروپ خآطرہ"
+
 msgid "Add VIP"
 msgstr "جمع کئریو VIP"
 
 msgid "Add VPN Service"
 msgstr "جمع کئریو VPNسئروِس"
-
-msgid ""
-"Add and remove security groups to this project from the list of available "
-"security groups."
-msgstr ""
-"جمع کریو یا کڈیو  حِفاظتی گروپ یَتھ پروجیکٹس دَستِیآب  لِسٹ  حِفاظتی گروپ مَنز"
 
 msgid ""
 "Add hosts to this aggregate or remove hosts from it. Hosts can be in "
@@ -345,15 +368,6 @@ msgstr ""
 
 msgid "Add/Remove Hosts to Aggregate"
 msgstr "جغمع کئریو/ کئڈیو ہوسٹ ایگریگیٹ سیتھ"
-
-msgid "AddFirewall"
-msgstr "فآئر وال کئریو جمع"
-
-msgid "AddPolicy"
-msgstr "جمع کئریو پآلیسی"
-
-msgid "AddRule"
-msgstr "جمع کئریو رول"
 
 #, python-format
 msgid "Added Firewall \"%s\"."
@@ -397,12 +411,18 @@ msgstr "جمع کئریتھ  مانیٹر "
 msgid "Added pool \"%s\"."
 msgstr "پول جمع کئورمُت\"%s\""
 
+msgid "Additional routes"
+msgstr "مَزید رئوٹس"
+
 msgid ""
 "Additional routes announced to the hosts. Each entry is: destination_cidr,"
 "nexthop (e.g., 192.168.200.0/24,10.56.1.254) and one entry per line."
 msgstr ""
 "مَزید راوٹس ایلان آو کئرنہٕ ہوسٹ خآطرہ۔  ہر اینٹری چھ : destination_cidr,"
 "nexthop (e.g., 192.168.200.0/24,10.56.1.254) تہٕ ہر اینٹری فئی لائن پئٹھ."
+
+msgid "Address"
+msgstr "ایڈریس"
 
 msgid "Admin"
 msgstr "ایڈمِن"
@@ -413,11 +433,21 @@ msgstr " ایڈمِن پآس وئرڈ"
 msgid "Admin State"
 msgstr "ایڈمِن سِٹیٹ"
 
+msgid "Admin State Up"
+msgstr "ایڈمِن سِٹیٹ اَپ"
+
 msgid "Advanced Options"
 msgstr "ایڈوانسڈ آپشن"
 
 msgid "After"
 msgstr "پَتہ"
+
+msgid ""
+"After launching an instance, you login using the private key (the username "
+"might be different depending on the image you launched):"
+msgstr ""
+"اِنسٹنس لانچ کرنہ  پَتہ توہیہ کریو لاگِن اِستعمال  کران زاتی کی (یوزر نآو ٲسھ "
+"اَلگ  دار م دار شکل یُس لانچ کر)"
 
 #, python-format
 msgid "Agent %s was successfully added."
@@ -462,6 +492,9 @@ msgstr "اِنتِخآب نہ  کریتھIP "
 msgid "Allocate IP To Project"
 msgstr "اِنتِخآب کریو IP پروجیکٹ خآطرہ"
 
+msgid "Allocate a floating IP from a given floating IP pool."
+msgstr "اِنتِخآب کریو فلوٹینگ IP دِتمِت فلوٹینگ IP پول مَنز"
+
 #, python-format
 msgid "Allocated Floating IP %(ip)s."
 msgstr "اِنتِخآب نہ  کریتھ فلوٹینگ IP %(ip)s"
@@ -469,20 +502,30 @@ msgstr "اِنتِخآب نہ  کریتھ فلوٹینگ IP %(ip)s"
 msgid "Allocation Pools"
 msgstr "ایلوکئشن پولز"
 
-msgid "Allowed Host"
-msgstr "ہوسٹ اِجازت"
-
-msgid "Allowed Host (optional)"
-msgstr "اِجازت دِیو ہوسٹ(ٲپشنِل)"
-
 msgid "Amount of energy"
 msgstr "اینرجی ہُند تعداد"
 
-msgid "An external (HTTP) URL to load the image from."
-msgstr "اَکھ نیبرُم (HTTP) URLشکل اَپلوڈ کرنہ کآطرہ"
-
 msgid "An external (HTTP) URL to load the template from."
 msgstr "اَکھ نیبرِم  (HTTP) URL لوڈ کئرنہٕ خآطرہ ٹیپلیٹ پئٹھ "
+
+msgid ""
+"An instance can be launched with varying types of attached storage. You may "
+"select from those options here."
+msgstr ""
+"اَکھ اِنسٹنس ہیکو لانچ کریتھ جوڈیتھ سِٹوریج ۔  واریاہ قِسمو سیتھ ۔ توہیہ ہیکو "
+"ژاریتھ واریاہ آپشنز سیتھ"
+
+msgid ""
+"An object is the basic storage entity that represents a file you store in "
+"the OpenStack Object Storage system. When you upload data to OpenStack "
+"Object Storage, the data is stored as-is (no compression or encryption) and "
+"consists of a location (container), the object's name, and any metadata "
+"consisting of key/value pairs."
+msgstr ""
+"  اینٹیٹی یُس ریپریزینٹ کران چُھ اَکھ ٲبجیکٹ چُھ بیسِک سِٹوریج  فٲیل توہیہ سِٹور "
+"ہیکیو کریت آپن سِٹوریج سِسٹمس مَنز۔ یَلہ اَپلوڈ کریو آپن سِٹیک  ٲبجیکٹ  سِٹوریج، "
+"ڈیٹا چُھ سِٹور (کاہ کمپریشن نہ ا اینکریپشن) تہ چہ اَتھ مَنز جآے (کنٹینر)، ٲبجیکٹ "
+"نآو، تہ کاہ میٹا ڈیٹا یَتھ مَنز آسہ کی/ ویلیو جورہ"
 
 msgid ""
 "An unexpected error has occurred. Try refreshing the page. If that doesn't "
@@ -509,6 +552,9 @@ msgstr "جوڈیو کئریو فلوٹینگ IP "
 msgid "Associate Monitor"
 msgstr "جوڈیئو مآنیٹر"
 
+msgid "Associate QoS Spec"
+msgstr "جوڈیئو QoS سِپیک"
+
 msgid "Associate QoS Spec with Volume Type"
 msgstr "جوڈیو QoS سِپیکس والیوم قِسم سیتھ"
 
@@ -529,6 +575,12 @@ msgstr "کم از کم اَکھ میمبر چُھ وَضاحت کئران"
 
 msgid "At least one network must be specified."
 msgstr "کم از کم اَکھ نیٹ ورک گژہ آسون وَضاحت کریتھ"
+
+msgid "Attach To Instance"
+msgstr "جوڈیئو اَکھ اِنسئنس"
+
+msgid "Attach Volume"
+msgstr "جوڈیئو والیوم"
 
 msgid "Attach to Instance"
 msgstr "جوڈیئو اِنسٹئنس"
@@ -563,11 +615,14 @@ msgstr "ایٹیچمینٹ"
 msgid "Audited"
 msgstr "اوڈیٹِٹ"
 
+msgid "Authentication URL"
+msgstr "آتھنٹِکیشن URL"
+
 msgid "Authorization algorithm"
 msgstr "آتھرئزیشن  ایلگورِتھم"
 
-msgid "Auto Security Group"
-msgstr "آٹو حِفاظتی گروپ"
+msgid "Authorization mode"
+msgstr "آتھورئزیشن موڈ"
 
 msgid "Automatic"
 msgstr "آٹومیٹِک"
@@ -599,30 +654,23 @@ msgctxt "Current status of a Volume Backup"
 msgid "Available"
 msgstr " دَستِیاب "
 
+msgid "Available Rules"
+msgstr "دَستِیاب رول"
+
+msgid "Available networks"
+msgstr "دَستِیاب نیٹ ورک"
+
 msgid "Average CPU utilization"
 msgstr "CPUاوست   اِستعمال"
 
-msgid "Backup"
-msgstr "بیک اَپ"
-
-msgctxt "Current status of a Database Instance"
-msgid "Backup"
-msgstr "بیک اَپ"
-
-msgid "Backup Database"
-msgstr "  بیک اَپ ڈیٹا بیس"
-
-msgid "Backup File"
-msgstr "بیک اَپ فٲئل "
+msgid "Avg."
+msgstr "اوست"
 
 msgid "Backup Name"
 msgstr "بیک اَپ نآو"
 
 msgid "Backups"
 msgstr "بیک اَپ"
-
-msgid "Base Image"
-msgstr "بیس شکل"
 
 msgid "Before"
 msgstr "گوڈے"
@@ -660,8 +708,8 @@ msgstr "CIDR کئریو وَضاحت"
 msgid "CPU time used"
 msgstr "CPU وَقت اِستعمال"
 
-msgid "Can not specify both image and external image location."
-msgstr "ہیکو نہ وَضاحت کریتھ دونوے شکل تہ نیبرِم شکل جٲے"
+msgid "Cancel"
+msgstr "مَنسوخ"
 
 msgid "Centralized"
 msgstr "سینٹریلازیڈ "
@@ -681,8 +729,16 @@ msgstr "بئدلایئو ٹیمپلیٹ"
 msgid "Change Volume Type"
 msgstr "تَبدیل کئریو والیوم قِسم"
 
+msgid "Change your password. We highly recommend you create a strong one. "
+msgstr ""
+"تَبدیل کئریو تُہند پآس وئرڈ۔ عئس چھ سُفارِش کئران  توہِیہٕ بَناونہٕ خآطرہ اَکھ مَضبوط "
+"دار"
+
 msgid "Changing password is not supported."
 msgstr " پآس وئرڈ تَبدیل کئرون خآطرہ چُھ نہٕ تعاوُن"
+
+msgid "Checksum"
+msgstr "چیک کریو سم"
 
 msgid "Choose Your Boot Source Type."
 msgstr "ژاریئو تُہند بُٹ ضریعہٖ قِسم"
@@ -693,14 +749,15 @@ msgstr "ژاریئو اَکھ ہوسٹ سئرور  خٲلی کئرنہٖ خآط�
 msgid "Choose a Host to migrate to."
 msgstr "ژاریئو اَکھ ہوسٹ مئگریٹ کئرنہٖ خآطرہ"
 
-msgid "Choose a main binary"
-msgstr "ژاریو مین بینریہ"
+msgid ""
+"Choose a key pair name you will recognise and paste your SSH public key into "
+"the space provided."
+msgstr ""
+"ژاریو اَکھ کی جورہ نآو توہیہ پریزنایو تہ پیسٹ کریو تُہندِسSSH عام کی مَنز یَتھ "
+"جٲے چھ"
 
 msgid "Choose a snapshot"
 msgstr "ژاریئو أکھ سِنیپ شآٹ"
-
-msgid "Choose a storage location"
-msgstr "ژاریو سِٹوریج جآے"
 
 msgid "Choose a volume"
 msgstr "ژاریئو أکھوالیوم"
@@ -717,14 +774,18 @@ msgstr "ژإریئو جوڈیتھ QoS سِپیک"
 msgid "Choose consumer for this QoS Spec."
 msgstr "ژریئو کئنزیومر یَتھ QoS سِپیک خآطرہ"
 
-msgid "Choose libraries"
-msgstr "ژاریو لیبریری"
-
-msgid "Choose the binary which should be used in this Job."
-msgstr "ژاریو بینری یُس جآبس مَنز چُھ اِستعمال کرون"
+msgid ""
+"Choose network from Available networks to Selected networks by push button "
+"or drag and drop, you may change NIC order by drag and drop as well. "
+msgstr ""
+" توہیہ ہیکو بدلاویتھNIC آرڈر ڈریگ تہ ڈراپ سیتھ اریو رول  دَستِیاب رولز مَنز "
+"ژارنہ خآطرہ رول پُش بَٹن سیتھ یا ڈریگ تھ ڈراپ، "
 
 msgid "Choose the flavor to launch."
 msgstr "ژاریئو اَکھ فِلوئر لانچ خآطرہ"
+
+msgid "Choose the rule you want to remove."
+msgstr "ژاریو رول یُس توہیہ یَژہان چھو کڈون"
 
 msgid "Cinder"
 msgstr "سِنڈر"
@@ -732,57 +793,23 @@ msgstr "سِنڈر"
 msgid "Cipher"
 msgstr "سطپیہر"
 
-msgid "Classless Inter-Domain Routing (e.g. 192.168.0.0/24)"
-msgstr "کلاس کم  اینٹر ڈمین راوٹِنگ(e.g. 192.168.0.0/24)"
-
 msgid "Clear Domain Context"
 msgstr "صآف کئریو ڈومین کئنٹیکسٹ"
+
+msgid "Click here to show only console"
+msgstr "کِلک کئریو یَتینس کئنسول ہاونہٕ خآطرہ"
 
 msgid "Close"
 msgstr "بَند"
 
-msgid "Cluster"
-msgstr "کِلسٹر"
-
-msgid "Cluster Details"
-msgstr "کِلسٹر تَفصیل"
-
-msgid "Cluster Instances"
-msgstr "کِلسٹر اِنسٹنسِز"
-
-msgid "Cluster Name"
-msgstr "کِلسٹر نآو"
-
-msgid "Cluster Template"
-msgstr "کلسٹر ٹیمپلیٹ"
-
-msgid "Cluster Template Details"
-msgstr "کلسٹر ٹیمپلیٹ تَفصیل"
-
-msgid "Cluster Template Name"
-msgstr "ٹیمپلیٹ کِلسٹر نآو"
-
-#, python-format
-msgid "Cluster Template copy %s created"
-msgstr " کلسٹر ٹیمپلیٹ کاپی%s بَناویتھ"
-
-msgid "Cluster Templates"
-msgstr " ٹیمپلیٹ کِلسٹر"
-
-msgid "Cluster template creation failed"
-msgstr "کلسٹر ٹیمپلیٹ بَناوُن نا کامیاب"
-
-msgid "Clusters"
-msgstr "کِلسٹر"
-
 msgid "Code"
 msgstr "کوڈ"
 
-msgid "Comma separated list of databases to create"
-msgstr "کامہ سیتھ جُدا کئریتھ لِسٹ ڈیٹا بیس  بَناونہ خآطرہ"
-
 msgid "Compute"
 msgstr "کمپیٹ"
+
+msgid "Compute (Nova)"
+msgstr "کئمپیوٹر (نووا)"
 
 msgid "Compute Host"
 msgstr "کئمپیوٹ ہوسٹ"
@@ -793,27 +820,12 @@ msgstr "کئمپیوٹ سئروِس"
 msgid "Configuration Drive"
 msgstr "کئنفِگریشن ڈریئو"
 
-msgid "Configure"
-msgstr "کنفِگر"
-
-msgid "Configure Cluster"
-msgstr "کنفِگر کِلسٹر"
-
-msgid "Configure Cluster Template"
-msgstr "کنفِگر کِلسٹر ٹیمپلیٹ"
-
-msgid "Configure Node Group Template"
-msgstr "کنفِیگر نوڈ گروپ ٹیمپلیٹ"
-
 msgid ""
 "Configure OpenStack to write metadata to a special configuration drive that "
 "attaches to the instance when it boots."
 msgstr ""
 "کنفِیگر اوپن سِٹیک لیکھنہ خآطرہ میٹا ڈیٹا خاص کنفِیگریشن ڈریو یُس جوڈیو اِنسٹنس "
 "بڈت گژہنہ برونٹہ"
-
-msgid "Configure Template"
-msgstr "کنفِیگر ٹیمپلیٹ"
 
 msgid "Confirm Admin Password"
 msgstr "کئفعرم کئریو ایڈمِن پآس وئرڈ"
@@ -829,6 +841,9 @@ msgstr "کئنفئرم یا واپس تَبدیل کئریو ریسآئز /مئ�
 
 msgid "Confirm new password"
 msgstr "کئنفئرم کئریو نئوہ  پآس وئرڈ "
+
+msgid "Conflicting Rule"
+msgstr "فسآد رول :"
 
 msgid "Connection Limit"
 msgstr "کئنیکشن حد"
@@ -852,6 +867,9 @@ msgstr "کنٹینر ایکسس"
 msgid "Container Details"
 msgstr "کنٹینر  تَفصیل"
 
+msgid "Container Format"
+msgstr "  فٲرمیٹ کنٹینر "
+
 msgid "Container Name"
 msgstr "کنٹینر نآو"
 
@@ -860,6 +878,9 @@ msgstr " کنٹینر آو کامیابی سآن بَناونہ"
 
 msgid "Containers"
 msgstr "کنٹینر"
+
+msgid "Content Type"
+msgstr "کنٹینٹ قِسم"
 
 msgid "Control Location"
 msgstr "کئنٹرول لوکیشن "
@@ -871,6 +892,10 @@ msgstr "کنٹرول ایکسس تُندِ اِنسٹنس کی جورٖ ضریع
 
 msgid "Cookie Name"
 msgstr "کوکئی نآو"
+
+#, python-format
+msgid "Cookie Name: %(cookie_name)s"
+msgstr "کوکئی نآو : : %(cookie_name)s"
 
 msgid "Cookie name is required for APP_COOKIE persistence."
 msgstr "کوکی نآو چُھ ضروری APP_COOKIE  پرسیسٹنس خآطرہ"
@@ -885,25 +910,17 @@ msgstr "کاپی"
 msgid "Copy Object"
 msgstr "کاپی آبجیکٹ  "
 
-msgid "Copy Template"
-msgstr "کاپی  ٹیمپلیٹ"
+#, python-format
+msgid "Copy Object: %(object_name)s"
+msgstr "کاپی آبجیکٹ  : %(object_name)s"
 
 #, python-format
 msgid "Cores(Available: %(avail)s, Requested: %(req)s)"
 msgstr "Cores(Available: %(avail)s, Requested: %(req)s)"
 
-msgid "Could not create"
-msgstr "ہیکو نہ بَناویتھ"
-
-msgid "Could not create data source"
-msgstr "ہیکو نہ بَناویئھ ڈیٹا سورسبب"
-
 #, python-format
 msgid "Could not find default role \"%s\" in Keystone"
 msgstr "ہیکئو نہٕ ژہانڈیتھ ڈیفالٹ کئردار  \"%s\"کئی سِٹون"
-
-msgid "Could not launch job"
-msgstr "ہیکو نہ لانچ کریتھ جاب"
 
 #, python-format
 msgid "Couldn't get current security group list for instance %s."
@@ -911,9 +928,6 @@ msgstr "ہیکئو نہٕ اَنیتھ  حآلی حِفاظتی گروپ لِس�
 
 msgid "Couldn't get security group list."
 msgstr "ہیکئو نہٕ اَنیتھ حِفاظتی گروپ لِسٹ"
-
-msgid "Count"
-msgstr "گینتی"
 
 msgid "Create"
 msgstr "بَنایئو"
@@ -928,17 +942,14 @@ msgstr "بَنایئو اَکھ شکل"
 msgid "Create Backup"
 msgstr " بیک اَپ بَنایئو  "
 
-msgid "Create Cluster Template"
-msgstr "بَناومُت کلسٹر ٹیمپلیٹ"
-
 msgid "Create Container"
 msgstr "کنٹینر بَنایو"
 
-msgid "Create Data Source"
-msgstr "بَنایو ڈیٹا سورس "
-
 msgid "Create Domain"
 msgstr "بَنایئو ڈومین"
+
+msgid "Create Encrypted Volume Type"
+msgstr "بَنایئو اَکھ ٖ اینکریپٹڈ والیوم قِسم  "
 
 msgid "Create Encryption"
 msgstr "بَنایئو اینکریپشن"
@@ -956,26 +967,6 @@ msgid "Create Host Aggregate"
 msgstr "بَنایئو ہوسٹ  ایگرِگیٹ"
 
 msgid ""
-"Create IKE Policy for current project.\n"
-"\n"
-"Assign a name and description for the IKE Policy. "
-msgstr ""
-"بَنایئو IKE پآلیسی حآلی پروجیکٹ خآطرہ \n"
-"\n"
-"دِیئو اَکھ نآو تہٕ تَفصیل IP سیک سآئٹ کئنیکشن خآطرہ ۔ سآری فیلڈس یَتھ ٹیبس مَنز "
-"چھ  ضروری"
-
-msgid ""
-"Create IPSec Policy for current project.\n"
-"\n"
-"Assign a name and description for the IPSec Policy. "
-msgstr ""
-"بَنایئو IP سیک سآئٹ کئنیکشن حآلی پروجیکٹ خآطرہ \n"
-"\n"
-"دِیئو اَکھ نآو تہٕ تَفصیل IP سیک سآئٹ کئنیکشن خآطرہ ۔ سآری فیلڈس یَتھ ٹیبس مَنز "
-"چھ  ضروری"
-
-msgid ""
 "Create IPSec Site Connection for current project.\n"
 "\n"
 "Assign a name and description for the IPSec Site Connection. All fields in "
@@ -989,9 +980,6 @@ msgstr ""
 msgid "Create Image"
 msgstr "بَنایئو شکل"
 
-msgid "Create Job Binary"
-msgstr "بَنایئو جآب بینری"
-
 msgid "Create Key Pair"
 msgstr "کی جورہ بَنایو"
 
@@ -1000,9 +988,6 @@ msgstr "بَنایئو نیٹ وئرک"
 
 msgid "Create Network (Quota exceeded)"
 msgstr "بَنایئو نیٹ وئرک (کئوٹا گئو زیادہ)"
-
-msgid "Create Node Group Template"
-msgstr " نوڈ گروپ ٹیمپلیٹ بَنایو"
 
 msgid "Create Port"
 msgstr "بَنایئو پورٹ"
@@ -1046,23 +1031,8 @@ msgstr "بَنایئو سب نیٹ"
 msgid "Create Subnet (Quota exceeded)"
 msgstr "بَنایئو سب نیٹ (کئوٹا چُھ زیادہ)"
 
-msgid "Create Template"
-msgstr "  ٹیمپلیٹ بَنایو "
-
 msgid "Create User"
 msgstr "بَنایئ یوزر"
-
-msgid ""
-"Create VPN Service for current project.\n"
-"\n"
-"Specify a name, description, router, and subnet for the VPN Service. Admin "
-"State is Up (checked) by default."
-msgstr ""
-"بَنایئو VPN پآلیسی حآلی پروجیکٹ خآطرہ \n"
-"\n"
-"دِیئو اَکھ نآو تہٕ تَفصیل IP سیک سآئٹ کئنیکشن خآطرہ ۔ سآری فیلڈس یَتھ ٹیبس مَنز "
-"چھ  ضروری تہ بے لوڈ بیلنسِنگ ل ریقہ یَتہ پول خآطرہ ط ایڈمِن سِٹیٹ چُھUP (چیکڈ) "
-"ڈیفالٹ سیتھ "
 
 msgid "Create Volume"
 msgstr "بَنآیئو والیوم"
@@ -1072,6 +1042,9 @@ msgstr "بَناوان والیوم  بیک اَپ"
 
 msgid "Create Volume Snapshot"
 msgstr "بَنایئو والیوم سِنیپ شآٹس"
+
+msgid "Create Volume Snapshot (Force)"
+msgstr "بَنایئو والیوم سِنیپ شآٹس (زبردستی)"
 
 msgid "Create Volume Type"
 msgstr "بَنایئو والیوم قَسم"
@@ -1094,14 +1067,6 @@ msgstr "بَنایئو أکھ راوٹر"
 msgid "Create a Snapshot"
 msgstr "بَنآیئو سِنیپ شٲٹس"
 
-msgid ""
-"Create a VIP for this pool. Assign a name, description, IP address, port, "
-"and maximum connections allowed for the VIP. Choose the protocol and session "
-"persistence method for the VIP. Admin State is UP (checked) by default."
-msgstr ""
-"بَنایو اَکھVIP پول خآطرہ۔ دِیو اَکھ نآو، تَفصیل،IP نیب، پورٹ تہ زیادہ خوتہ زیادہ "
-"کنیکشن یِم  خآطرہ VI ضروری چھ۔ ژاریو پروٹکال تہ سیشن "
-
 msgid "Create a Volume"
 msgstr "بَنایئو والیوم "
 
@@ -1115,34 +1080,6 @@ msgid "Create a Volume Type"
 msgstr "بَنایئو اَکھ والیوم قِسم"
 
 msgid ""
-"Create a firewall based on a policy.\n"
-"\n"
-"A policy must be selected. Other fields are optional."
-msgstr ""
-"بَنایو اَکھ فآیر وال رول  پآلیسی  پیٹھ \n"
-"\n"
-"اَکھ  پآلیسی گژہ ین ژارنہ۔ بآقی فیلڈس چھ آپشنلآرڈر  فآیر والرولز لِسٹ مَنز"
-
-msgid ""
-"Create a firewall policy with an ordered list of firewall rules.\n"
-"\n"
-"A name must be given. Firewall rules are added in the order placed under the "
-"Rules tab."
-msgstr ""
-"بَنایو اَکھ فآیر وال رول  پآلیسی آرڈر  فآیر والرولز لِسٹ مَنز\n"
-"\n"
-"  فآیر وال  رولز چھ جمع کریتھ رولز ٹیب مُطابِق اَکھ نآو گژہ یون دِنہ۔ "
-
-msgid ""
-"Create a firewall rule.\n"
-"\n"
-"Protocol and action must be specified. Other fields are optional."
-msgstr ""
-"بَنایو اَکھ فآیر وال رول \n"
-"\n"
-"پروٹوکال تہ ایکشن گژہ وَضاحت آسون۔  بآق فیلڈ چھ آپشنل"
-
-msgid ""
 "Create a monitor template.\n"
 "\n"
 "Select type of monitoring. Specify delay, timeout, and retry limits required "
@@ -1154,6 +1091,30 @@ msgstr ""
 "Select type of monitoring. Specify delay, timeout, and retry limits required "
 "by the monitor. Specify method, URL path, and expected HTTP codes upon "
 "success."
+
+msgid "Create a new \"extra spec\" key-value pair for a volume type."
+msgstr "بَنایئو اَکھ نئوہ  \"extra spec\"کئی ویلیو جورہ والیوم قِسم خآطرہ"
+
+#, python-format
+msgid "Create a new \"spec\" key-value pair for QoS Spec \"%(qos_spec_name)s\""
+msgstr ""
+"بَنایئو  اَکھ نئوہ \"spec\" key-value pair for QoS Spec \"%(qos_spec_name)s\""
+
+msgid "Create a new network for any project as you need."
+msgstr "بَنایئو اَکھ نئوہ نیٹ وئرک کونہٖ تہٕ پروجیکٹس خآطرہ یُس توہیہٕ ضروری چُھ"
+
+msgid "Create a new role."
+msgstr "بَنایئو اَکھ نئوہ کئردار"
+
+msgid "Create a new stack with the provided values."
+msgstr "بَنایئواَکھ سِٹیک دِتمِت ویلیوز سیتھ ۔ "
+
+msgid ""
+"Create a new user and set related properties including the Primary Project "
+"and Role."
+msgstr ""
+"بَنایو اَکھ نوہ یوزر تہ سیٹ کریو جوڈیتھ خَصوصیت پریمری پروجیکٹ تہ کردار شآمِل "
+"کریتھ"
 
 msgid "Create a policy with selected rules."
 msgstr "بَنایئو اَکھ پآلیسی ژارمِت رولز سیتھ"
@@ -1168,20 +1129,8 @@ msgstr ""
 "بَنایئو أکھ سب نیٹ یُس جوڈیتھ آسہٕ نیٹ وئرک سیتھ ۔ خآص کئنفِگریشن چھ دَستِیغب کِلک "
 "کئرنہٖ سیتھ  \"Subnet Details\" ٹیبس پئٹھ"
 
-msgid ""
-"Create a subnet associated with the new network, in which case \"Network "
-"Address\" must be specified. If you wish to create a network without a "
-"subnet, uncheck the \"Create Subnet\" checkbox."
-msgstr ""
-"بَنایئو اَکھ سب نیٹ یُس جوڈیتھ چُھ نئوس  نیٹ وئرک سیتھ، یَتھ مَنز  \"Network "
-"Address\" گئژہ وَضاحت  آسُن ۔ اگر توہیہٕ یَژہیو بَناوُن اَکھ  نیٹ وئرک سب نیٹ وئرے، "
-"اَن چیک کئریو \"Create Subnet\" چیک بآکس"
-
 msgid "Create an Encrypted Volume Type"
 msgstr "بَنایئو اَکھ ٖ اینکریپٹڈ والیوم قِسم  "
-
-msgid "Create security group for this Node Group."
-msgstr "بَنایو  ِفاظتی گروپس   نوڈ گروپس مَنز"
 
 msgid "Created"
 msgstr "بَناومُت"
@@ -1193,18 +1142,6 @@ msgstr "بَناومُت"
 msgctxt "Current status of a Pool"
 msgid "Created"
 msgstr "بَناومُت"
-
-msgctxt "Current status of a VPN Service"
-msgid "Created"
-msgstr "بَناومُت"
-
-#, python-format
-msgid "Created Cluster Template %s"
-msgstr "بَناومُت کلسٹر ٹیمپلیٹ %s"
-
-#, python-format
-msgid "Created Node Group Template %s"
-msgstr "بَناومُت  نوڈ گروپ ٹیمپلیٹ%s"
 
 #, python-format
 msgid "Created extra spec \"%s\"."
@@ -1249,6 +1186,15 @@ msgctxt "Current status of a Volume Backup"
 msgid "Creating"
 msgstr "بَناوان"
 
+msgid ""
+"Creating encryption for a volume type causes all volumes with that volume "
+"type to be encrypted.  Encryption information cannot be added to a volume "
+"type if volumes are currently in use with that volume type."
+msgstr ""
+" والیوم  قِسم بَناوان اینکریپشن خآطرہ کرہ سآری  والیوم تَتھ والیوم  قِسم خآطرہ "
+"اینکریپٹ۔   اینکریپشن اِطلاع ہیکو نہ جمع کریتہ والیوم  قِسم خآطرہ اگر والیوم "
+"چُھ حآلی مَنز اِستعمال   والیوم   قِسم  خآطرہ"
+
 #, python-format
 msgid "Creating volume \"%s\""
 msgstr "والیوم بَناوان \"%s\""
@@ -1282,14 +1228,14 @@ msgstr "بَنایئو  دَرخواست   سب نیٹ خآطرہ"
 msgid "Current Host"
 msgstr "حآلی ہوسٹ"
 
-msgid "Current Size (GB)"
-msgstr "حآلی سآیز (GB)"
-
 msgid "Current password"
 msgstr "حآلی  پآس وئرڈ "
 
 msgid "Custom ICMP Rule"
 msgstr "قسٹم ICMP رول"
+
+msgid "Custom Properties"
+msgstr "قسٹم کَصسیت"
 
 msgid "Custom TCP Rule"
 msgstr "قسٹم TCPرول"
@@ -1310,50 +1256,17 @@ msgstr "DENY"
 msgid "DHCP Agents"
 msgstr "DHCP ایجینٹ"
 
+msgid "DHCP Enable"
+msgstr "DHCP لاگو"
+
 msgid "DNS Name Servers"
 msgstr "DNS سَرور نٲو"
 
+msgid "DNS name server"
+msgstr "DNSنٱو سئرور"
+
 msgid "Daily Usage Report"
 msgstr "دوہے یوسیج ریپورٹ"
-
-msgid "Data Processing"
-msgstr "ڈیٹا پروسیسِنگ"
-
-msgid "Data Processing Plugin Details"
-msgstr "ڈیٹآ پروسیسِنگ پِلگ اِن تَفصیل"
-
-msgid "Data Processing Plugins"
-msgstr "ڈیٹآ پروسیسِنگ پِلگ اِن"
-
-msgid "Data Source Details"
-msgstr "ڈیٹآ سورس تَفصیل"
-
-msgid "Data Source Type"
-msgstr "ڈیٹا سورس قِسم"
-
-msgid "Data Sources"
-msgstr " ڈیٹا سورس "
-
-msgid "Data source created"
-msgstr "ڈیٹا سورس بَناومُت"
-
-msgid "Database"
-msgstr "ڈیٹا بیس"
-
-msgid "Database Instance"
-msgstr " ڈیٹا بیس   اِنسٹنس"
-
-msgid "Database Name"
-msgstr "ڈیٹآ بیس نآو"
-
-msgid "Databases"
-msgstr "ڈیٹآ بیس نآو"
-
-msgid "Datastore"
-msgstr "ڈیٹا سِٹور"
-
-msgid "Datastore Version"
-msgstr "ڈیٹا سِٹور ورجن"
 
 msgid "Date Updated"
 msgstr "تآریخ أپڈیٹ"
@@ -1364,6 +1277,9 @@ msgstr "تٲریخ چھ نہٖ پریزناوان"
 msgid "Day"
 msgstr "دوہ"
 
+msgid "Dead peer detection action"
+msgstr "مئردہ پیر ڈیٹیکشن کئم"
+
 msgid "Dead peer detection actions"
 msgstr "ڈیڈ پیئر ڈیٹیکشن کئم"
 
@@ -1372,6 +1288,9 @@ msgstr "ڈیڈ پیئر ڈیٹیکشن وَقفہٕ"
 
 msgid "Dead peer detection timeout"
 msgstr "ڈیڈ پیئر ڈیٹیکشن وَقگت مئکلیئو"
+
+msgid "Decrypt Password"
+msgstr "ڈیکریپٹ پآسوئرڈ"
 
 msgid "Default Quotas"
 msgstr "ڈیفالٹ کئوٹا "
@@ -1385,15 +1304,9 @@ msgstr "ڈیفالٹ"
 msgid "Delay"
 msgstr "ژیئر"
 
-msgid "Delete on Terminate"
-msgstr "مِٹایئو  ٹئرمِنیٹ پئٹھ "
-
 #, python-format
 msgid "Delete the created network \"%s\" due to subnet creation failure."
 msgstr "مِٹایئو بٔناومُت نیٹ وئرک \"%s\"  کیازکہٖ سب نیٹ کئریشن چھ ناکامیاب"
-
-msgid "Delete volume on instance terminate"
-msgstr "مِٹایئو والیوم اِنسٹئنس ٹئرمِنیٹ پئٹھ "
 
 msgid "Deleted"
 msgstr "مِٹاویتھ"
@@ -1407,48 +1320,8 @@ msgid "Deleted"
 msgstr "مِٹاویتھ"
 
 #, python-format
-msgid "Deleted IKE Policy %s"
-msgstr "مِٹاویتھ    IKE پآلیسی: %s"
-
-#, python-format
-msgid "Deleted IPSec Policy %s"
-msgstr "مِٹاویتھ   IP  سیک سآئٹ پآلیسی: %s"
-
-#, python-format
-msgid "Deleted IPSec Site Connection %s"
-msgstr "مِٹاویتھ   IP  سیک سآئٹ کئنیکشن: %s"
-
-#, python-format
 msgid "Deleted VIP %s"
 msgstr "VIPمِٹائو %s"
-
-#, python-format
-msgid "Deleted VPN Service %s"
-msgstr "مِٹاویتھVPN   سئروِس %s"
-
-#, python-format
-msgid "Deleted firewall %s"
-msgstr "مٕٹایئو فآئر وال %s"
-
-#, python-format
-msgid "Deleted member %s"
-msgstr "میمبر مِٹائو%s"
-
-#, python-format
-msgid "Deleted monitor %s"
-msgstr "مآنیٹر مِٹائو%s"
-
-#, python-format
-msgid "Deleted policy %s"
-msgstr "مٕٹایئو پآلیسی %s"
-
-#, python-format
-msgid "Deleted pool %s"
-msgstr "میمبر مِٹائو%s"
-
-#, python-format
-msgid "Deleted rule %s"
-msgstr "مٕٹایئو رول %s"
 
 msgid "Deleting"
 msgstr "مِٹاوان"
@@ -1471,11 +1344,20 @@ msgstr "منع"
 msgid "Description"
 msgstr "تَفصیل"
 
+msgid "Description:"
+msgstr "تَفصیل"
+
+msgid "Destination"
+msgstr "مَنزل"
+
 msgid "Destination CIDR"
 msgstr "مَنزِل CIDR"
 
 msgid "Destination IP"
 msgstr "مَنزِل IP"
+
+msgid "Destination IP Address"
+msgstr "مَنزِلIP نیب"
 
 msgid "Destination IP Address/Subnet"
 msgstr "مَنزِلIP نیب  /  سب نیٹ"
@@ -1498,9 +1380,16 @@ msgstr "مَنزل آبجیکٹ نآو"
 msgid "Destination port (integer in [1, 65535] or range in a:b)"
 msgstr "مَنزِل پورٹ  (اِنٹیجر [1, 65535] or range in a:b)"
 
+msgid "Destination:"
+msgstr "مِنزِل:"
+
 msgid "Detached"
 msgstr "اَلگ کئریتھ"
 
+msgid "Detaching"
+msgstr "اِلگ کئران"
+
+msgctxt "Current status of a Volume"
 msgid "Detaching"
 msgstr "اِلگ کئران"
 
@@ -1548,6 +1437,9 @@ msgstr "معزور HAموڈ"
 
 msgid "Disable Service"
 msgstr "معزور سئروِس"
+
+msgid "Disable the compute service."
+msgstr "معزور کئریو کئمپیوٹ سئروِس"
 
 msgid "Disabled"
 msgstr "معزور"
@@ -1666,14 +1558,6 @@ msgctxt "Current status of a Pool"
 msgid "Down"
 msgstr "ڈاون"
 
-msgctxt "Current status of a VPN Service"
-msgid "Down"
-msgstr "ڈاون"
-
-msgctxt "Current status of an IPSec Site Connection"
-msgid "Down"
-msgstr "ڈاون"
-
 msgctxt "current status of port"
 msgid "Down"
 msgstr "ڈاون"
@@ -1685,27 +1569,23 @@ msgstr "ڈاون"
 msgid "Download"
 msgstr "ڈاون لوڈ"
 
-msgid "Download Backup"
-msgstr "ڈاون لوڈ بیک اَپ"
-
 msgid "Download CSV Summary"
 msgstr "ڈوان لوڈ کئریوCSV  خَلاصہٖ"
 
 msgid "Download EC2 Credentials"
 msgstr " کریڈینشلEC2 ڈاون لڈ کریو"
 
-msgid "Download Job Binary"
-msgstr "ڈاون لوڈ جآب بینری"
-
 msgid "Download Key Pair"
 msgstr "ڈاون لوڈ کی جورہ"
 
-msgid "Download OpenStack RC File"
-msgstr "ڈاون لڈ کریو کھولیتھ سِٹیک فآیل RC "
+msgid "EC2 Access Key"
+msgstr "EC2 ایکسس کی"
 
-#, python-format
-msgid "Duration of instance type %s (openstack flavor)"
-msgstr "وَقفہٕ اِسٹئنس قئسم %s (کھولیتھ سِٹیک فِلیوئر)"
+msgid "EC2 Secret Key"
+msgstr "EC2 سیکریٹ کی"
+
+msgid "EC2 URL"
+msgstr "EC2 URL"
 
 msgid "Edit"
 msgstr "شیریئو"
@@ -1743,9 +1623,6 @@ msgstr "شیرئو IP سیک پآلیسی"
 msgid "Edit IPSec Site Connection"
 msgstr "شیرئوIP سیک سآئٹ کئنیکشن"
 
-msgid "Edit Image Tags"
-msgstr "شیریو شکل ٹیگس"
-
 msgid "Edit Instance"
 msgstr "شیریو   اِنسٹنسِز"
 
@@ -1757,6 +1634,9 @@ msgstr "شیریئو  مآنیٹر"
 
 msgid "Edit Network"
 msgstr "شیریئو نیٹ وئرک"
+
+msgid "Edit Object"
+msgstr "شیریو  آبجیکٹ  "
 
 msgid "Edit Policy"
 msgstr "شیریئو پآلیسی"
@@ -1788,11 +1668,11 @@ msgstr "شیریو حِفاظتی گروپ"
 msgid "Edit Snapshot"
 msgstr "شیریئو سِنیپ شآٹس"
 
+msgid "Edit Spec"
+msgstr "شیریئو سِپیک "
+
 msgid "Edit Subnet"
 msgstr "شیریئو  سب نیٹ"
-
-msgid "Edit Tags"
-msgstr "شیریو ٹیگس"
 
 msgid "Edit Template"
 msgstr "شیریئو ٹیمپلیٹ"
@@ -1806,6 +1686,9 @@ msgstr "شیرئو VPNسئروِس"
 msgid "Edit Volume"
 msgstr "شیرئو والیوم"
 
+msgid "Edit Volume Type Extra Spec"
+msgstr "شیریئو  والیوم قٔسم علاوہ سِپیک "
+
 msgid ""
 "Edit the flavor details. Flavors define the sizes for RAM, disk, number of "
 "cores, and other resources. Flavors are selected when users deploy instances."
@@ -1813,11 +1696,17 @@ msgstr ""
 "شیریئو فِلیوئر تَفصیل ۔ فِلیوئر کئرہ وَضاحت  سآئزRAM خآطرہ ، ڈِسک ، نمبر کورز "
 "ہِند، تہِ بآقی ریسورسِز۔فِلیورس چھ ژارنہٕ یَلہٕ  یوزرس کئرن اِستعمال اِنسٹئنسِز"
 
+msgid "Edit the image details."
+msgstr "شیریو شکل تَفصیل"
+
 msgid "Edit the instance details."
 msgstr "شیریواِنسٹئنس  تَفصیل"
 
 msgid "Edit the project details."
 msgstr "شیریو پروجیکٹ  تَفصیل"
+
+msgid "Edit the role's details."
+msgstr "اِدارت کّٗریو کٕردار تِفصیل   "
 
 msgid "Egress"
 msgstr "ایگریس"
@@ -1856,14 +1745,14 @@ msgstr "اینکریپشن"
 msgid "Encryption algorithm"
 msgstr "اینکئریپشئنل ایلگورِتھم"
 
+msgid "Energy (Kwapi)"
+msgstr "اینرجی(کواپی)"
+
 msgid "Enter a value for ICMP code in the range (-1: 255)"
 msgstr "داخل کریو ICMP کوڈ یَتھ رینج مَنز  (-1: 255)"
 
 msgid "Enter a value for ICMP type in the range (-1: 255)"
 msgstr "داخل کریو ICMP رینج یَتھ رینج مَنز  (-1: 255)"
-
-msgid "Enter an integer value between 0 and 255 (or -1 which means wildcard)."
-msgstr "داخل کریو اَکھ اینٹیجر  ویلیو ۰ تہ ۲۵۵ مَنز(یا -۱ یَمُک مَطلب چُھ)"
 
 msgid "Enter an integer value between 1 and 65535."
 msgstr "داخل کریو اَکھ اینٹیجر  ویلیو ۱ تہ ۶۵۵۳۵ مَنز"
@@ -1903,10 +1792,6 @@ msgstr ""
 msgid "Error"
 msgstr "غَلطی"
 
-msgctxt "Current status of a Database Instance"
-msgid "Error"
-msgstr "غَلطی"
-
 msgctxt "Current status of a Firewall"
 msgid "Error"
 msgstr "غَلطی"
@@ -1923,19 +1808,11 @@ msgctxt "Current status of a Pool"
 msgid "Error"
 msgstr "غَلطی"
 
-msgctxt "Current status of a VPN Service"
-msgid "Error"
-msgstr "غَلطی"
-
 msgctxt "Current status of a Volume"
 msgid "Error"
 msgstr "غَلطی"
 
 msgctxt "Current status of a Volume Backup"
-msgid "Error"
-msgstr "غَلطی"
-
-msgctxt "Current status of an IPSec Site Connection"
 msgid "Error"
 msgstr "غَلطی"
 
@@ -1951,10 +1828,6 @@ msgctxt "current status of router"
 msgid "Error"
 msgstr "غَلطی"
 
-msgctxt "status of a neteork port"
-msgid "Error"
-msgstr "غَلطی"
-
 msgid "Error Deleting"
 msgstr "غَلطی مِٹاونہٖ وَقتہٕ"
 
@@ -1965,20 +1838,8 @@ msgstr "غَلطی: %s فآیل ڈاون لوڈRC  کئرنہ وَقتہ"
 msgid "Error adding Hosts to the aggregate."
 msgstr "غَلطی جمع کئرنہ ٕوَقتہٕ ہوسٹ ایگریگیٹ سیتھ"
 
-msgid "Error creating database backup."
-msgstr "غَلطی ڈیٹا بیس بیک اَپ  کئرنہ وَقتہ"
-
-msgid "Error deleting database on instance."
-msgstr "غَلطی اِنسٹنس پیٹھ ڈیٹا بیس لانچ  کئرنہ وَقتہ"
-
-msgid "Error deleting database user."
-msgstr "غَلطی  ڈیٹا بیس یوزر  کئرنہ وَقتہ"
-
 msgid "Error editing QoS Spec consumer."
 msgstr "غَلطی QoS سِپیک   کئنزیومر"
-
-msgid "Error getting database backup list."
-msgstr "غَلطی ڈیٹا بیس بیک اَپ لِسٹ  کئرنہ وَقتہ"
 
 msgid "Error updating QoS Spec association."
 msgstr "غَلطی اَپڈیٹ کئرنہ خآطرہ  QoS سِپیک جورہ خآطرہ"
@@ -1996,8 +1857,15 @@ msgstr "ایتھر قِسم"
 msgid "Evacuate Host"
 msgstr "خآلی کئریو ہوسٹ"
 
+msgid ""
+"Evacuate the servers from the selected down host to an active target host."
+msgstr "خآلی کئریو سئرور ژارمِت داون ہوسٹ پئٹھ ایکٹیو ٹآرگیٹ ہوسٹ تٲن"
+
 msgid "Events"
 msgstr "ایوینٹس"
+
+msgid "Expected Codes"
+msgstr "اُمید وار کوڈس"
 
 msgid "Expected HTTP Status Codes"
 msgstr "اُمید وارHTTP سِٹیٹس کوڈس"
@@ -2011,6 +1879,9 @@ msgstr ""
 
 msgid "Extend Volume"
 msgstr "والیوم بئڈراویتھ"
+
+msgid "Extend the size of a volume."
+msgstr " بئڈرایو والیوم سآئز"
 
 #, python-format
 msgid "Extending volume: \"%s\""
@@ -2125,12 +1996,6 @@ msgstr "ناکامیاب ہوسٹ خآلی کئرنہِ  خآطرہ : %s."
 msgid "Failed to evacuate instances: %s"
 msgstr "نا کامیاب اِنسٹئنس خآلی کئرنہٕ خٲطرہ: %s"
 
-msgid "Failed to fetch internal binary list"
-msgstr "ناکامیاب بینری اِنٹرنل لِسٹ اَنہ خآطرہ"
-
-msgid "Failed to get list of internal binaries."
-msgstr "ناکامیاب بینری اِنٹرنل لِسٹ اَنہ خآطرہ"
-
 #, python-format
 msgid "Failed to get network list %s"
 msgstr "ناکامیاب نیٹ وئرک لِسٹ اَنہٕ خآطرہ %s"
@@ -2228,9 +2093,6 @@ msgstr " نآکآمیاب  فٲیر وال اَپڈیٹ کئرنئ خٲطرہ %(
 msgid "Failed to update health monitor %s"
 msgstr "ناکامیاب صحت مآنیٹر اَپڈیٹ کئرنہٖ خآطرہ  %s"
 
-msgid "Failed to update image."
-msgstr "ناکامیاب شکل اَپڈیٹ کرَنہ خآطرہ"
-
 #, python-format
 msgid "Failed to update member %s"
 msgstr "ناکامیاب میمبر اَپڈیٹ کئرنہٖ خآطرہ %s"
@@ -2263,6 +2125,9 @@ msgstr "نآکآمیابرولز اَپڈیٹ کئرنئ خٲطرہ %(name)s: %(
 msgid "Failed to update subnet \"%(sub)s\":  %(reason)s"
 msgstr "ناکامیاب  سب نیٹ اَپڈیٹ کئرنہٖ خآطرہ \"%(sub)s\":  %(reason)s"
 
+msgid "Fault"
+msgstr "غلطی"
+
 msgid ""
 "Fields in this tab are optional. You can configure the detail of IPSec site "
 "connection created."
@@ -2275,6 +2140,12 @@ msgstr "فآیل"
 msgid "File exceeds maximum size (16kb)"
 msgstr "فٲئل چھ سٲئز خوتئ زیادہ (16kb)"
 
+msgid "File:"
+msgstr "فایل"
+
+msgid "Filter"
+msgstr "فِلٹر"
+
 msgid "Fingerprint"
 msgstr "اُنگجین ہِند نِشآن"
 
@@ -2282,17 +2153,8 @@ msgstr "اُنگجین ہِند نِشآن"
 msgid "Firewall %s was successfully updated."
 msgstr "فآئر وال  %s  گئو کامیابی سآن اَپڈیٹ  "
 
-msgid "Firewall Details"
-msgstr "فآئر وال تَفصیل"
-
 msgid "Firewall Policies"
 msgstr "فآئر وال پآلیسی"
-
-msgid "Firewall Policy Details"
-msgstr "فآئر وال پآلیسی  تَفصیل"
-
-msgid "Firewall Rule Details"
-msgstr "فآئر وال رول  تَفصیل"
 
 msgid "Firewall Rules"
 msgstr "فآئر وال رولز"
@@ -2314,6 +2176,13 @@ msgstr "فلوئر ایکسس"
 
 msgid "Flavor Choice"
 msgstr "فِلوئر اِنتِخٲب"
+
+msgid "Flavor Details"
+msgstr "فِلیور تَفصیل"
+
+#, python-format
+msgid "Flavor Details: %(name)s\">%(name)s"
+msgstr "فِلیوئر تَفصیل: %(name)s\">%(name)s"
 
 msgid "Flavor ID ="
 msgstr "فِلوئر ID ="
@@ -2341,8 +2210,8 @@ msgstr ""
 "فِلیورس چھ وَضاحت کئران سآئز RAMخآطرہ ، ڈِسک، نمبر کورز ہُند تہٕ ریسورسِز تہٕ ہیکئو "
 "ژاریتھ یَلہٕ یوزرس اطنسٹئنسِز اِستعمال کئرن"
 
-msgid "Floating IP Pool"
-msgstr "فلوٹینگ IPپول"
+msgid "Floating IP"
+msgstr "فلوٹینگ IP"
 
 msgid "Floating IPs"
 msgstr "فِلوٹینگ IPs"
@@ -2350,31 +2219,15 @@ msgstr "فِلوٹینگ IPs"
 msgid "Folder created successfully."
 msgstr "فولڈر آو کامیابی سآن بَناونہ"
 
-#, python-format
-msgid "For GRE networks, valid tunnel IDs are %(min)s through %(max)s."
-msgstr "VLAN networks, valid VLAN IDs چُھ %(min)s through %(max)sخآطرہ"
-
-#, python-format
 msgid ""
-"For VLAN networks, the VLAN VID on the physical network that realizes the "
-"virtual network. Valid VLAN VIDs are %(vlan_min)s through %(vlan_max)s. For "
-"GRE or VXLAN networks, the tunnel ID. Valid tunnel IDs for GRE networks are "
-"%(gre_min)s through %(gre_max)s. For VXLAN networks, %(vxlan_min)s through "
-"%(vxlan_max)s."
+"For TCP and UDP rules you may choose to open either a single port or a range "
+"of ports. Selecting the \"Port Range\" option will provide you with space to "
+"provide both the starting and ending ports for the range. For ICMP rules you "
+"instead specify an ICMP type and code in the spaces provided."
 msgstr ""
-"For VLAN networks, the VLAN VID on the physical network that realizes the "
-"virtual network. Valid VLAN VIDs are %(vlan_min)s through %(vlan_max)s. For "
-"GRE or VXLAN networks, the tunnel ID. Valid tunnel IDs for GRE networks are "
-"%(gre_min)s through %(gre_max)s. For VXLAN networks, %(vxlan_min)s through "
-"%(vxlan_max)s."
-
-#, python-format
-msgid "For VLAN networks, valid VLAN IDs are %(min)s through %(max)s."
-msgstr "VLAN نیٹ وئرک, valid VLAN IDs چُھ %(min)s through %(max)s خآطرہ"
-
-#, python-format
-msgid "For VXLAN networks, valid tunnel IDs are %(min)s through %(max)s."
-msgstr "خآطرہVXLAN networks, valid tunnel IDs چُھ %(min)s through %(max)s."
+"TCP تہ UDP رولز یِمتوہہ ژاران چھو کھولنہ خآطرہ اَکھ پورٹ یا واریاہ پورٹ۔ ژارُن  "
+"\"Port Range\"  ٲپشن  فراہم جآے دونوے شُہتہ اندیوم پورٹ رینج خآطرہ ۔ ICMP "
+"رولزICMP خآطرہ توہیہ پَریو وَضاحت کرون اَکہ قِسم تہ کوڈ یَتھ جآے مَنز چُ"
 
 msgid "Forbidden"
 msgstr "منع کئورمُت"
@@ -2395,8 +2248,20 @@ msgstr "پئٹھ "
 msgid "From Port"
 msgstr "پورٹ پیٹھ"
 
+msgid "From here you can add a DHCP agent for the network."
+msgstr "یَتہٖ پئٹھ ہیکئو توہیہٕ جمع کئریتھ اَکھ DHCPایجینٹ نیٹ وئرک خآطرہ"
+
+msgid "From here you can create a snapshot of a volume."
+msgstr "یئتہٕ پئٹھ ہیکئو توہیہٕ بَناویتھ اَکھ سِنیپ شآٹس والیوم خآطرہ"
+
 msgid "From here you can update the default quotas (max limits)."
 msgstr "یَتہٕ پئٹھ ہیکئو توہیہٕ اَپڈیٹ کئریتھ ڈیفالٹ کئوٹاز  (زیادہ خوتہٕ زیادہ حد)"
+
+msgid "From:"
+msgstr "پیئٹھ"
+
+msgid "GB"
+msgstr "GB"
 
 msgid "GET"
 msgstr "GET"
@@ -2410,20 +2275,17 @@ msgstr "GRE"
 msgid "Gateway IP"
 msgstr "IPگیٹ وے"
 
-msgid "Gateway IP (optional)"
-msgstr " گیٹ وے IP (آپشنل)"
-
 msgid "Gateway IP and IP version are inconsistent."
 msgstr "گیٹ وے IP تہ  IPوئرجن چُھ  مُستئکِل "
 
 msgid "Gateway interface is added"
 msgstr "گیٹ وے اینٹر فیس چُھ جمع کئریتھ"
 
-msgid "General Info"
-msgstr "عام اِطلاع"
-
 msgid "Glance"
 msgstr "أکھ نظر"
+
+msgid "Go"
+msgstr "گئژہیو"
 
 #, python-format
 msgid "Group \"%s\" was successfully created."
@@ -2432,8 +2294,14 @@ msgstr "گروپ \"%s\"  آو کامیابی سآن بَناونہٕ"
 msgid "Group ID"
 msgstr "گروپ  ID"
 
+msgid "Group Management"
+msgstr "گروپ مینیجمینٹ"
+
 msgid "Group Members"
 msgstr "گروپ میمبرس"
+
+msgid "Group by:"
+msgstr "گروپ کئورمُت:"
 
 msgid "Group has been updated successfully."
 msgstr "گروپ  آو کامیابی سآناَپڈیٹ کئرنہٕ"
@@ -2441,6 +2309,14 @@ msgstr "گروپ  آو کامیابی سآناَپڈیٹ کئرنہٕ"
 msgid "Groups"
 msgstr "گروپس"
 
+msgid ""
+"Groups are used to manage access and assign roles to multiple users at once. "
+"After creating the group, edit the group to add users."
+msgstr ""
+"گروپس چہ  یوان  اِستعمال  کئرنہ ایکسس مینیج کرنہ خآطرہ تہ رول ایسآین کرنہ "
+"خآطرہ جَلدی ۔ گروپ بَناونہ خآطرہ، شیریو گروپ یوزر جمع کرنہ خآطرہ"
+
+#. Translators: High Availability mode of Neutron router
 msgid "HA mode"
 msgstr "HA موڈ"
 
@@ -2456,6 +2332,12 @@ msgstr "HTTPطَریقٕہ چُھ یئوان  اِستعمال کئرنہٕ صح
 msgid "HTTPS"
 msgstr "HTTPS"
 
+msgid "Hash"
+msgstr "ہیش"
+
+msgid "Health Monitors"
+msgstr "صحت مآنیٹر"
+
 #, python-format
 msgid "Health monitor %s was successfully updated."
 msgstr "ہیلتھ مآنیٹر  %s گئو کامیابی سآن اَپڈیٹ"
@@ -2465,9 +2347,6 @@ msgstr "مدد"
 
 msgid "High Availability Mode"
 msgstr "تھود دَستِیاب موڈس مَنز"
-
-msgid "Hive"
-msgstr "ہآیو"
 
 msgid "Home"
 msgstr "ہوم"
@@ -2503,8 +2382,12 @@ msgstr ""
 "ہوسٹ ایگریگیٹ چُھ تَقسیم کئران دَستِیاب زون لاجئکل یونِٹس مَنز  ہوسٹ گروپ کئرنہٕ "
 "سیتھ ۔ بَنایئو ہوسٹ ایگریگیٹ تہٕ ژاریئو ہوٹ یِم اَتھ مَنز موجود چٗھ "
 
-msgid "Host or IP that the user is allowed to connect through."
-msgstr "ہوسٹ یا IP یُس یوزر ہیکہ جوڈیتھ"
+msgid ""
+"Host aggregates divide an availability zone into logical units by grouping "
+"together hosts. Edit the aggregate host to select hosts contained in it."
+msgstr ""
+"ہوسٹ ایگریگیٹ چُھ تَقسیم کئران دَستِیاب زون لاجئکل یونِٹس مَنز  ہوسٹ گروپ کئرنہٕ "
+"سیتھ ۔ بَنایئو ہوسٹ ایگریگیٹ تہٕ ژاریئو ہوٹ یِم اَتھ مَنز موجود چٗھ "
 
 msgid "Hostname"
 msgstr "ہوسٹ نآو"
@@ -2520,6 +2403,9 @@ msgstr " ہیپروئزر اِنسٹئنس"
 
 msgid "Hypervisor Servers"
 msgstr "ہیپر ویزر سئروِس"
+
+msgid "Hypervisor Summary"
+msgstr "ہیپر ویزر خُلاصہٖ"
 
 msgid "Hypervisors"
 msgstr "ہیپروئزرس"
@@ -2558,6 +2444,9 @@ msgstr "IP ایڈریس"
 msgid "IP Address (optional)"
 msgstr "IP ایڈریس(آپشنل)"
 
+msgid "IP Addresses"
+msgstr "IPایڈریسِز"
+
 msgid "IP Protocol"
 msgstr "پروٹوکال"
 
@@ -2590,14 +2479,11 @@ msgstr ""
 "اگر توہیہٕ ڈیفالٹ چھو اِستعمال کئران ترایئو خآلی ۔ اگر توہیہٕ چھو نہٖ یٔژہان "
 "اِستعمال کئرون اَکھ گیٹ وے، , چیک کئریو  'Disable Gateway' بونکن."
 
-msgid ""
-"IP address of Gateway (e.g. 192.168.0.254). Specify an explicit address to "
-"set the gateway. If you do not want to use a gateway, check 'Disable "
-"Gateway' below."
-msgstr ""
-"IP ایڈریس گیٹ وے خآطرہ (e.g. 192.168.0.254) وَضاحت کئریو اَکھ  واجِب گیٹ وے سیٹ "
-"کئرنہٕ خآطرہ ۔ اگر توہیہٕ چھو نہٕ یَژہان اِستعمال کئرون  اَکھ گیٹ وے، چیک کئریو "
-"'معزور گیٹ وے' بونکین"
+msgid "IP allocation pool"
+msgstr "IPایلوکیشن پوول"
+
+msgid "IP version"
+msgstr "IP وئرجن"
 
 msgid "IPSec Policies"
 msgstr " IP  سیک  پآلیسی"
@@ -2649,12 +2535,29 @@ msgstr "شِناخَت"
 msgid "Identity service does not allow editing user data."
 msgstr "شِناخی سئروِس چُھ نہٕ اِجازت دِوان یوزر ڈیٹا شیرنہٕ خٲطرہ"
 
+msgid ""
+"If console is not responding to keyboard input: click the grey status bar "
+"below."
+msgstr ""
+"اگر کنسول چُھ نہ جواب دِوان کی بورڈ اِنپُٹ خآطرہ: کِلک کریو گرے سِٹیٹس بآر بونکین"
+
+msgid ""
+"If no container name is provided, a default container named volumebackups "
+"will be provisioned for you. Backups will be the same size as the volume "
+"they originate from."
+msgstr ""
+"اگر کاہ کئنٹینر نآو چُھ نہِ دَستِیاب، اَکھ ڈیفالٹ  کئنٹینر نآو والیوم بیک اَپس یئہٕ "
+"توہیہٕ دَستِیاب کئرنہٕ ۔ بیک اَپس  آسہِ ہیو  سآئز یُس والیوم تِم بِناوان"
+
 msgid "Image"
 msgstr "شکل"
 
 msgctxt "Type of an image"
 msgid "Image"
 msgstr "شکل"
+
+msgid "Image (Glance)"
+msgstr "شکل (أکھ نظر)"
 
 msgid "Image File"
 msgstr "شکل فآیل"
@@ -2670,9 +2573,6 @@ msgstr "شکل نآو"
 
 msgid "Image Name ="
 msgstr "شکل نآو ="
-
-msgid "Image Registry"
-msgstr "شکل ریجسٹری"
 
 msgid "Image Source"
 msgstr "شکل سورس"
@@ -2704,26 +2604,21 @@ msgstr "پآلیسی مَنز"
 msgid "In Use"
 msgstr "اِستعمالس مَنز"
 
-msgid "Incremental"
-msgstr "بڈہن وول"
+msgid ""
+"In addition, you can create an external network or a shared network by "
+"checking the corresponding checkbox."
+msgstr ""
+" توہیہ اَتہ مَزید ہیکو  بَناویتھ اَکھ نیبرُم نیٹ ورک یا بعگراویتہ   نیٹ ورک  چیک "
+"کرنہ سیتہ کارسپآنڈینگ چیک بآکس"
+
+msgid "Info"
+msgstr "اِنفو"
 
 msgid "Information"
 msgstr "اِطلاع"
 
 msgid "Ingress"
 msgstr "اِنگریس"
-
-msgid "Initial Admin User"
-msgstr " گوڈنِک ایڈمِن یوزر"
-
-msgid "Initial Databases"
-msgstr "گوڈنِک ڈیٹا بیس"
-
-msgid "Initial admin user to add"
-msgstr "گوڈنِک ایڈمِن یوزر جمع کریتھ"
-
-msgid "Initialize Databases"
-msgstr " چٲلو  کئریو ڈیٹا بیس"
 
 msgid "Initiator state"
 msgstr "شُروع کئورمژ حآلت مَنز"
@@ -2740,9 +2635,6 @@ msgstr "اِنجیکٹِڈ فآئل پآتھ بئٹس"
 msgid "Injected Files"
 msgstr "اِنجیکٹِڈ فآئل"
 
-msgid "Input"
-msgstr "اِن پُٹ"
-
 msgid "Input must be in CIDR format"
 msgstr "اِنپُٹ گئژہ آسون CIDR فارمیٹس ۄمَنز"
 
@@ -2758,17 +2650,26 @@ msgstr " اِنسٹنس"
 msgid "Instance Action List"
 msgstr "اِنسٹس کئم لِسٹ"
 
+msgid "Instance Admin Password"
+msgstr "اِنسٹئنس ایڈمِن پآس وئرڈ"
+
 msgid "Instance Boot Source"
 msgstr "اِنسٹئنس  بُٹ ضریعہٖ"
 
-msgid "Instance Count"
-msgstr "اِنسٹئنس گئنتی"
+msgid "Instance Console"
+msgstr "اِنسٹئنس کئنسول"
+
+msgid "Instance Console Log"
+msgstr "اِنسٹئنس کئنسول لاگ"
 
 msgid "Instance ID"
 msgstr "اِنسٹئنس ID"
 
 msgid "Instance Name"
 msgstr "اِنسٹئنس نآو"
+
+msgid "Instance Overview"
+msgstr "اِنسٹنس  اوور ویو"
 
 msgid "Instance Password is not set or is not yet available"
 msgstr "اِنسٹنس پٲس ورڈ چُھ نہ دَستِیاب یا چُھ نہ دَستِیاب"
@@ -2784,9 +2685,6 @@ msgstr " اِنسٹنس یِم جوڈیتھ چھ"
 
 msgid "Instances"
 msgstr "اِنسٹئنسِز"
-
-msgid "Instances Count"
-msgstr "اِنسٹنسِز گنتی"
 
 msgid "Insufficient privilege level to view domain information."
 msgstr "نا کافی پریویلی لیول ڈومین اِطلاع وِچھنہٕ خآطرہ"
@@ -2809,14 +2707,8 @@ msgstr "اینٹر فیس  جمع کئریتھ"
 msgid "Interfaces"
 msgstr "اِنٹر فیس"
 
-msgid "Internal IP"
-msgstr "اِنٹرنل IP"
-
 msgid "Internal Interface"
 msgstr " اینٹر فیس نیبرُم"
-
-msgid "Internal binary"
-msgstr "بینری اِنٹرنل"
 
 msgid "Invalid date format: Using today as default."
 msgstr "نا واجِب تآریخ فارمیٹ : اِستعمال اَز ڈیفالٹ پئٹھ"
@@ -2833,50 +2725,14 @@ msgstr "ناقابِل وَقتُک پیرڈ ۔ توہِیہٕ چھو  دَخو�
 msgid "Items Per Page"
 msgstr " آئٹمز فئی صفحس پئٹھ"
 
-msgid "Java Opts"
-msgstr "جآوا ٲپٹس"
-
-msgid "Job"
-msgstr "جآب"
-
-msgid "Job Binaries"
-msgstr "جآب بینری"
-
-msgid "Job Binary Details"
-msgstr "جآب بینری تَفصیل"
-
-msgid "Job Execution Details"
-msgstr "جآب ایکزیکوشن تَفصیل"
-
-msgid "Job Execution ID"
-msgstr "جآب ایکزیکوشن ID"
-
-msgid "Job Type"
-msgstr "جآب قِسم"
-
-msgid "Job args"
-msgstr "جب آرگس"
-
-msgid "Job configs"
-msgstr "جآب کنفِگس"
-
-msgid "Job created"
-msgstr "جآب بَناویتھ"
-
-msgid "Job launched"
-msgstr "لانچ کور جاب"
-
-msgid "Job params"
-msgstr "جآب پیرمز"
-
-msgid "Jobs"
-msgstr " جآب"
-
 msgid "Kernel ID"
 msgstr "ID کرنل"
 
 msgid "Key"
 msgstr "کئی"
+
+msgid "Key Name"
+msgstr "کئی نٲو"
 
 msgid "Key Pair"
 msgstr "کئی جورہ"
@@ -2886,6 +2742,9 @@ msgstr "نآو کی جورہ"
 
 msgid "Key Pairs"
 msgstr "کئی جورہ"
+
+msgid "Key Pairs are how you login to your instance after it is launched."
+msgstr "کی جورہ چھ کتھ کن کریو لاگِن تُہدِس اِنسٹنسِز لانچ کرنہ پَتہ"
 
 msgid "Key Size (bits)"
 msgstr "کئی سآئز (بِٹس)"
@@ -2899,20 +2758,19 @@ msgstr ""
 msgid "Key pair to use for authentication."
 msgstr "کئی جورہ اِستعمال کئرنہٖ خآطرہ آتھینٹِکیشن"
 
+msgid ""
+"Key pairs are ssh credentials which are injected into images when they are "
+"launched. Creating a new key pair registers the public key and downloads the "
+"private key (a .pem file)."
+msgstr ""
+"کی جورہ چھ sshکریڈینشل یِم اینجیکٹ کریتھ چھ شکل مَنز یَلہ لانچ کریتھ چھ۔ بَناوُن "
+"اَکھ نوہ کی جورہ چُھ ریجیسٹر کران عام کی تہ ڈاون لوڈ کران زاتی کی(a .pem file)."
+
 msgid "Key-Value Pairs"
 msgstr "کئی -ویلیو جورہ"
 
-msgid "Keypair"
-msgstr "کی جورہ"
-
 msgid "Kwapi"
 msgstr "کواپی"
-
-msgid "LUKS Volume Snapshots"
-msgstr "LUKSجآے سِنیپ شآٹ"
-
-msgid "LUKS Volumes"
-msgstr "LUKSجآے"
 
 msgid "Language"
 msgstr "زَبان"
@@ -2922,6 +2780,12 @@ msgstr "آخری ۱۵ دوہ"
 
 msgid "Last 30 days"
 msgstr "آخری ۳۰ دوہ"
+
+msgid "Last Modified"
+msgstr "آخری شیرمُت"
+
+msgid "Last Updated"
+msgstr "آخری اَپڈیٹِڈ"
 
 msgctxt "Time since the last update"
 msgid "Last Updated"
@@ -2939,20 +2803,14 @@ msgstr "آخری وئری"
 msgid "Launch"
 msgstr "لانچ"
 
-msgid "Launch Cluster"
-msgstr "لانچ کِلسٹر"
-
-msgid "Launch Database"
-msgstr " لانچ  کئریو ڈیٹآ بیس"
-
 msgid "Launch Instance"
 msgstr "لانچ اِنسٹنس"
 
-msgid "Launch On Existing Cluster"
-msgstr "لآنچ  کئریو حآلی کِلسٹر پیٹھ"
+msgid "Launch Instance (Quota exceeded)"
+msgstr "لانچ کئریو اِنسٹئنسِز (کئوٹا گئو زیادہ)"
 
-msgid "Launch On New Cluster"
-msgstr "لآنچ  کئریو نوہ کِلسٹر"
+msgid "Launch Parameters"
+msgstr "پیرامیٹر کئریو لانچ"
 
 msgid "Launch Stack"
 msgstr "لانچ کئریو سِٹیک"
@@ -2969,16 +2827,6 @@ msgstr "لانچ کریتھ اِنسٹنس یَمہ نیٹ ورک خآطرہ"
 msgid "Launch instance with this policy profile"
 msgstr "لانچ کریو اِنسٹنس یَتھ پآلیسی پروفآیل سیتھ"
 
-msgid "Launch instances in these security groups."
-msgstr "لانچ  اِنسٹنسِز یِمن حِفاظتی گروپس مَنز"
-
-msgid "Launch instances in this availability zone."
-msgstr "لانچ  اِنسٹنسِز یِمن حِفاظتی گروپس مَنز"
-
-#, python-format
-msgid "Launched %(count)s named \"%(name)s\"."
-msgstr "لٲنچڈ %(count)s named \"%(name)s\". "
-
 msgid ""
 "Launching multiple instances is only supported for images and instance "
 "snapshots."
@@ -2987,8 +2835,11 @@ msgstr "لانچینگ ملٹیپل اِنسٹنسِز چُھ تعاوُن شک�
 msgid "Length of Injected File Path"
 msgstr "زیچھر  اِنجیکٹِڈ فآئل پآتھ"
 
-msgid "Libs"
-msgstr "لیبس"
+msgid "Lifetime Units"
+msgstr "لآئف ٹآئم یونِٹس"
+
+msgid "Lifetime Value"
+msgstr "لآئف ٹآئم قعمت"
 
 msgid "Lifetime units"
 msgstr "تا عُمر یونِٹس"
@@ -3014,6 +2865,9 @@ msgstr "لآئو مئگریٹ"
 msgid "Live Migrate Instance"
 msgstr "لآئو مئگریٹ اِنسٹئنس"
 
+msgid "Live migrate an instance to a specific host."
+msgstr "لٲئو مئگریٹ أکھ اِنسٹئنس یُس وَضاحت پئزہ کئرون ہوسٹ خٲطرہ"
+
 msgid "Load Balancer"
 msgstr "لوڈ بیلئنسر"
 
@@ -3030,6 +2884,9 @@ msgstr "لوڈ بیلئنسِنگ طَریقہٕ"
 msgid "Local"
 msgstr "لوکل"
 
+msgid "Local Disk Usage"
+msgstr "لوکل ڈِسک اِستعمال"
+
 msgid "Local Storage (total)"
 msgstr "لوکئل سِٹوریج (کُل)"
 
@@ -3039,17 +2896,31 @@ msgstr "لوکئل سِٹوریج (اِستعمال)"
 msgid "Log"
 msgstr "لاگ"
 
+msgid "Log Length"
+msgstr "لاگ زیچھر"
+
 msgid "MAC Learning State"
 msgstr "MAC Lپئرنُک سِٹیٹ"
 
-msgid "Main Class"
-msgstr "مین کِلاس"
+msgid "MB"
+msgstr "MB"
+
+msgid "MTU"
+msgstr "MTU"
 
 msgid "Make Private"
 msgstr "زآتی بَنایو"
 
 msgid "Make Public"
 msgstr "عام بَنایو"
+
+msgid ""
+"Make a new copy of an existing object to store in this or another container. "
+"You may additionally specify the path within the selected container where "
+"the new copy should be stored."
+msgstr ""
+"بَنایو اَکھ نوہ کاپی موجودہ  آبجیکٹ جمعکرنہ خآطرہ یَتہ  یا اکی کنٹینر مَنز۔ "
+"توہیہ ہیکو مَزید وَضاحت کریتھ پآتھ ژارمِت کنٹینر یَتینس نوہ کاپی پَزہ جمع کرین"
 
 msgid "Manage Attachments"
 msgstr "مینیج کئریو ایٹیچمینٹ"
@@ -3075,26 +2946,20 @@ msgstr "مینیج کئریو QoS سِپیک   جورہ "
 msgid "Manage Rules"
 msgstr "مینیج رولز"
 
+msgid "Manage Security Group Rules"
+msgstr "مینیج کریو  حِفاظتی گروپ رولز"
+
 msgid "Manage Specs"
 msgstr "مینیج کئریو سِپیکس"
 
 msgid "Manage Volume Attachments"
 msgstr "مینیج کئریو والیوم ایٹیچمینٹ"
 
-msgid "Management IP"
-msgstr "مینیجمینٹ IP"
-
 msgid "Manual"
 msgstr "مینول"
 
-msgid "MapReduce"
-msgstr "نَقشہ کم"
-
 msgid "Mapped Fixed IP Address"
 msgstr "میپڈ فیکسIP نیب"
-
-msgid "Mapper"
-msgstr "میپر"
 
 msgid "Max Retries"
 msgstr "زیادہ خوتہٕ زیادہ کوشئش"
@@ -3102,8 +2967,8 @@ msgstr "زیادہ خوتہٕ زیادہ کوشئش"
 msgid "Max Retries (1~10)"
 msgstr " (1~10) زیادہ خوتھ زیادہ"
 
-msgid "Max. Size (MB)"
-msgstr "زیادہ خوتہ زیادہ  سآئز  (MB)"
+msgid "Max."
+msgstr "زیادہ خوتہٕ زیادہ"
 
 msgid "Maximum Transmission Unit size for the connection"
 msgstr "زیادہ خوتہٕ زیادہ ٹرانسمیشن یونِٹ سآئز کئنیکشن  خآطرہ"
@@ -3127,14 +2992,11 @@ msgstr "میمبر IP ایڈریس گئژہ  وَضاحت کئرون"
 msgid "Member Source"
 msgstr "میمبر ضریعہ"
 
-msgid "Member address"
-msgstr "میمبرز ایڈریس"
-
-msgid "Member(s)"
-msgstr "میمبر"
-
 msgid "Members"
 msgstr "میمبرس"
+
+msgid "Memory Usage"
+msgstr "میموری اِستعمال"
 
 msgid "Message"
 msgstr "شیچھ"
@@ -3145,11 +3007,11 @@ msgstr " میٹا ڈیٹا"
 msgid "Metadata Items"
 msgstr "  میٹا ڈیٹا آئٹم"
 
-msgid "Metadata successfully updated."
-msgstr "میٹا ڈیٹا کامیابی سآن اَپڈیٹ کئورمُت "
-
 msgid "Meter"
 msgstr "میٹر"
+
+msgid "Metric:"
+msgstr "میٹرِک:"
 
 msgctxt "Current status of an Instance"
 msgid "Migrating"
@@ -3162,14 +3024,23 @@ msgstr "مئگریِنگ"
 msgid "Migration Policy"
 msgstr "مئگریشن پآلیسی"
 
-msgid "Min. Size (MB)"
-msgstr "کم از کم سآئز  (MB)"
+msgid "Min Disk"
+msgstr "کم از کم ڈِسک"
+
+msgid "Min RAM"
+msgstr "کم از کمRAM"
+
+msgid "Min."
+msgstr "کم از کم"
 
 msgid "Minimum Disk (GB)"
 msgstr "کم از کم ڈِسک (GB)"
 
 msgid "Minimum RAM (MB)"
 msgstr "کم از کمRAM (MB) "
+
+msgid "Minutes"
+msgstr "مِنٹس"
 
 #, python-format
 msgid "Modified domain \"%s\"."
@@ -3211,6 +3082,15 @@ msgstr "شیریو کوٹا"
 msgid "Modify Usage Report Parameters"
 msgstr "شیریئو یوسیج ریپورٹ پیرامیٹر "
 
+msgid "Modify dashboard settings for your user."
+msgstr "شیریئو ڈیش بورڈ  سیٹینگس تُہندِ یوزر خآطرہ"
+
+msgid "Modify name and description of a volume."
+msgstr "شیرئیو نٲو تہٕ تَفصیل والیوم ہُند"
+
+msgid "Modify the name and description of a snapshot."
+msgstr "شیریئو نٲو تہٕ تَفصیل سِنیپ شآٹس خٲطرہ"
+
 msgid "Monitor"
 msgstr " مانیٹر "
 
@@ -3219,6 +3099,9 @@ msgstr "مآنیٹر تَفصیل"
 
 msgid "Monitor Type"
 msgstr "مآنیٹر قِسم"
+
+msgid "Monitoring:"
+msgstr "مآنیٹرینگ"
 
 msgid "Monitors"
 msgstr "مآنیٹرس"
@@ -3268,6 +3151,9 @@ msgstr "نیٹ وئرک%s آو کامیابی سآن بَناونہٖ"
 msgid "Network %s was successfully updated."
 msgstr "نیٹ وئرک%s آو کامیابی سآن اَپڈیٹ کئرنہ"
 
+msgid "Network (Neutron)"
+msgstr "نیٹ وئرک (نیوٹران)"
+
 msgid "Network Address"
 msgstr "نیٹ وئرک ایڈریس"
 
@@ -3277,11 +3163,17 @@ msgstr "نیٹ وئرک ایڈریس تہٕ IP  وئرجن چُھ نہ مُست�
 msgid "Network Agents"
 msgstr "نیٹ وئرک ایجینٹس"
 
+msgid "Network Details"
+msgstr "نیٹ وئرک تَفصیل"
+
 msgid "Network ID"
 msgstr "نیٹ وئرک ID"
 
 msgid "Network Name"
 msgstr "نیٹ وئرک نٲو"
+
+msgid "Network Overview"
+msgstr " نیٹوئرک اوور ویو"
 
 msgid "Network Profile"
 msgstr "نیٹ وئرک پروفآئل"
@@ -3291,6 +3183,9 @@ msgstr "نیٹ وئرک  پروفآئل ہیکو نہٕ واپس اَنیتھ"
 
 msgid "Network Topology"
 msgstr "نیٹ وئرک ٹوپولاجی"
+
+msgid "Network Type:"
+msgstr " نیٹوئرک قِسم"
 
 msgid "Network address in CIDR format (e.g. 192.168.0.0/24)"
 msgstr "نیٹ وئرک ایڈریس  CIDR فارمیٹس مَنز (مِثال 192.168.0.0/24)"
@@ -3314,11 +3209,11 @@ msgstr " نیٹ وئرک"
 msgid "Neutron"
 msgstr "نیوران"
 
-msgid "Neutron Management Network"
-msgstr "نیوٹران مینیجمینٹ نیٹ ورک"
-
 msgid "Never"
 msgstr "زہین نہٕ "
+
+msgid "Never updated"
+msgstr "زہ نہ اَپڈیٹ"
 
 msgid "New DHCP Agent"
 msgstr "نئو DHCP ایجینٹ"
@@ -3329,14 +3224,8 @@ msgstr "نئوہ فِلیوئر"
 msgid "New Host"
 msgstr "نئوہ ہوسٹ"
 
-msgid "New Size (GB)"
-msgstr "نوہ سآیز (GB)"
-
 msgid "New password"
 msgstr " نئوہ  پآس وئرڈ "
-
-msgid "New size for volume must be greater than current size."
-msgstr "نوہ سآیز والیوم خآطرہ گژہ آسون حآلی سآیز خوتہ ریادہ"
 
 msgid "New size must be greater than current size."
 msgstr "نئوہ سآئز گئژہ آسون بوڈہ حآلی سآئز خوتہٕ "
@@ -3356,17 +3245,11 @@ msgstr "کاہ ہوسٹ آو نہٕ  ژارنہٕ"
 msgid "No Hosts found."
 msgstr "کاہ ہوسٹ آو نہٕ ژہانڈنہٖ"
 
-msgid "No Images Available"
-msgstr " دَستِیاب کاہ شکل نہ "
-
 msgid "No Session Persistence"
 msgstr "کاہ سیشن چُھنہٖ جآری"
 
-msgid "No Templates Available"
-msgstr "کاہ ٹیمپلیٹ چُھ نہ  دَستِیاب"
-
-msgid "No availability zone specified"
-msgstr "کاہ تہ دَستِیاب زون چھ نہ  وَضاحت کئریتھ"
+msgid "No attached device"
+msgstr "کاہ جوڈیتھ آلہٕ نہٖ"
 
 msgid "No availability zones found"
 msgstr "کاہ دَستِیاب زون آیئہٕ نہٕ لَبنہٕ"
@@ -3376,9 +3259,6 @@ msgstr "کاہ دَستِیاب کنسول نہ"
 
 msgid "No available projects"
 msgstr "کاھ دَستِیاب تِفسیل نِہ"
-
-msgid "No backups available"
-msgstr "کاہ بیک اَپ چُھ نہ  دَستِیاب"
 
 msgid "No flavors available"
 msgstr "کاہ فِلیوئر چُھنہٕ دَستِیاب"
@@ -3407,17 +3287,11 @@ msgstr "کاہ ہوسٹ آو نہٕ ژہانڈنہٖ"
 msgid "No images available"
 msgstr "کاہ شَکل چھ نہ دَستِیاب"
 
-msgid "No images available."
-msgstr "کاہ شکل چھ نہ  دَستِیاب"
-
 msgid "No instances available"
 msgstr "کاہ اِنسٹنس چُھ نہ دَستِیاب"
 
 msgid "No key pairs available"
 msgstr "کاہ کئی جورہ چھ نئ دَستِیاب"
-
-msgid "No keypair"
-msgstr "کی جورہ نہ"
 
 msgid "No networks available"
 msgstr "کاہ نیٹ وئرک چُھ نہٕ دَستِیاب"
@@ -3442,6 +3316,9 @@ msgstr " پروجیکٹس آے  نہٕ لَبنہٕ  ۔ سآری  پروجیکٹ
 
 msgid "No provider is available"
 msgstr "کاہ پروویئڈر چُھنہ دَستِیاب"
+
+msgid "No rules defined."
+msgstr "کاہ رول چُھ نہ وَضاحت کئریتھ"
 
 msgid "No security groups available"
 msgstr "کاہ حِفآظتی گروپ دَستِیاب نہ"
@@ -3483,27 +3360,11 @@ msgstr "کاہ والیوم سِنیپ شٲٹس  چھ نئ دَستِیاب"
 msgid "No volume type"
 msgstr "کاہ والیوم قِسم نہٕ"
 
+msgid "No volumes attached."
+msgstr "کاہ والیوم جوڈیتھ چُھنہٕ"
+
 msgid "No volumes available"
 msgstr "کاہ والیوم چُھنہٕ دَستِیاب"
-
-msgid "Node Group Template Details"
-msgstr "نوڈ گروپ ٹیمپلیٹ تَفصیل"
-
-#, python-format
-msgid "Node Group Template copy %s created"
-msgstr "نوڈ گروپ ٹیمپلیٹ کاپی %s بَناومِت"
-
-msgid "Node Group Templates"
-msgstr "نوڈ گروپ ٹیمپلیٹ"
-
-msgid "Node Groups"
-msgstr "نوڈ گروپس"
-
-msgid "Node Processes"
-msgstr "نوڈ پراسیس "
-
-msgid "Node group cluster"
-msgstr "نوڈ گروپ کلیسٹر"
 
 msgid "Non-Members"
 msgstr "نآن -میمبرس"
@@ -3518,14 +3379,21 @@ msgstr "کہین نہ"
 msgid "Normal"
 msgstr "نارمل"
 
-msgid "Not Assigned"
-msgstr "دِتمُت نہ"
-
-msgid "Not Found"
-msgstr "آو نہ لَبنہ"
+msgid "Not attached"
+msgstr "جوڈیتھ نہٕ"
 
 msgid "Not available"
 msgstr "چُہ نہ دَستِیاب"
+
+msgid "Note: "
+msgstr "نوٹ: "
+
+msgid ""
+"Note: A Public Container will allow anyone with the Public URL to gain "
+"access to your objects in the container."
+msgstr ""
+"نوٹ:عام کنٹینر دِیہ اِجازت کاس تہ عامURL پیٹھ  ایکسس خآطرہ تُہدِس ٲبجیکٹس "
+"کنٹینرس مَنز"
 
 msgid "Nova"
 msgstr "نووا"
@@ -3533,8 +3401,17 @@ msgstr "نووا"
 msgid "Number of API requests against swift"
 msgstr "تعداد API  درخواست ہُند سویفٹ خِلاف"
 
+msgid "Number of Instances"
+msgstr "تعداد اِنسٹئنس ہُند۱"
+
+msgid "Number of Snapshots"
+msgstr "تعداد سِنیپ شآٹس  ہُند"
+
 msgid "Number of VCPUs"
 msgstr "تعداد  VCPU"
+
+msgid "Number of Volumes"
+msgstr "والیوم ہُند تعداد"
 
 msgid "Number of containers"
 msgstr "تعداد کئنٹینر ہُند"
@@ -3547,9 +3424,6 @@ msgstr "تعداد  یئن وئل بآئٹس نیٹوئرک پئٹھ VM اینٹ
 
 msgid "Number of incoming packets for a VM interface"
 msgstr "تعداد  یئن وئل پیکٹس VM اینٹرفیس پئٹھ "
-
-msgid "Number of instances to launch."
-msgstr "اِنسٹئنس ہُند تعداد لانچ خآطرہ"
 
 msgid "Number of objects"
 msgstr "تعداد آبجیکٹس ہُند"
@@ -3577,11 +3451,20 @@ msgstr "تعداد لیکھمِت دَرخواست ہُند"
 msgid "OR Copy/Paste your Private Key"
 msgstr "کاپی/ پیسٹ تُہند زاتی کئی OR"
 
+msgid "Object Count"
+msgstr "آبجیکٹ گنتی"
+
+msgid "Object Count: "
+msgstr " آبجیکٹ گنتی"
+
 msgid "Object Details"
 msgstr "آبجیکٹ   تَفصیل"
 
 msgid "Object Name"
 msgstr "آبجیکٹ نآو"
+
+msgid "Object Storage (Swift)"
+msgstr "آبجیکٹ سِٹوریج (تیز)"
 
 msgid "Object Store"
 msgstr "آبجیکٹ سِٹور"
@@ -3591,6 +3474,9 @@ msgstr "آبجیکٹ   گئو کامیابی سآن اَپڈیٹ  "
 
 msgid "Object was successfully uploaded."
 msgstr "آبجیکٹ آو کامیابی سآن اَپلوڈ کرنہ"
+
+msgid "Object:"
+msgstr "آبجیکٹ  "
 
 msgid "Objects"
 msgstr " آبجیکٹس"
@@ -3604,20 +3490,17 @@ msgstr "ڈیمانڈ پئٹھ "
 msgid "Open Port"
 msgstr "کھولیو پورٹ"
 
-msgid "OpenStack Flavor"
-msgstr "کھولیتھ سِٹیک فِلیور"
-
-msgid "Optional Backup Description"
-msgstr "آپشنل تَفصیل  بیک اَپ"
+msgid "Open Port/Port Range:"
+msgstr "کھولیو پورٹ / پورٹ رینج"
 
 msgid "Optional Parameters"
 msgstr "آپشنل پیرامینٹرس"
 
-msgid "Optional parent backup"
-msgstr "آپشنل پیرنٹ  بیک اَپ"
-
 msgid "Optional: Next Hop Addresses (comma delimited)"
 msgstr "آپشنل: بیاکھ ہاپ ایڈریس  (کامہٕ محدود نہٖ)"
+
+msgid "Optionally, you may choose to create a new volume."
+msgstr "آپشنلئی، توہیہٕ ہیکئو ژاریتھ بَناونہٕ خآطرہ اَکھ نئوہ والیوم"
 
 msgid "Other"
 msgstr "بیاکھ"
@@ -3625,11 +3508,14 @@ msgstr "بیاکھ"
 msgid "Other Protocol"
 msgstr "بآقی پروٹوکال"
 
-msgid "Output"
+msgid "Outputs"
 msgstr "آوٹ پُٹ"
 
 msgid "Overview"
 msgstr "اوور ویو"
+
+msgid "Owner"
+msgstr "مآلِک"
 
 msgid "PFS"
 msgstr "PFS"
@@ -3640,8 +3526,8 @@ msgstr "PING"
 msgid "Page Not Found"
 msgstr "پیج آو نہٕ لَبنہٕ "
 
-msgid "Parent Backup"
-msgstr "پیرنٹ   بیک اَپ"
+msgid "Parameters"
+msgstr "پیرامیٹر"
 
 msgid "Password"
 msgstr "پآس وئرڈ"
@@ -3690,17 +3576,17 @@ msgstr "پئرفیکٹ فاروئرڈ سیکریسی"
 msgid "Period"
 msgstr "پیرڈ"
 
+msgid "Period:"
+msgstr "پیرڈ"
+
 msgid "Permit"
 msgstr "اِجازت"
-
-msgid "Persist cluster after job exit"
-msgstr "جآب مَنز نیرنہ پَتہ کلسٹر تھایو  "
 
 msgid "Physical Network"
 msgstr "فیزیکل نیٹ وئرک"
 
-msgid "Pig"
-msgstr "پیگ"
+msgid "Physical Network:"
+msgstr "فیزیکل نیٹوئرک"
 
 msgid "Please choose a HTTP method"
 msgstr "مہربآنی کئریتھ ژاریو اَکھ HTTP طَریقہٕ"
@@ -3711,6 +3597,9 @@ msgid ""
 msgstr ""
 "مہربآنی کئریتھ ژاریو اَکھ ویلیو (e.g. 200)،اَکھ لِسٹ آسیتھ ویلیوز ہِنز (e.g. "
 "200, 202), یا واریاہ ویلیوز آسیتھ (e.g. 200-204)"
+
+msgid "Please note: "
+msgstr "مہربآنی کئریتھ نوٹ کئریو: "
 
 #, python-format
 msgid "Please specify a %s using only one source method."
@@ -3723,18 +3612,6 @@ msgstr "مہربآنی کئریتھ وَضاحت کئریو اَکھ URL"
 msgid "Please try again later [Error: %s]."
 msgstr "مہربآنی کریتھ کوشیش کریو دوبارہ [Error: %s]."
 
-msgid "Plugin"
-msgstr " پِلگ اِن "
-
-msgid "Plugin Name"
-msgstr "پِلگ اِن نآو"
-
-msgid "Plugin name"
-msgstr " پِلگ اِن نآو"
-
-msgid "Plugins"
-msgstr "پِلگ اِن"
-
 msgid "Policies"
 msgstr "پآلیسیز"
 
@@ -3744,6 +3621,9 @@ msgstr " پٲلیسی"
 #, python-format
 msgid "Policy %s was successfully updated."
 msgstr "پآلیسی  %s  گئو کامیابی سآن اَپڈیٹ  "
+
+msgid "Policy ID"
+msgstr "پالیسی ID"
 
 msgid "Policy Profiles"
 msgstr "پٲلیسی پروفٲئل"
@@ -3772,8 +3652,8 @@ msgstr "پورٹ %sآو کامیابی سآن بَناونہٕ"
 msgid "Port %s was successfully updated."
 msgstr "پورٹ  %s  گئو کامیابی سآن اَپڈیٹ  "
 
-msgid "Port Details"
-msgstr "پورٹ تَفصیل"
+msgid "Port ID"
+msgstr "پورٹ ID"
 
 msgid "Port Range"
 msgstr "پورٹ رینج"
@@ -3787,6 +3667,9 @@ msgstr " جوڈیتھ چُھ پورٹ یُس "
 msgid "Ports"
 msgstr "پورٹس"
 
+msgid "Position in Policy"
+msgstr "پآلیسی جآے"
+
 msgid "Post-Creation"
 msgstr "بَناونئ پَتئ"
 
@@ -3799,6 +3682,9 @@ msgstr "پاور اِستعمال"
 msgid "Pre-Shared Key (PSK) string"
 msgstr "گوڈے بعگراومِژ  (PSK)کئی سِٹرینگ"
 
+msgid "Pre-Shared Key string"
+msgstr "گوڈے بئگراومِژ کئی سِٹرینگ"
+
 msgid "Primary Project"
 msgstr "پریمئوی پروجیکٹ"
 
@@ -3807,12 +3693,6 @@ msgstr "زاتی"
 
 msgid "Private Key File"
 msgstr " فآئل زاتی کئی"
-
-msgid "Processes"
-msgstr "پروسیسز"
-
-msgid "Processes to be launched in node group"
-msgstr "پراسیسِز یِم لانچ چھ کرین نوڈ گروپس مَنز"
 
 msgid "Project"
 msgstr "پروجیکٹ"
@@ -3829,20 +3709,32 @@ msgstr "پروجیکٹID"
 msgid "Project Information"
 msgstr "پروجیکٹ اِطلاع"
 
+msgid "Project Limits"
+msgstr "پروجیکٹ حد"
+
 msgid "Project Members"
 msgstr "پروجیکٹ میمبرس"
 
 msgid "Project Name"
 msgstr "پروجئکٹ نآو"
 
+msgid "Project Quotas"
+msgstr "پروجیکٹ کوٹاز"
+
 msgid "Project Usage"
 msgstr "روجیکٹ یوسیج"
+
+msgid "Project Usage Overview"
+msgstr "پروجیکٹ یوسیج آوور ویو"
 
 msgid "Projects"
 msgstr "پروجیکٹس"
 
 msgid "Projects:"
 msgstr "پروجیکٹس:"
+
+msgid "Protect and use the key as you would any normal ssh private key."
+msgstr "محفوظ کریو تہ اِستعمال  کریو یتھ کن کاہ تہ نآرمل ssh  زآتی کی کرہ"
 
 msgid "Protected"
 msgstr "بَچآویتھ"
@@ -3859,11 +3751,23 @@ msgstr "پروٹوکال فٲیر وال خٲطرہ"
 msgid "Provider"
 msgstr "پرووایڈر"
 
+msgid "Provider Network"
+msgstr " نیٹوئرک دَستِیاب کئرن وول"
+
 msgid "Provider Network Type"
 msgstr "پرووئڈر سُند نیٹ وئرک قِسم"
 
 msgid "Provider for Load Balancer is not supported"
 msgstr " پروویئڈر لوڈ بیلئنسر چُھنہٖ تعاوُن"
+
+msgid ""
+"Provider specified network can be created. You can specify a physical "
+"network type (like Flat, VLAN, GRE, and VXLAN) and its segmentation_id or "
+"physical network name for a new virtual network."
+msgstr ""
+"پروویڈر ضریعہ خآص نیٹ ورک ہیکو بَناویتھ توہیہ ہیکیو وَضاحت کریتھ اَکھ فیضیکل  "
+"نیٹ ورک قِسم (مِثآل، Flat, VLAN, GRE, and VXLAN) تہ سیگمینٹیشن یا  فیضیکل نیٹ "
+"ورک  نآو نوہ ورچُیل نیٹ ورک خآطرہ "
 
 msgid "Pseudo-folder Name"
 msgstr "سئڈو فولڈرنآو"
@@ -3871,24 +3775,26 @@ msgstr "سئڈو فولڈرنآو"
 msgid "Pseudo-folder was successfully created."
 msgstr "سئڈو فولڈر آو بناونہ کامیابی سآن"
 
+msgid "Pseudo-folder:"
+msgstr "سیودو فولڈر"
+
 msgid "Public"
 msgstr "عوام"
 
 msgid "Public Key"
 msgstr "عآم کی"
 
+msgid "Public URL"
+msgstr "عام URL"
+
 msgid "QCOW2 - QEMU Emulator"
 msgstr "QCOW2 - QEMU ایمولیٹر"
 
-msgid "QoS Spec Consumer"
-msgstr "QoS سِپیک کئنزیومر"
-
-msgid ""
-"QoS Spec consumer value must be different than the current consumer value."
-msgstr "QoS سِپیک   کئنزیومر ویلیو گئژہ آسون اِلگ حٲلی  کئنزیومر ویلیو خوتہٖ"
-
 msgid "QoS Spec to be associated"
 msgstr "QoSسِپیک یُس جوڈیتھ چُھ"
+
+msgid "QoS Spec: "
+msgstr "QoS سِپیک :"
 
 msgid "QoS Specs"
 msgstr "QoS  سِپیک"
@@ -3938,6 +3844,10 @@ msgstr "کئوچ"
 msgid "Reason"
 msgstr "وَجہٕ"
 
+#, python-format
+msgid "Reason: %(disabled_reason)s"
+msgstr "وَجہٕ: %(disabled_reason)s"
+
 msgid "Rebuild Instance"
 msgstr "دوبآرہ بَنایئو اِنسٹئنس"
 
@@ -3948,14 +3858,8 @@ msgstr " پآس ورڈ دوبآرہ بَناوُن"
 msgid "Rebuilding instance %s."
 msgstr "Rebuilding instance %s."
 
-msgid "Reducer"
-msgstr "کم کرن ویول "
-
 msgid "Regions:"
 msgstr "علاقہٕ:"
-
-msgid "Register Image"
-msgstr "رجیسٹر  شکلہ"
 
 msgid "Relative part of requests this pool member serves compared to others"
 msgstr "ریلیٹیو حِصہ دَرخاست ہُند یہ پول میمبر کرہ بآقی لوکن ہِنز خِدمت"
@@ -3969,14 +3873,11 @@ msgstr ""
 "ہوی وَزن یہی لاگو کرنہ سآرنی میمبرس خآطرہ تہ یہی ضیرنہ پَتہ ۔ وَزن گژہ ٲسون ۱ "
 "پیٹہ ۲۵۶ تآن"
 
-msgid "Relaunch On Existing Cluster"
-msgstr "دوبآرہ کریہو لانچ حآلی کِلسٹر"
-
-msgid "Relaunch On New Cluster"
-msgstr "دوبآرہ کریہو لانچ نوہ کِلسٹر "
-
 msgid "Remote"
 msgstr "دور"
+
+msgid "Remote peer subnet"
+msgstr "دور پیر سب نیٹ"
 
 msgid "Remote peer subnet(s)"
 msgstr "دور پیئرسب نیٹ"
@@ -3987,6 +3888,9 @@ msgid ""
 msgstr ""
 "دور پیر سپ نیٹ  ایڈریس مآسک سیتھ فارمیٹس مَنز جُدا کئریتھ کامہٕ سیتھ اگر ضرورئی "
 "چُھ (مِثال 20.1.0.0/24, 21.1.0.0/24)"
+
+msgid "Remote:"
+msgstr "دور"
 
 msgid "Remove Rule"
 msgstr "کئڈئو رول"
@@ -4000,6 +3904,9 @@ msgstr "دَرکواستID "
 msgid "Required for APP_COOKIE persistence; Ignored otherwise."
 msgstr " ضروری APP_COOKIE  پرسیسٹنس خآطرہ؛ نَمر اَنداز کریو نَتہ "
 
+msgid "Reset to Default"
+msgstr "ڈیفالٹ کئریو ری سیٹ"
+
 msgid "Resize"
 msgstr "ریسآئز"
 
@@ -4007,25 +3914,17 @@ msgctxt "Action log of an instance"
 msgid "Resize"
 msgstr "ریسآئز"
 
-msgctxt "Current status of a Database Instance"
-msgid "Resize"
-msgstr "ریسآئز"
-
-msgid "Resize Database Volume"
-msgstr " والیوم ری سآئز ڈیٹا بیس"
-
 msgid "Resize Instance"
 msgstr "دوبآرہ کریو سآئز اِنسٹنسِز"
 
-msgid "Resize Volume"
-msgstr " والیوم ری سآئز"
-
-#, python-format
-msgid "Resizing volume \"%s\""
-msgstr "دوبآرہ  سآیز والیوم \"%s\""
-
 msgid "Resource"
 msgstr "زخیرزہ"
+
+msgid "Resource ID"
+msgstr "ریسوئرس ID"
+
+msgid "Resource Metadata"
+msgstr "ریسوئرس  میٹا ڈیٹا"
 
 msgid "Resource Usage"
 msgstr "ریسورس یوسیج"
@@ -4041,6 +3940,9 @@ msgstr "ریسٹور  کيریو"
 
 msgid "Restore Backup to Volume"
 msgstr "واپس کئریوبیک اَپ والیوم  تآن"
+
+msgid "Restore Backup:"
+msgstr "واپس کئریوبیک اَپ"
 
 msgid "Restore Volume Backup"
 msgstr "واپس کئریو والیوم بیک اَپ   تآن"
@@ -4079,6 +3981,9 @@ msgstr "کامیابی سٲن کِٔرداراَپڈیٹ"
 msgid "Roles"
 msgstr "کردار"
 
+msgid "Rollback"
+msgstr "رول بیک"
+
 msgid "Rollback On Failure"
 msgstr "رول بئک  ناقامیابی مَنز"
 
@@ -4087,6 +3992,9 @@ msgstr "روٹ ڈِسک"
 
 msgid "Root Disk (GB)"
 msgstr "روٹ ڈِسک(GB)"
+
+msgid "Route mode"
+msgstr "روئٹ موڈ"
 
 msgid "Router"
 msgstr " راوٹر"
@@ -4099,14 +4007,14 @@ msgstr "راوٹر%s گئوہ کامیابی سآن بَناونہٕ"
 msgid "Router %s was successfully updated."
 msgstr "رآوٹر%s گئو کامیابی سآن اَپڈیٹ"
 
-msgid "Router Details"
-msgstr "راوٹرِک  تَفصیل"
-
 msgid "Router ID"
 msgstr "راوٹر  ID"
 
 msgid "Router Name"
 msgstr "راوٹر نٲو"
+
+msgid "Router Rule Grid"
+msgstr "راوٹر رول گریڈ"
 
 msgid "Router Rules"
 msgstr "راوٹر رولز"
@@ -4123,6 +4031,13 @@ msgstr " راوٹر رول جمع کئریتھ"
 msgid "Routers"
 msgstr "راوٹرس"
 
+msgid ""
+"Routing rules to apply to router. Rules are matched by most specific source "
+"first and then by most specific destination."
+msgstr ""
+"راوٹِنگ رولز یِم راوٹرس پئھ لاگو گئزہن ۔ رولز چھ رئلان واریاہ وَضاحت کئرمِت "
+"ضریعہٖ سیتھ گوڈہ تہٕ پَتہٕ خآص ؤضاحت مَنزِل سیتھ"
+
 msgid "Rule"
 msgstr "رول"
 
@@ -4138,8 +4053,27 @@ msgstr "%(policy)s رول%(rule)s  ٲو کئڈنئ کآمیاب سٲن پٲلی�
 msgid "Rule %s was successfully updated."
 msgstr "رئول  %s  گئو کامیابی سآن اَپڈیٹ  "
 
+msgid "Rule Conflict"
+msgstr "رول کئنفلیکٹ"
+
+msgid "Rule:"
+msgstr "رول"
+
 msgid "Rules"
 msgstr "رولز"
+
+msgid ""
+"Rules define which traffic is allowed to instances assigned to the security "
+"group. A security group rule consists of three main parts:"
+msgstr ""
+"رولز یِم وَضا حت چھ کران کوس ٹریفِک چُھ اِجازت اِنسٹنسِز دِتمِت حِفآظتی گروپس خآطرہ۔  "
+"حِفآظتی گروپ رولس مَنز چھ ۳ بیڈہ حِصہ:"
+
+msgid "S3 URL"
+msgstr "S3 URL"
+
+msgid "SSH key pairs can be generated with the ssh-keygen command:"
+msgstr "کی جورہ چھ ssh ہیکان بَناویتہ ssh-keygenکمانڈ سیتھ"
 
 msgid "Save"
 msgstr "مَحفوظ"
@@ -4155,41 +4089,11 @@ msgstr "مَحفوظ علاوہ  سِپیک \"%s\""
 msgid "Saved spec \"%s\"."
 msgstr "مَحفوظ سِپیک  \"%s\""
 
-msgid "Scale"
-msgstr "سِکیل  "
-
-msgid "Scale Cluster"
-msgstr "سِکیل کِلسٹر"
-
-msgid "Scale cluster operation failed"
-msgstr "سِکیل کِلسٹر آپریشن ناکامیاب "
-
-msgid "Scaled cluster successfully started."
-msgstr "سِکیل کِلسٹر کامیاب شُروع "
-
-#, python-format
-msgid "Scheduled backup \"%(name)s\"."
-msgstr "سِکیڈیولڈ  بیک اَپ\"%(name)s\""
-
-#, python-format
-msgid "Scheduled deletion of %(data_type)s"
-msgstr "وٴقت مُقرر مِٹاوُن  %(data_type)s"
-
-#, python-format
-msgid "Scheduled resize of instance \"%s\"."
-msgstr "سِٕکیڈیولڈ ریسآئز اِسٹئنس خآطرہ \"%s\"."
-
 msgid "Script Data"
 msgstr "سِکریپٹ ڈیٹا"
 
 msgid "Script File"
 msgstr "سِکریپٹ فٲئل"
-
-msgid "Script name"
-msgstr "سِکریپٹ نآو"
-
-msgid "Script text"
-msgstr "سِکریپٹ مواد"
 
 msgid "Security Group"
 msgstr "حِفآظتی گروپ"
@@ -4200,8 +4104,26 @@ msgstr "حِفاظتی گروپ طَریقہٕ"
 msgid "Security Groups"
 msgstr "حِفاظتی گروپ"
 
+msgid ""
+"Security groups are sets of IP filter rules that are applied to the network "
+"settings for the VM. After the security group is created, you can add rules "
+"to the security group."
+msgstr ""
+"حِفاظتی گروپ چھ ٲمِت سیٹ کرنہ IP فِلٹر رولز یِم لآگو چھ نیٹ ورکVM سیٹینگس "
+"خآطرہ ۔ شیریو حِفاظتی گروپ تہ جمع کریو  تہ بَدلآیو رولز"
+
+msgid ""
+"Security groups are sets of IP filter rules that are applied to the network "
+"settings for the VM. Edit the security group to add and change the rules."
+msgstr ""
+" حِفاظتی گروپ چھ ٲمِت سیٹ کرنہ IP فِلٹر رولز یِم لآگو چھ نیٹ ورکVM سیٹینگس "
+"خآطرہ ۔ شیریو حِفاظتی گروپ تہ جمع کریو  تہ بَدلآیو رولز"
+
 msgid "Segmentation ID"
 msgstr "سیگمینٹیشن   ID"
+
+msgid "Segmentation ID:"
+msgstr "سیگمینٹیشن آئی ڈی"
 
 msgid "Select IKE Policy"
 msgstr "ژاریئوIKE  پآلیسی"
@@ -4257,9 +4179,6 @@ msgstr "ژاریئو اَکھ رائوٹر"
 msgid "Select a Subnet"
 msgstr "ژاریئو اَکھ سب نیٹ"
 
-msgid "Select a backup to restore"
-msgstr "ریسٹور خٲطرہ ژاریو بیک اَپ"
-
 #, python-format
 msgid "Select a health monitor of %s"
 msgstr "ژاریئو اَکھ صحت مآنیٹر %s"
@@ -4283,6 +4202,9 @@ msgstr "ژاریئو أکھ نئوہ ٹیمپلیٹ سِٹیک   ریلانچ 
 msgid "Select a port"
 msgstr "ژاریو اَکھ پورٹ"
 
+msgid "Select a pre-defined period or specify date."
+msgstr "ژاریئو اَکھ گوڈے ژارمُت پیرڈ یا وَضاحت کئریو تآریخ"
+
 msgid "Select a profile"
 msgstr "ژاریئو اَکھ پروفآئل"
 
@@ -4295,6 +4217,9 @@ msgstr "ژاریئو اَکھ نِشآن دِہ ہوسٹ"
 msgid "Select a template to launch a stack."
 msgstr "ژاریئو اَکھ  ٹیمپلیٹ  لانچ کئرنہ خآطرہ اَکھ سِٹیک"
 
+msgid "Select a volume to restore to."
+msgstr "ژاریئو اَکھ والیوم واپس کئرنہٕ خآطرہ"
+
 msgid "Select an IP address"
 msgstr " IPنیب ژاریو اَکھ"
 
@@ -4303,12 +4228,6 @@ msgstr "ژاریو اَکھ اِنسٹنس"
 
 msgid "Select an instance to attach to."
 msgstr " ژاریئو أکھ   اِنسٹئنس جوڈنہٕ خآطرہ"
-
-msgid "Select backup"
-msgstr "ژاریو بیک اَپ"
-
-msgid "Select datastore type and version"
-msgstr " ژاریئو ڈیٹا سِٹور قِسم تہ ورجن"
 
 msgid "Select format"
 msgstr "Select format"
@@ -4325,23 +4244,14 @@ msgstr "ژاریئو نیٹ وئرک"
 msgid "Select networks for your instance."
 msgstr " تُہند اِنسٹنسِز خآطرہ ژاریئو نیٹ ورک "
 
-msgid "Select parent backup"
-msgstr "ژاریئو پیرنٹ بیک اَپ"
-
-msgid "Select plugin and hadoop version"
-msgstr "ژاریئو پِلگ اِن تہ ہیڈوپ ورجن"
-
-msgid "Select plugin and hadoop version for cluster"
-msgstr "ژاریو اَکھ پِلگ اِن تہ ہیڈوپ  کلسٹرخآطرہ "
-
-msgid "Select plugin and hadoop version for cluster template"
-msgstr "ژاریو اَکھ پِلگ اِن تہ ہیڈوپ  کلسٹر ٹیمپلیٹ خآطرہ"
-
 msgid "Select rules for your policy."
 msgstr "ژاریئو رولز تُہندہ پآلیسی خٲطرہ"
 
 msgid "Select source"
 msgstr "ژاریئو ضریعہٖ"
+
+msgid "Select the image to rebuild your instance."
+msgstr "ژاریئو شَکل دو بآرہ بَناونہ کآطرہ اِنسٹنسِز"
 
 msgid ""
 "Select the projects where the flavors will be used. If no projects are "
@@ -4356,17 +4266,20 @@ msgstr "ژاریمیت ہوسٹ"
 msgid "Selected Projects"
 msgstr "ژارمیت پروجیکٹس"
 
+msgid "Selected Rules"
+msgstr "ژاریئو رول"
+
 msgid "Selected hosts"
 msgstr "ژاریمیت ہوسٹ"
+
+msgid "Selected networks"
+msgstr "ژاریئو نیٹ ورک"
 
 msgid "Server error"
 msgstr "سٗرور غَلطی"
 
 msgid "Service"
 msgstr "سئروِس"
-
-msgid "Service Configurations"
-msgstr "سروِس کنفِگریشن"
 
 msgid "Service Endpoint"
 msgstr " آخری پآنٹ سروِس "
@@ -4407,26 +4320,20 @@ msgstr "بئگراویتھ"
 msgid "Shared Storage"
 msgstr "بئگراویتھ ہوسٹ"
 
-msgid "Shared with Me"
-msgstr "بئگرایئو میہ سیتھ"
-
 msgid "Sign Out"
 msgstr "سآئن آوٹ"
 
 msgid "Size"
 msgstr "سآئز"
 
-msgid "Size (GB)"
-msgstr "سآئز  (GB)"
-
 msgid "Size of image to launch."
 msgstr "سآیز شَکلہ ہُند لانچ خٲلرہ"
 
-msgid "Size of the volume in GB."
-msgstr "سآیز والیومGB. مَنز"
-
 msgid "Size of volume"
 msgstr "سآئز جٲے ہُند"
+
+msgid "Size: "
+msgstr "سآیز"
 
 msgid "Slash is not an allowed character."
 msgstr "سِلیش چحُھ نہ اِجازت کریکٹر پٹھ"
@@ -4446,6 +4353,9 @@ msgstr " سِنیپ شآٹس"
 msgid "Snapshot \"%(name)s\" created for instance \"%(inst)s\""
 msgstr "سِنیپ شآٹس\"%(name)s\" بَناومِت اِنسٹنس خٲطرہ \"%(inst)s\""
 
+msgid "Snapshot Limits"
+msgstr "سِنیپ شآٹس  حد"
+
 msgid "Snapshot Name"
 msgstr "سِنیپ شٲٹس نٲو"
 
@@ -4454,6 +4364,9 @@ msgstr "سِنیپ شآٹس ضریعہٕ کئریو وَضاحت"
 
 msgid "Something went wrong!"
 msgstr "کیا تھان گئو غَلط"
+
+msgid "Source"
+msgstr "ضریعہٖ "
 
 msgid "Source CIDR"
 msgstr "ضریعہٖ CIDR"
@@ -4464,6 +4377,9 @@ msgstr "سورس   IP"
 msgctxt "load balancing method"
 msgid "Source IP"
 msgstr "سورس   IP"
+
+msgid "Source IP Address"
+msgstr "سورس IP نیب"
 
 msgid "Source IP Address/Subnet"
 msgstr "IP نیب  /  سب نیٹ سورس"
@@ -4477,20 +4393,11 @@ msgstr "سورس پورٹ"
 msgid "Source Port/Port Range"
 msgstr "سورس پورٹ /پورٹ رینج"
 
-msgid "Source password"
-msgstr " سورس پآس ورڈ"
-
 msgid "Source port (integer in [1, 65535] or range in a:b)"
 msgstr "سورس پورٹ (اِنٹیجر  [1, 65535] or range in a:b)"
 
-msgid "Source username"
-msgstr "سورس یوزر نآو"
-
-msgid "Spark"
-msgstr "سِپآرک"
-
-msgid "Spec"
-msgstr "سِپیک"
+msgid "Source:"
+msgstr "ضریعہٕ :"
 
 msgid ""
 "Specifies how IPv6 addresses and additional information are configured. We "
@@ -4506,26 +4413,26 @@ msgstr ""
 msgid "Specify \"Network Address\""
 msgstr "وَضاحت کئریو  \"نیٹ وئرک ایڈریس\""
 
-msgid "Specify \"Network Address\" or clear \"Create Subnet\" checkbox."
-msgstr "وَضاحت کئریو  \"Network Address\" or clear \"Create Subnet\" چیک بآکس"
-
-msgid "Specify IP address of gateway or check \"Disable Gateway\"."
-msgstr "وَضاحت کئران IP ایڈریس گیٹ وے یا چیک خآطرہ \"Disable Gateway\"."
-
 msgid "Specify VIP"
 msgstr "وَضاحت کئریو VIP"
-
-msgid "Specify a free IP address from the selected subnet"
-msgstr "وَضاحت کئریو اَکھ مُفت  IPایڈریس ژارمِت سب نیٹ مَنز"
 
 msgid "Specify additional attributes for the subnet."
 msgstr "وَضاحت کئریو مزید ایٹریبیوٹس سب نیٹ خآطرہ"
 
+msgid "Specify advanced options to use when launching an instance."
+msgstr "وَضاحت کریو ایڈوانسڈ آپشنز  اِنسٹنس لانچ کرنہ پَتھ اِستعمال کر"
+
 msgid "Specify an IP address for the interface created (e.g. 192.168.0.254)."
 msgstr "وَضاحت کئریو اَکھ IP ایڈریس اینٹر فیس خآطرہ( مِثال 192.168.0.254)"
 
+msgid "Specify an image to upload to the Image Service."
+msgstr "وَضاحت کئریو اَکھ شکل أپلوڈ کئرنہٕ خآطرہ شکل سئروِس"
+
 msgid "Specify member IP address"
 msgstr "وَضاحت کئریو میمبرIP ایڈریس خآطرہ"
+
+msgid "Specify the details for launching an instance."
+msgstr "وَضاحت کئریو تَفصیل اِنسٹنس لانچ خآطرہ"
 
 msgid "Specs"
 msgstr "سِپیکس"
@@ -4539,8 +4446,14 @@ msgstr "سِٹیک ID"
 msgid "Stack Name"
 msgstr "سِٹیک نٲو"
 
+msgid "Stack Parameters"
+msgstr "سِٹیک پیرامیٹر"
+
 msgid "Stack Resource"
 msgstr " سِٹیک زخیرزہ"
+
+msgid "Stack Resource ID"
+msgstr "سِٹیک ریسوئرس  ID"
 
 msgid "Stack Resource Type"
 msgstr " سِٹیک زخیرزہ قِسم"
@@ -4559,6 +4472,9 @@ msgstr " سِٹیک اَپڈیٹ شُروع کئورمُت"
 
 msgid "Stacks"
 msgstr " سِٹیکس"
+
+msgid "Start"
+msgstr "شروع"
 
 msgctxt "Action log of an instance"
 msgid "Start"
@@ -4585,6 +4501,9 @@ msgstr "شُروع کئریو خآلی کئرون %(current)s to %(target)s تآ
 msgid "State"
 msgstr "حآل"
 
+msgid "Statistics of all resources"
+msgstr "سِٹیٹِکس سآرنی ریسورز ہُند"
+
 msgid "Stats"
 msgstr "سٹیٹس"
 
@@ -4596,15 +4515,6 @@ msgstr "سِٹیٹس="
 
 msgid "Status Reason"
 msgstr "سِٹیٹس وَجہٕ"
-
-msgid "Storage location"
-msgstr "سِٹوریج جآے"
-
-msgid "Storage type"
-msgstr "سِٹوریج قِسم"
-
-msgid "Streaming MapReduce"
-msgstr "سِٹریم کران نَقشہ کم کرون"
 
 msgid "Subnet"
 msgstr "سب  نیٹ"
@@ -4620,11 +4530,22 @@ msgstr "سب نیٹ \"%s\" گئو کامیابی سآن اَپڈیٹ"
 msgid "Subnet Details"
 msgstr "سب نیٹ تَفصیل"
 
+msgid "Subnet ID"
+msgstr "سب نیٹ آئی ڈی"
+
 msgid "Subnet Name"
 msgstr "سب نیٹ نٲو"
 
 msgid "Subnet list can not be retrieved."
 msgstr "سب نیٹ  لِسٹ ہیکو نہٖ واپس اَنیتھ"
+
+#, python-format
+msgid "Subnet: %(dest_subnetname)s"
+msgstr "سب نیٹ: %(dest_subnetname)s"
+
+#, python-format
+msgid "Subnet: %(row_source_subnetname)s"
+msgstr "سب نیٹ: %(row_source_subnetname)s"
 
 msgid "Subnets"
 msgstr "سب نیٹس"
@@ -4673,12 +4594,6 @@ msgstr "کامیابی سآن  شیرئوQoS سِپیک خریدار"
 
 #, python-format
 msgid ""
-"Successfully restored backup %(backup_name)s to volume with id: %(volume_id)s"
-msgstr ""
-"Successfully restored backup %(backup_name)s to volume with id: %(volume_id)s"
-
-#, python-format
-msgid ""
 "Successfully sent the request to change the volume type to \"%(vtype)s\" for "
 "volume: \"%(name)s\""
 msgstr ""
@@ -4705,9 +4620,6 @@ msgstr "کامیابی سآن   اَپبڈیٹ  کئریو کئنٹینر ایک
 msgid "Successfully updated container access to public."
 msgstr "کامیابی سآن   اَپبڈیٹ  کئریوکئنٹینر ایکسئس عوام  خآطرہ"
 
-msgid "Successfully updated image."
-msgstr "کامیابی سآن   اَپبڈیٹ  کئریوشکل"
-
 #, python-format
 msgid "Successfully updated security group: %s"
 msgstr "کامیابی سآن   اَپڈیٹ    کئریو  حِفاظتئی گروپ : %s"
@@ -4720,8 +4632,8 @@ msgstr "کامیابی  سآن اَپڈیٹ کئریو والیوم سِنیپ �
 msgid "Successfully updated volume status to \"%s\"."
 msgstr "کامیابی سآن اَپڈیٹ کئریو وایوم سِٹیٹس \"%s\" "
 
-msgid "Supported Versions"
-msgstr "تعاوُن ورجن"
+msgid "Sum."
+msgstr "کُل"
 
 msgctxt "Current status of an Instance"
 msgid "Suspended"
@@ -4752,9 +4664,6 @@ msgstr "سیسٹم اِطلاع"
 msgid "TCP"
 msgstr "TCP"
 
-msgid "Tags"
-msgstr "ٹیگس"
-
 msgid "Target Host"
 msgstr "نِشآن دہ ہوسٹ"
 
@@ -4769,9 +4678,6 @@ msgstr "ٹیمپلیٹ ڈیٹا"
 
 msgid "Template File"
 msgstr "ٹیمپلیٹ فآئل"
-
-msgid "Template Name"
-msgstr " نآو ٹیمپلیٹ"
 
 msgid "Template Source"
 msgstr "ٹیمپلیٹ ضریعہٕ"
@@ -4790,6 +4696,7 @@ msgid ""
 "number."
 msgstr "پورٹ نمبر  گژہ آسون زیادہ یا بَرابر  \"to\"  پورٹ نمبر خوتہ\"from\""
 
+#. Translators: Only used inside Horizon code and invisible to users
 #, python-format
 msgid ""
 "The 'operation' parameter for get_feature_permission '%(feature)s' is "
@@ -4798,17 +4705,41 @@ msgstr ""
 "The 'operation' parameter for get_feature_permission '%(feature)s' is "
 "invalid. It should be one of %(allowed)s"
 
+msgid ""
+"The <strong>Cipher</strong> is the encryption algorithm/mode to use (e.g., "
+"aes-xts-plain64). If the field is left empty, the provider default will be "
+"used."
+msgstr ""
+" <strong>Cipher</strong> اینکریپشن  چُھ ایلگاریتہ م /موڈ  اِستعمال  کرنہ خآطرہ "
+"(e.g., aes-xts-plain64) اگر فیلڈ ٲسہ خآلی، پروویڈر ڈیفآلٹ  گژہ اِستعمال"
+
+msgid ""
+"The <strong>Control Location</strong> is the notional service where "
+"encryption is performed (e.g., front-end=Nova). The default value is 'front-"
+"end.'"
+msgstr ""
+"چُھ نوشنل سروِس یَتینس  اینکریپشن  چُھ چآلوو <strong>Control Location</strong> "
+"(مِثآل فرینٹ-اینڈ=نووا). ڈیفالٹ ویلیو چُھ 'front-end.'"
+
+msgid ""
+"The <strong>Key Size</strong> is the size of the encryption key, in bits (e."
+"g., 128, 256). If the field is left empty, the provider default will be used."
+msgstr ""
+"چُھ سآیز اینکریپشن کی ہُند <strong>Key Size</strong> ، بِٹس مَنز (مِثآل., 128, "
+"256). اگر فیلڈ خٲلی آسہ  پروویڈر ڈیفآلٹ  گژہ اِستعمال"
+
+msgid ""
+"The <strong>Provider</strong> is the class providing encryption support (e."
+"g. LuksEncryptor)."
+msgstr ""
+"چُھ کِلاس دِنہ وول اینکریپشن تَعاوُن  (مِثآل  اینکریپٹر  لوکس )<strong>Provider</"
+"strong>"
+
 msgid "The Aggregate was updated."
 msgstr " ایگریگیٹ آو اَپڈیٹ کئرنہٕ"
 
-msgid "The ICMP code is invalid."
-msgstr "کوڈ چُھ نہ واجِب  ICMP "
-
 msgid "The ICMP code not in range (-1, 255)"
 msgstr "کوڈ چُھ نہ چُھ نہ رینج مَنز  ICMP  (-1, 255)"
-
-msgid "The ICMP type is invalid."
-msgstr "قِسم چُھ نہ واجِب  ICMP "
 
 msgid "The ICMP type not in range (-1, 255)"
 msgstr "قِسم چُھ نہ رینج مَنز  ICMP  (-1, 255)"
@@ -4816,6 +4747,13 @@ msgstr "قِسم چُھ نہ رینج مَنز  ICMP  (-1, 255)"
 #, python-format
 msgid "The ID \"%s\" is already used by another flavor."
 msgstr "ID \"%s\" چُھ گوڈے کاہ بیکھ فلیوئر اِستعمال کئران"
+
+msgid ""
+"The Image Location field MUST be a valid and direct URL to the image binary. "
+"URLs that redirect or serve error pages will result in unusable images."
+msgstr ""
+"شکل جآے فیلڈ گژہ آسین واجِب تہ سودہ URL شکل بینری خآطرہ۔  URLs یم ریڈیریکٹ یا "
+"سَرور غَلطی پیج کرن نَتیجہ فَضول شکلہ"
 
 msgid "The Key Pair name that was associated with the instance"
 msgstr "کی جورہ نآو یُس جوڈیتھ چُھ اِنسٹنس سیتھ"
@@ -4828,8 +4766,24 @@ msgstr ""
 "والیوم سٲیز چھ واریاہ ل لَکوٹ  '%(image_name)s'خآطرہ گژہ آسون بوڈہ یا بَرابر "
 "'%(smallest_size)d' GB"
 
+msgid ""
+"The chart below shows the resources used by this project in relation to the "
+"project's quotas."
+msgstr ""
+"چآرٹ بونکین چُھ ہاوان ریسورسِز اِستعمال گیمِت پروجیکٹ سیتھ پروجیکٹ  کوٹا مُطلِق"
+
 msgid "The container cannot be deleted since it is not empty."
 msgstr "کئنٹینر  ہیکئو نہٖ خآلی کئریتھ کیازکہٕ یہٕ چُھنہٖ خٲلی"
+
+msgid ""
+"The default IP address of the interface created is a gateway of the selected "
+"subnet. You can specify another IP address of the interface here. You must "
+"select a subnet to which the specified IP address belongs to from the above "
+"list."
+msgstr ""
+"ڈیفالٹIP  ایڈریس  اینٹر فیک بَناومُت چُھ  گیٹ وے پئٹھژارمِت سب نیٹ  خآطرہ  توہیہٕ "
+"پئزیئو  وَضاحت کئرون بیاکھ  IP  ایڈریس  اینٹر فیسُک یَتینس ۔  توہیہٕ پئزیئو  "
+"ژارُن اَکھ  سب نیٹ یَتھ سب نیٹ یَٔتھ  وَضاحت کئریتھ  IP  ایڈریس  آسہ ہیرمِہٕ لِسٹ مَنز"
 
 #, python-format
 msgid ""
@@ -4838,10 +4792,6 @@ msgid ""
 msgstr ""
 "The flavor '%(flavor)s' is too small for requested image.\n"
 "Minimum requirements: %(min_ram)s MB of RAM and %(min_disk)s GB of Root Disk."
-
-#, python-format
-msgid "The instance is preparing the live migration to host \"%s\"."
-msgstr "اِنسٹنس چھ تَیآری کران لآیو مےگریشن ہوسٹ خآطرہ \"%s\""
 
 msgid "The instance password encrypted with your public key."
 msgstr "اِنسٹنس پٲس ورڈ چُھ اینکریپٹ تُہندِ عام کی سیتھ"
@@ -4873,11 +4823,21 @@ msgid ""
 "implemented."
 msgstr "فِیزیکل  نیٹورک یَمہ سیتھ ورچُیل نیٹورک یہ لاگو کرنہ نآو "
 
+msgid ""
+"The next hop addresses can be used to override the router used by the client."
+msgstr ""
+"بیاکھ ہاپ ایڈریس ہیکئو اِستعمال کئریتھ اوور رآئڈ کئرنہٕ خآطرہ  کئلائنٹ سیتھ"
+
 msgid "The page you were looking for doesn't exist"
 msgstr "پیج یُس توہِیہٕ ژہانڈان چھو چُھ نہٖ موجود"
 
 msgid "The physical mechanism by which the virtual network is implemented."
 msgstr "فِیزیکل طَریقہ یَمہ سیتھ ورچُیل نیٹورک یہ لاگو کرنہ"
+
+msgid ""
+"The private key will be only used in your browser and will not be sent to "
+"the server"
+msgstr "زاتی کی یہ اِستعمال کرنہ تُہندِس براوزرس مَز تہ یہ نہ سوزنہ سَرور تآن"
 
 msgid "The pseudo folder cannot be deleted since it is not empty."
 msgstr "سیوڈو فولڈر  ہیکئو نہٖ خآلی کئریتھ کیازکہٕ یہٕ چُھنہٖ خٲلی"
@@ -4888,6 +4848,7 @@ msgstr "را کئنٹینٹ مٲحول فآئل ہِند"
 msgid "The raw contents of the template."
 msgstr "را کئنٹینٹ ٹیمپلیٹ ہِند"
 
+#. Translators: Only used inside Horizon code and invisible to users
 #, python-format
 msgid ""
 "The requested feature '%(feature)s' is unknown. Please make sure to specify "
@@ -4911,9 +4872,6 @@ msgstr "  اِنسٹنس پورٹ چُھ گوڈے جوڈیتہ بیکَس فلو
 msgid "The specified port is invalid."
 msgstr "کوڈ چُھ نہ واجِب وَضاحت کئریتھ"
 
-msgid "The state to start in."
-msgstr " شُرُعات شُروع کئرنہٕ  خآطرہ"
-
 msgid "The state to start the network in."
 msgstr "سِٹیٹ شُروعات  کئرنچ نیٹ وئرک ہُند"
 
@@ -4922,23 +4880,14 @@ msgid "The subnet in the Network Address is too small (/%s)."
 msgstr "سب نیٹ نیٹ وئرک ایڈریس چُھ لَکوٹ (/%s)."
 
 #, python-format
-msgid "The volume size cannot be less than the image minimum disk size (%sGB)"
-msgstr "والیوم سآئز ہیکہٕ نہٖ کم  آسیتھ شکل کم از کم ڈِسک سآئز خوتہٕ (%sGB)"
-
-#, python-format
 msgid "The volume size cannot be less than the image size (%s)"
 msgstr "والیوم سآئز ہیکہٕ نہٖ کم  آسیتھ شکل سآئز خوتہٕ (%s)"
 
-#, python-format
-msgid "The volume size cannot be less than the snapshot size (%sGB)"
-msgstr "والیوم سآئز ہیکہٕ نہٖ کم  آسیتھ سِنیپ شآٹس سآئز خوتہٕ (%sGB)"
-
-#, python-format
-msgid "The volume size cannot be less than the source volume size (%sGB)"
-msgstr "والیوم سآئز ہیکہٕ نہٖ کم ضریعہٕ والیوم سآئز خوتہٕ سآئز خوتہٕ (%sGB)"
-
 msgid "There are no meters defined yet."
 msgstr "کاہ میٹر چُھنہٕ وَضاحت کئریتھ وئنہٕ"
+
+msgid "There are no networks, routers, or connected instances to display."
+msgstr "نیٹ وئرک چھ نہٕ، راوٹرس چھ نہٖ یا کاہ جوڈیتھ اِنسٹئنسِز چھ نہٖ ہاونہٖ خآطرہ"
 
 msgid ""
 "There is not enough capacity for this flavor in the selected availability "
@@ -4950,6 +4899,13 @@ msgstr ""
 #, python-format
 msgid "There was a problem parsing the %(prefix)s: %(error)s"
 msgstr "اَکھ مُشکِل گئی دَرپیش پٲرسِنگ  وَقتئ  %(prefix)s: %(error)s"
+
+msgid ""
+"This generates a pair of keys: a key you keep private (cloud.key) and a "
+"public key (cloud.key.pub). Paste the contents of the public key file here."
+msgstr ""
+"یہ چُہ بَناوان کی جورہ: اَکھ کی یَس توہیہ تھاوان چھو زاتی (cloud.key) تہ عام کی "
+"(cloud.key.pub)۔ پیسٹ کریو کنٹینٹ   عام کیفآیل یَتینس"
 
 msgid ""
 "This is required for operations to be performed throughout the lifecycle of "
@@ -4981,9 +4937,6 @@ msgstr "ٹآئم آوٹ"
 msgid "Timezone"
 msgstr "ٹآئم زون"
 
-msgid "Title"
-msgstr "عنوان"
-
 msgid "To"
 msgstr "تآن"
 
@@ -4994,17 +4947,34 @@ msgid "To date to must be greater than From date."
 msgstr "تَتھ دوہ تٲم گئژہ آسُن زیادہ تَمہٖ دوہ پئٹھ"
 
 msgid ""
+"To decrypt your password you will need the private key of your key pair for "
+"this instance. Select the private key file, or copy and paste the content of "
+"your private key file into the text area below, then click Decrypt Password."
+msgstr ""
+"پآس ورڈ ڈیکریپٹ کرنہ خآطرہ توہیہ پَیو ض ضرورت زاتی کی ہِنز اِنسٹنس کریتھ۔ "
+"ژاریو  زاتی کی فآیل مواد ایریا مَنز بونکین، کِلک کریو ڈیکریپٹ  پآس ورڈ"
+
+msgid "To exit the fullscreen mode, click the browser's back button."
+msgstr "فُل سِکرین مَنز نیرنہٕ خآطرہ، کِلک کئریو بروازر بیک بَٹن"
+
+msgid ""
 "To specify an allowed IP range, select &quot;CIDR&quot;. To allow access "
 "from all members of another security group select &quot;Security Group&quot;."
 msgstr ""
 "اَکھ خآص اِجازت دِتمُتIP رینج، ژاریو &کوٹ;CIDR&کوٹ;. ایکسس اِجازت خآطرہ سآرنی "
 "میمبرس نیش بیکھ حِفاظتی گروپس ژاریو گروپ حِفاظ&کوٹ؛ حِفاظتی گروپ &کوٹ"
 
+msgid "To:"
+msgstr "تٲن"
+
 msgid "Topology"
 msgstr "ٹاپئولیجی"
 
-msgid "Total Size of LUKS Volumes and Snapshots (GB)"
-msgstr "کُل سآئزLUKS جٲے تہٕ سِنیپ شآٹس ہِنز (GB)"
+msgid "Total Disk"
+msgstr "کُل ڈِسک"
+
+msgid "Total RAM"
+msgstr "کُل RAM"
 
 msgid "Total Size of Volumes and Snapshots (GB)"
 msgstr "کُل سآئز جٲے تہٕ سِنیپ شآٹس ہِنز (GB)"
@@ -5021,14 +4991,18 @@ msgstr "بئدلایئو پروٹوکال"
 msgid "Type"
 msgstr "قِسم"
 
-msgid "Type and version of datastore."
-msgstr "قِسم تہ ورجن ڈیٹا سِٹور"
+#, python-format
+msgid "Type: %(persistence_type)s"
+msgstr "قِسم: %(persistence_type)s"
 
 msgid "UDP"
 msgstr "UDP"
 
 msgid "URL"
 msgstr "URL"
+
+msgid "URL Path"
+msgstr "URLپآتھ"
 
 msgid "UTC"
 msgstr "UTC"
@@ -5151,9 +5125,6 @@ msgstr "ناقابِل  ہوسٹ  ایگرِگیٹ بَناونہٕ خآطرہ\"
 msgid "Unable to create host aggregate."
 msgstr "اقابِل  ہوسٹ  ایگرِگیٹ بَناونہٕ خآطرہ"
 
-msgid "Unable to create job binary"
-msgstr "نا قابِل کئم بئنیری  واپس  اَنہٕ   خآطرہ "
-
 #, python-format
 msgid "Unable to create key pair: %(exc)s"
 msgstr "نا قابِل کئی جورہ بَناونہٕ   خآطرہ : %(exc)s"
@@ -5161,9 +5132,6 @@ msgstr "نا قابِل کئی جورہ بَناونہٕ   خآطرہ : %(exc)s"
 #, python-format
 msgid "Unable to create network \"%s\"."
 msgstr "نا قابِل نیٹ وئرک بَناواَنہٕ خآطرہ۔ \"%s\""
-
-msgid "Unable to create new cluster for job."
-msgstr "نا قابِل نئوہ   کئلسٹر کئم ہُند واپس  اَنہٕ   خآطرہ"
 
 #, python-format
 msgid "Unable to create project \"%s\"."
@@ -5185,9 +5153,6 @@ msgstr "نا قابِل بناَنہٕ خآطرہ سِپیک"
 msgid "Unable to create subnet \"%s\"."
 msgstr "نا قابِل سب نیٹ بَناواَنہٕ خآطرہ۔  \"%s\""
 
-msgid "Unable to create the cluster"
-msgstr "نا قابِل کئلسٹر بَناونہٕ    خآطرہ"
-
 msgid "Unable to create user."
 msgstr "نا قابِل یوزر بَناونہٕ خآطرہ"
 
@@ -5207,24 +5172,8 @@ msgid "Unable to create volume."
 msgstr "نا قابِل والوم بَناونہٕ ٕ خآطرہ "
 
 #, python-format
-msgid "Unable to delete IKE Policy: %s"
-msgstr "ناکامیابٕ مِٹاونہٕ   خآطرہ   IKE   پآلیسی : %s"
-
-#, python-format
-msgid "Unable to delete IPSec Policy: %s"
-msgstr "ناکامیابٕ مِٹاونہٕ   خآطرہ   IP  سیک پآلیسی : %s"
-
-#, python-format
-msgid "Unable to delete IPSec Site Connection: %s"
-msgstr "ناکامیابٕ مِٹاونہٕ   خآطرہ   IP  سیک سآئٹ کئنیکشن: %s"
-
-#, python-format
 msgid "Unable to delete VIP. %s"
 msgstr " ناقابِل VIPمِٹاونہٕ خآطرہ %s"
-
-#, python-format
-msgid "Unable to delete VPN Service: %s"
-msgstr "مِٹاویتھ   VPN  سئروِس: %s"
 
 msgid "Unable to delete container."
 msgstr "نا قابِل کئنٹینرمِٹاونہٕ خآطرہ"
@@ -5284,87 +5233,8 @@ msgstr "نا قابِل والئومبئڈراونہٕ  خآطرہ"
 msgid "Unable to fetch EC2 credentials."
 msgstr "نا قابِل EC2کئریڈینشل واپس اَنہٕ خآطرہ"
 
-msgid "Unable to fetch available images."
-msgstr "نا قابِل دَستِیاب شکل  واپس  اَنہٕ   خآطرہ "
-
-msgid "Unable to fetch cluster list"
-msgstr "نا قابِل کئلئسٹر لِسٹ اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch cluster template list"
-msgstr "نا قابِل کئلئسٹر ٹیمپلیٹ لِسٹ اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch cluster template."
-msgstr "نا قابِل کئلئسٹر ٹیمپلیٹ  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch cluster to scale"
-msgstr "نا قابِل کئلئسٹر سِکیل تآن  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch cluster to scale."
-msgstr "نا قابِل کئلئسٹر سِکیل تآن  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch clusters."
-msgstr "نا قابِل کئلسٹر  واپس  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch data sources."
-msgstr "نا قابِل ڈیٹا تَفصیل واپس  اَنہٕ   خآطرہ "
-
-msgid "Unable to fetch flavor for template."
-msgstr "نا قابِل ٹیمپلیٹ خآطرہ فِلیور  واپس  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch floating ip pools."
-msgstr "نا قابِل فلوٹینگ آیی پئی پولز  واپس  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch image choices."
-msgstr "نا قابِل شکل اِنتِخاب اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch instance details."
-msgstr "نا قابِل اِنسٹئنس  تَفصیل اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch job binary list."
-msgstr "نا قابِل کئم بئنیری لِسٹ  واپس  اَنہٕ   خآطرہ "
-
-#, python-format
-msgid "Unable to fetch job binary: %(exc)s"
-msgstr "نا قابِل کئم بئنیری  واپس  اَنہٕ   خآطرہ : %(exc)s"
-
-msgid "Unable to fetch job executions."
-msgstr "نا قابِل کئم ایکزیکئوشن  واپس  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch jobs."
-msgstr "نا قابِل کئم   واپس  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch keypair choices."
-msgstr "نا قابِل کئی جورہ اِنتِخآب اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch node group details."
-msgstr "نا قابِل فیچ نوٹ تَفصیل اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch node group template list."
-msgstr "نا قابِل گروپ ٹیمپلیٹ   واپس  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch plugin details."
-msgstr "نا قابِل پِلگ اِن تَفصیل  واپس  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch plugin list."
-msgstr "نا قابِل کئلئسٹر ٹیمپلیٹ تَفصیل اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch template object."
-msgstr "نا قابِل ٹیمپلیٹ آبجئکٹ  واپس  اَنہٕ   خآطرہ"
-
-msgid "Unable to fetch template to copy."
-msgstr "نا قابِل ٹیمپلیٹ نَقل کئرَنہٕ   خآطرہ"
-
-msgid "Unable to fetch the image details"
-msgstr "نا قابِل شکل تَفصیل واپس  اَنہٕ   خآطرہ "
-
-msgid "Unable to find backup!"
-msgstr "نا قابِل بیک اَپ ژہانڈنہٕ خآطرہ!"
-
 msgid "Unable to find default role."
 msgstr "نا قابِل ڈیفالٹ کئردار ژہانڈنہٕ خآطرہ"
-
-msgid "Unable to generate process choices."
-msgstr "نا قابِل پروسئس اِنتِخآب اَنہٕ   خآطرہ"
 
 msgid "Unable to get EC2 credentials"
 msgstr "نا قابِل عئوپِن ٲر سی ۲کئریڈینشل واپس اَنہٕ خآطرہ"
@@ -5383,12 +5253,6 @@ msgstr "نا قابِلVNC  کئنسول  اِنسٹئنس خآطرہ  اَنہ�
 
 msgid "Unable to get cinder services list."
 msgstr "نا قابِل واپس اَنہٕ خآطرہ سئنڈر سئوِس لِسٹ"
-
-msgid "Unable to get database backup data."
-msgstr "نا قابِل ڈیٹابیس بیک اپ   کئرنہِ خآطرہ "
-
-msgid "Unable to get databases data."
-msgstr "نا قابِلڈیٹا بیس اَنہِ خآطرہ "
 
 #, python-format
 msgid "Unable to get events for stack \"%s\"."
@@ -5410,9 +5274,6 @@ msgstr "نا قابِل واپس اَنہٕ خآطرہ نیٹ وئرک ایجئ�
 msgid "Unable to get network agents list."
 msgstr "نا قابِل واپس اَنہٕ خآطرہ نیٹ وئرک ایجئنٹ لِسٹ"
 
-msgid "Unable to get node group details."
-msgstr "نا قابِل نوڈ  تَفصیل اَنہٕ   خآطرہ"
-
 msgid "Unable to get nova services list."
 msgstr "نا قابِل واپس اَنہٕ خآطرہ  نئوا سئروِس لِسٹ"
 
@@ -5433,9 +5294,6 @@ msgstr "نا قابِل سب نیٹ اَنہٕ ٕ خآطرہ \"%s\""
 msgid "Unable to get the available hosts"
 msgstr "نا قابِل دَستِیاب  ہوسٹ لِسٹ عنہٕ خآطرہ"
 
-msgid "Unable to get user data."
-msgstr "نا قابِل یوزر ڈیٹا اَنہِ خآطرہ "
-
 msgid "Unable to import key pair."
 msgstr "نا قابِل کئی جورہ در آمد کئرنہٕ  خآطرہ "
 
@@ -5443,17 +5301,8 @@ msgstr "نا قابِل کئی جورہ در آمد کئرنہٕ  خآطرہ "
 msgid "Unable to launch %(count)s named \"%(name)s\"."
 msgstr "نا قابِل لانچ کئرنہٕ خآطرہ  %(count)s named \"%(name)s\"."
 
-msgid "Unable to launch job."
-msgstr "نا قابِل کئم   اَنہٕ   خآطرہ"
-
 msgid "Unable to list containers."
 msgstr "نا قابِل کئنٹینر لِسٹ اَنہٕ خآطرہ"
-
-msgid "Unable to list database backups for parent."
-msgstr "نا قابِل ڈیٹا بیس لِسٹ پیرئنٹ بیک اَپ خآطرہ"
-
-msgid "Unable to list database instances to backup."
-msgstr "نا قابِل لِسٹ ڈیٹا بیس اِنسٹئنسِز بیک اَپ  واپس  اَنہٕ   خآطرہ"
 
 msgid "Unable to list dhcp agents hosting network."
 msgstr "نا قابِل کئرنہٕ  خآطرہ اِیجینٹ ہوسٹِنگ نیٹوئرک"
@@ -5492,18 +5341,9 @@ msgstr "ناقابِل شئرنہٕ خآطرہ   اِنسٹئنسز \"%s\""
 msgid "Unable to modify project \"%s\"."
 msgstr "نا قابِل  پروجیکٹ شئرنہٕ خآطرہ  \"%s\""
 
-msgid "Unable to obtain flavors."
-msgstr "نا قابِل فِلیوئرس واپس خآطرہ"
-
 #, python-format
 msgid "Unable to parse IP address %s."
 msgstr "نل قابِلIP  ایڈریس%s  پآرس  کئرنہٕ خآطرہ"
-
-msgid "Unable to populate anti-affinity processes."
-msgstr "نا قابِل اینٹی ایفینیٹی پروسئس  کئرنہٕ  خآطرہ"
-
-msgid "Unable to process plugin tags"
-msgstr "نا قابِل پِلگ اِن ٹیگس  پراسئس کئرنہٕ   خآطرہ"
 
 msgid "Unable to rebuild instance."
 msgstr "نا قابِل اِنسٹئنس دوبارہ بٔناونہٕ خآطرہ"
@@ -5511,10 +5351,6 @@ msgstr "نا قابِل اِنسٹئنس دوبارہ بٔناونہٕ خآطر�
 #, python-format
 msgid "Unable to resize instance \"%s\"."
 msgstr "نا قابِل اِنسٹئنس ریسآئز واپس خآطرہ \"%s\"."
-
-#, python-format
-msgid "Unable to resize volume. %s"
-msgstr "نا قابِل والیوم ری سآئز   کئرنہِ خآطرہ . %s"
 
 msgid "Unable to restore backup."
 msgstr "نا قابِل بیک اَپ واپس     اَنہٕ ٕ خآطرہ"
@@ -5616,15 +5452,6 @@ msgstr "نا قابِل دَستِیاب زون لِسٹ واپس عئنس من�
 msgid "Unable to retrieve availability zones."
 msgstr "نا قابِل دَستِیاب زون واپس اَنہٕ  خآطرہ "
 
-msgid "Unable to retrieve available metadata for aggregate."
-msgstr "نا قابِل دَستِیاب  میٹا ڈیٹا یُس ایگریگیٹ کئرون چُھ سُہٕ واپس عئنس منز"
-
-msgid "Unable to retrieve available metadata for flavors."
-msgstr "نا قابِل  دَستِیاب میٹا ڈیٹا فلوئر س خآطرہ واپس  انہٕ خآطرہ"
-
-msgid "Unable to retrieve available properties for image."
-msgstr "نا قابِل واپس اَنہٕ خآطرہ دَستِیاب خَصوصیت شکل خآطرہ"
-
 msgid "Unable to retrieve backup details."
 msgstr "نا قابِل والیوم بیک اَپ تَفصیل واپس     اَنہٕ ٕ خآطرہ"
 
@@ -5637,28 +5464,11 @@ msgstr "ناقابِل کئمپیوٹ حد تَفصیل واپس اَنہٕ خآ
 msgid "Unable to retrieve container list."
 msgstr "نا قابِل کئنٹینرٕ وااپس اَنہٕ  خآطرہ"
 
-msgid "Unable to retrieve data processing plugins."
-msgstr "نا قابِل ڈاٹا  پروسئسینگ پِلگ اِن واپس  اَنہٕ   خآطرہ "
-
-msgid "Unable to retrieve database instances."
-msgstr "ناقابِل ڈیٹا بیس اِنسٹئنسز واپس کئرنہٕ خآطرہ"
-
-msgid "Unable to retrieve database size information."
-msgstr "نا قابِل ڈیٹابیس سٲئز إِطلاع واپس خآطرہ "
-
 msgid "Unable to retrieve default Neutron quota values."
 msgstr "نا قابِل واپس اَنہٕ ٕ خآطرہ  نیوٹران کئوٹا ویلئوز"
 
 msgid "Unable to retrieve default quota values."
 msgstr "نا قابِل ڈیفالٹ  کئوٹا ویلئو واپس  انہٕ خآطرہ"
-
-#, python-format
-msgid "Unable to retrieve details for backup: %s"
-msgstr "نا قابِل تَفصیل بیک اَپ خآطرہ واپس  اَنہٕ   خآطرہ : %s"
-
-#, python-format
-msgid "Unable to retrieve details for database instance: %s"
-msgstr "نا قابِل ڈیٹابیس إِنسٹئنسِز  تَفصیل واپس خآطرہ : %s"
 
 #, python-format
 msgid "Unable to retrieve details for instance \"%s\"."
@@ -5667,10 +5477,6 @@ msgstr "نا قابِل تَفصیل   اَنہٕ خآطرہ  اِنسٹئنس �
 #, python-format
 msgid "Unable to retrieve details for network \"%s\"."
 msgstr "نا قابِل واپس اَنہٕ خآطرہ  تَفصیل نیٹوئرک خآطرہ \"%s\""
-
-#, python-format
-msgid "Unable to retrieve details for parent backup: %s"
-msgstr "نا قابِل تَفصیل پیرئنٹ بیک اَپ خآطرہ واپس  اَنہٕ   خآطرہ: %s"
 
 #, python-format
 msgid "Unable to retrieve details for router \"%s\"."
@@ -5759,9 +5565,6 @@ msgstr "نا قابِل واپس اَنہٕ خآطرہ  ہیپروئزرسِٹی
 msgid "Unable to retrieve image details."
 msgstr "نا قابِل  شَکل تَفصیل واپس اَنہٕ خآطرہ"
 
-msgid "Unable to retrieve image list"
-msgstr "نا قابِل شکل لِسٹ واپس  اَنہٕ   خآطرہ "
-
 msgid "Unable to retrieve image list."
 msgstr "نا قابِل واپس اَنہٕ خآطرہ  شکل لِسٹ"
 
@@ -5770,10 +5573,6 @@ msgstr "نا قابِل  شَکل واپس اَنہٕ خآطرہ"
 
 msgid "Unable to retrieve images for the current project."
 msgstr "نا قابِل حٲلی پروجیکٹ شَکل واپس اَنہٕ خآطرہ"
-
-#, python-format
-msgid "Unable to retrieve images with filter %s."
-msgstr "نا قابِل شکل فِلٹر سیتھ واپس  اَنہٕ   خآطرہ %s"
 
 msgid "Unable to retrieve images."
 msgstr "نا قابِل  شَکل واپس اَنہٕ خآطرہ"
@@ -5860,17 +5659,11 @@ msgstr "نا قابِل واپس اَنہٕ خآطرہ نیٹوئرک "
 msgid "Unable to retrieve networks list."
 msgstr "نا قابِلنیٹ وئرک   لِسٹ واپس اَنہٕ خآطرہ%s"
 
-msgid "Unable to retrieve networks."
-msgstr "نا قابِل نیٹ وئرک  واپس  اَنہٕ   خآطرہ"
-
 msgid "Unable to retrieve object list."
 msgstr "نا قابِل کئنٹینر  آبجیکٹ لِسٹ کئرنہٕ  خآطرہ"
 
 msgid "Unable to retrieve object."
 msgstr "نا قابِل آبجیکٹ واپس اَنہٕ  خآطرہ"
-
-msgid "Unable to retrieve plugin."
-msgstr "نا قابِل پِلگ اِن واپس  اَنہٕ   خآطرہ "
 
 msgid "Unable to retrieve policies list."
 msgstr "نا قابِل پآلیسیز لِسٹ واپس اَنہٕ خآطرہ"
@@ -6002,15 +5795,6 @@ msgstr "ناکامیاب والیوم  تَفصیل والیوم واپس  اَ�
 msgid "Unable to retrieve the aggregate to be updated"
 msgstr "نا قابِل ایگریگیٹ یُس اَپڈیٹ کئرون عئوس سُہٕ واپس عئنس منز"
 
-msgid "Unable to retrieve the aggregate to be updated."
-msgstr "نا قابِل ایگریگیٹ یُس اَپڈیٹ کئرون عئوس سُہٕ واپس عئنس منز"
-
-msgid "Unable to retrieve the flavor metadata."
-msgstr "نا قابِل فلیور میٹا ڈیٹا اَپڈیٹ کئرنہٕ  خآطرہ"
-
-msgid "Unable to retrieve the image to be updated."
-msgstr "نا قابِل واپس اَنہٕ خآطرہ شکل اَپڈیٹ کئرنہٕ خآطرہ"
-
 msgid "Unable to retrieve the specified pool."
 msgstr "نا قابِل  وَضاحت پول واپس اَنہٕ  ٕ خآطرہ۔ "
 
@@ -6139,27 +5923,15 @@ msgstr "نا قابِل آبجیکٹ اَپڈیٹ کئرنہٕ  خآطرہ"
 msgid "Unable to update role."
 msgstr "نا قابِل  اَپڈیٹ کئرنہٕ خآطرہ کئردار"
 
-msgid "Unable to update row"
-msgstr "نا قابِل رو اَپڈیٹ کئرنہٕ خآطرہ"
-
 #, python-format
 msgid "Unable to update subnet \"%s\"."
 msgstr "نا قابِل سب نیٹاَپڈیٹ کئرنہٕ خآطرہ\"%s\""
 
-msgid "Unable to update the aggregate metadata."
-msgstr "نا قابِل اَپڈیٹ کئورنہٕ خآطرہ ایگرِگیٹ میٹا ڈیٹا"
-
 msgid "Unable to update the aggregate."
 msgstr "نا قابِل اَپڈیٹ کئورنہٕ خآطرہ ایگرِگیٹ"
 
-msgid "Unable to update the flavor metadata."
-msgstr "نا قابِل فلیور میٹا ڈیٹا اَپڈیٹ کئرنہٕ  خآطرہ"
-
 msgid "Unable to update the group."
 msgstr "نا قابِل اَپڈیٹ کئرنہٕ ٕ خآطرہ   گروپ "
-
-msgid "Unable to update the image metadata."
-msgstr "نا قابِل اَپڈیٹ کئرنہٕ خآطرہ  شکل میٹا ڈیٹا"
 
 msgid "Unable to update the user."
 msgstr "نا قابِل یوزر اَپڈیٹ کئرنہٕ خآطرہ"
@@ -6176,12 +5948,6 @@ msgstr "نا قابِل اَپڈیٹ کئرنہٕ ٕ خآطرہ   والیوم �
 
 msgid "Unable to update volume."
 msgstr "نا قابِل والئوم اَپڈیٹ  کئرنہٕ ٕ خآطرہ "
-
-msgid "Unable to upload cluster template file"
-msgstr "نا قابِل کئلئسٹر ٹیمپلیٹ فآئل اَپلوڈ کئرنہٕ  خآطرہ"
-
-msgid "Unable to upload job binary"
-msgstr "نا قابِل کئم بئنیری  واپس  اَنہٕ   خآطرہ "
 
 msgid "Unable to upload object."
 msgstr "نا قابِل آبجیکٹ اَپلوڈ کئرنہٕ  خآطرہ"
@@ -6209,26 +5975,14 @@ msgstr "ہیور"
 msgid "Update"
 msgstr "اَپڈیٹ"
 
-msgid "Update Aggregate Metadata"
-msgstr " اَپڈیٹ ایگریگیٹ  میٹا ڈیٹا"
-
 msgid "Update Default Quotas"
 msgstr "اَپڈیٹ  ڈیفالٹ  کئوٹا"
 
 msgid "Update Defaults"
 msgstr "اَپڈیٹ  ڈیفالٹ"
 
-msgid "Update Flavor Metadata"
-msgstr " اَپڈیٹ  میٹا ڈیٹا فِلیور"
-
 msgid "Update Group"
 msgstr "اپڈیٹ کئریو گروپ"
-
-msgid "Update Image"
-msgstr "اَپڈیٹ  کئریو شکل"
-
-msgid "Update Image Metadata"
-msgstr " اَپڈیٹ  میٹا ڈیٹا شکل"
 
 msgid "Update Metadata"
 msgstr " اَپڈیٹ میٹا ڈیٹا"
@@ -6267,6 +6021,15 @@ msgid "Update Volume Status"
 msgstr "اٗپڈیٹ کئریو والیوم سِٹیٹس"
 
 msgid ""
+"Update a stack with the provided values. Please note that any encrypted "
+"parameters, such as passwords, will be reset to default if you do not change "
+"them here."
+msgstr ""
+"اَپڈیٹ اَکھ سِٹیک دِتمِت ویلیوز سیتھ ۔ مہربآنی کئریتھ نوٹ کئریو کہہ کاہ  "
+"اینکئریپٹ پیرامیٹر، مِثال پآسوئرڈ، یئہٕ ریسیٹ کئرنہٖ ڈیفالٹ سیتھ  اگر توہیہٕ تِم "
+"کئریو نہٕ تَبدیل یَتینس"
+
+msgid ""
 "Update a subnet associated with the network. Advanced configuration are "
 "available at \"Subnet Details\" tab."
 msgstr ""
@@ -6287,6 +6050,14 @@ msgstr "اَپڈیٹ کئریئو دَرخواست یَتھ پورٹ خآطرہ"
 
 msgid "Update requests for this subnet"
 msgstr "اَپڈیٹ کئریئو دَرخواست یَتھ سب نیٹ خآطرہ"
+
+#, python-format
+msgid "Update the \"extra spec\" value for \"%(key)s\""
+msgstr "اَپڈیٹ the \"extra spec\" value for \"%(key)s\""
+
+#, python-format
+msgid "Update the spec value for \"%(key)s\""
+msgstr "اَپڈیٹ کئریو سِپیک ویلیو\"%(key)s\" خآطرہ"
 
 msgid "Updated"
 msgstr "اَپڈیٹِڈ"
@@ -6309,17 +6080,15 @@ msgstr "والیوم سِنیپ شآٹس اَپڈیٹ کئران \"%s\""
 msgid "Upload"
 msgstr "اَپلوڈ"
 
-msgid "Upload File"
-msgstr "اَپلوڈ فٲئل"
-
 msgid "Upload Object"
 msgstr "اَپلوڈ ابجیکٹ"
 
+#, python-format
+msgid "Upload Object To Container: %(container_name)s"
+msgstr "اَپلوڈ آبجیکٹ کنٹینر خآطرہ : %(container_name)s"
+
 msgid "Upload Objects"
 msgstr "اَپلوڈ آبجیکٹ"
-
-msgid "Upload Template"
-msgstr "اَپلوڈ  ٹیمپلیٹ"
 
 msgid "Upload Volume to Image"
 msgstr "اَپلوڈ کئریو والیوم   شکل  خآطرہ"
@@ -6330,14 +6099,14 @@ msgstr "اَپلوڈ کئریو شکل"
 msgid "Uploaded image size"
 msgstr "اَپلوڈیڈ شکل سآئز"
 
-msgid "Url"
-msgstr "Url"
-
 msgid "Usage"
 msgstr "اِستعمال"
 
 msgid "Usage (Hours)"
 msgstr "یوسیج(گھنٹہٕ)"
+
+msgid "Usage Overview"
+msgstr " یوسیج  اوور ویو"
 
 msgid "Usage Report"
 msgstr "یوسیج ریپورٹ"
@@ -6348,17 +6117,25 @@ msgstr "استعمال سئرور ڈیفالٹ"
 msgid "Use a volume as source"
 msgstr "اِستعمال کئریو والیوم ضریعہٕ پئٹٰھ"
 
-msgid "Use anti-affinity groups for processes"
-msgstr "اِستعمال  کئریو اینٹی ایفِنیٹی گروپس پروسیس  خآطرہ"
-
-msgid "Use anti-affinity groups for: "
-msgstr "اِستعمال  کئریو اینٹی ایفِنیٹی گروپس   خآطرہ"
-
 msgid "Use image as a source"
 msgstr "اِستعمال کئریو شکل ضریعہٕ پئٹٰھ"
 
+msgid ""
+"Use one of the available template source options to specify the template to "
+"be used in creating this stack."
+msgstr ""
+"اِستعمال کئریو أکھ دَستِیاب  ٹیمپلیٹ ضریعہٖ آپشنس وَضاحت کئرنہٕ خآطرہ  ٹیمپلیٹ یُس "
+"اِستعمال یئہٕ کئرنہٕ سِٹیک بَناونہِ خآطرہ"
+
 msgid "Use snapshot as a source"
 msgstr "اِستعمال کئریو  اَکھ سِنیپ شآئٹس ضریعہٕ پئٹٰھ"
+
+#, python-format
+msgid "Used <span> %(used)s </span> of <span> %(available)s </span>"
+msgstr "Used <span> %(used)s </span> of <span> %(available)s </span>"
+
+msgid "Used in Policy"
+msgstr "اِستعمال مَنز  جآے"
 
 msgid "User"
 msgstr "یوزر"
@@ -6370,6 +6147,9 @@ msgstr "یوزر \"%s\"  ٲو کامیابی سٲن بَناوان"
 #, python-format
 msgid "User %s has no role defined for that project."
 msgstr "یوزر%s چُھ نہٕ کاہ کئردار پرزوجیکٹ خٲطرہ"
+
+msgid "User Credentials"
+msgstr "یوزر کریڈینشل"
 
 msgid "User Credentials Details"
 msgstr "اِستعمال کریو کریڈینشل  تَفصیل"
@@ -6390,14 +6170,17 @@ msgstr "یوزر ٲو کامیابی اَپڈیٹ کئرنئ"
 msgid "User name \"%s\" is already used."
 msgstr "یوزر \"%s\" چُھ گوڈے موجود"
 
-msgid "Username"
-msgstr "یوزر نآو"
-
 msgid "Users"
 msgstr "یوزر "
 
+msgid "VCPU"
+msgstr "VCPU"
+
 msgid "VCPU Hours"
 msgstr "گھنٹہٕ VCPU"
+
+msgid "VCPU Usage"
+msgstr "VCPUاِستعمال"
 
 msgid "VCPUs"
 msgstr "VCPUs"
@@ -6427,6 +6210,9 @@ msgstr "VLAN"
 msgid "VPN"
 msgstr "VPN"
 
+msgid "VPN Connections"
+msgstr "VPNکئنیکشن"
+
 msgid "VPN Service"
 msgstr "VPNسئروِس"
 
@@ -6455,8 +6241,8 @@ msgstr "ویلیو"
 msgid "Value (Avg)"
 msgstr "قیمت (Avg)"
 
-msgid "Version"
-msgstr "ورجن"
+msgid "Value:"
+msgstr "ویلیو:"
 
 msgid "View Container"
 msgstr "وِچھیو کنٹینر "
@@ -6470,11 +6256,17 @@ msgstr "وِچھیو تَفصیل"
 msgid "View Extra Specs"
 msgstr "وِچھیئو علاوہ سِپیکس"
 
+msgid "View Full Log"
+msgstr "وِچھیئو پورہ لاگ"
+
 msgid "View Log"
 msgstr "وِچھیو لاگ"
 
 msgid "View Usage"
 msgstr "وِچھىو   یوسیج"
+
+msgid "View Usage Report"
+msgstr "وِچھیئو یوسیج ریپورٹ"
 
 msgid "Virtual Private Network"
 msgstr "وئرچُئل زاتی نیٹورک"
@@ -6486,20 +6278,33 @@ msgstr "والیوم "
 msgid "Volume %(volume_name)s on instance %(instance_name)s"
 msgstr "Volume %(volume_name)s on instance %(instance_name)s"
 
-msgid "Volume Backup"
-msgstr "والیوم بیک اَپ"
+msgid "Volume (Cinder)"
+msgstr "والیوم(سِنڈر)"
+
+msgid "Volume Backup:"
+msgstr "بَناوان  بیک اَپ"
 
 msgid "Volume Backups"
 msgstr "والیوم بیک اَپ"
 
+msgid ""
+"Volume Backups are stored using the Object Storage service. You must have "
+"this service activated in order to create a backup."
+msgstr ""
+" والیوم  بیک اَپ چھ جمع کئریتھ اِستعمال کئریتھ آبجیکٹ سِٹوریج سئروِستوہیہٕ گئژہ "
+"آسین یہِ سئروِس تٲکہٕ بیک اَپ بَنہٕ "
+
+msgid "Volume Limits"
+msgstr "والیوم حد"
+
 msgid "Volume Name"
 msgstr "والیوم  نآو"
 
-msgid "Volume Size"
-msgstr "والیوم سآیز"
-
 msgid "Volume Snapshot"
 msgstr "والیوم سِنیپ شآئٹس"
+
+msgid "Volume Snapshot Overview"
+msgstr "والیوم  سِنیپ شآٹس اوور ویو"
 
 msgid "Volume Snapshots"
 msgstr "جٲے سِنیپ شآٹس ہِنز"
@@ -6510,16 +6315,25 @@ msgstr "والیوم ضریعہٕ"
 msgid "Volume Type Encryption Details"
 msgstr " والیوم قِسم   ٖ اینکریپٹڈ تَفصیل"
 
-msgid "Volume Types"
-msgstr "والیوم  قِسم"
+msgid "Volume Type Encryption Overview"
+msgstr "والیوم قِسم اینکریپشن اوور ویو"
+
+msgid "Volume Type Extra Specs"
+msgstr "والیوم قِسم علاوہ سِپیکس"
+
+msgid "Volume Type is Unencrypted."
+msgstr "والیوم قِسم  چُھنہٖ اینکریپٹڈ"
 
 #, python-format
-msgid ""
-"Volume cannot be extended to %(req)iGB as you only have %(avail)iGB of your "
-"quota available."
-msgstr ""
-"Volume cannot be extended to %(req)iGB as you only have %(avail)iGB of your "
-"quota available."
+msgid "Volume Type: %(volume_type_name)s"
+msgstr "والیوم قِسم : %(volume_type_name)s"
+
+#, python-format
+msgid "Volume Type: %(volume_type_name)s "
+msgstr "والیوم قِسم : %(volume_type_name)s "
+
+msgid "Volume Types"
+msgstr "والیوم  قِسم"
 
 msgid ""
 "Volume mount point (e.g. 'vda' mounts at '/dev/vda'). Leave this field blank "
@@ -6532,24 +6346,8 @@ msgid "Volume size in gigabytes (integer value)."
 msgstr "والیوم سآئز گیگا بئٹس مَنز(اِنٹیجر ویلیو)"
 
 #, python-format
-msgid ""
-"Volume size must be equal to or greater than the image minimum disk size "
-"(%sGB)"
-msgstr ""
-"والیوم سآئز گئژہ برابر یا زیادہ آسون  شکل کم از کم ڈِسک سآئز خوتہٕ  (%sGB)"
-
-#, python-format
 msgid "Volume size must be equal to or greater than the image size (%s)"
 msgstr "والیوم سآئز گئژہ آسون برابر یا زیادہ شکل سآئز خوتہٕ(%s)"
-
-#, python-format
-msgid ""
-"Volume size must be equal to or greater than the origin volume size (%s)"
-msgstr "والیوم سآئز گئژہ برابر یا زیادہ آسون  اصلی والیوم سآئز خوتہٕ  (%s)"
-
-#, python-format
-msgid "Volume size must be equal to or greater than the snapshot size (%sGB)"
-msgstr "والیوم سآئز گئژہ آسون برابر یا زیادہ سِنیپ شآئٹس سآئز خوتہٕ(%sGB)"
 
 msgid "Volume size must be greater than 0"
 msgstr "والیوم سآئز گئزہ آسیون 0 خوتہٖ زیادہ"
@@ -6560,17 +6358,23 @@ msgstr "والیوم ضریعہٕ کئریو وَضاحت"
 msgid "Volumes"
 msgstr "جآے"
 
-msgid "Volumes per node"
-msgstr "والیوم فی نوڈ"
-
-msgid "Volumes size (GB)"
-msgstr "والیوم سآیز"
+msgid "Volumes Attached"
+msgstr "والیوم جوڈیتھ"
 
 msgid "Weight"
 msgstr "وزن"
 
-msgid "Which keypair to use for authentication."
-msgstr "کوس کی جورہ گژہ اِستعمال کرون آتھنٹِکیشن"
+msgid ""
+"Within a container you can group your objects into pseudo-folders, which "
+"behave similarly to folders in your desktop operating system, with the "
+"exception that they are virtual collections defined by a common prefix on "
+"the object's name. A slash (/) character is used as the delimiter for pseudo-"
+"folders in the Object Store."
+msgstr ""
+"کنٹینرس مَنز توہیہ ہیکیو گروپ کریتھ تُہند آبجیکٹس سئڈو فولڈر مَنز، یُس بآقین "
+"فولڈر پیٹھ تُہندِس ڈیسک ٹآپ ٲپریٹِنگ سِسٹم،یَمہ وعرے کہ تَم چھ ویرچُیل کلیکضن وَضاحت "
+"کیتھ اام پریفیکس سیتھ   آبجیکٹ نآوس پیٹھ۔ اَکھ سِلیش (/)  حَرف چُھ اِستعمال  یوان "
+"کرنہ ڈیلیمٹر سیوڈو فولڈر پیٹھ آبجیکٹ سَٹور مَنز"
 
 msgid "Yes"
 msgstr "عئن"
@@ -6581,8 +6385,37 @@ msgstr "تُہیہٕ چھو گوڈے اِستعمال کئران تُہند دَ
 msgid "You are already using all of your available volumes."
 msgstr "تُہیہٕ چھو گوڈے اِستعمال کئران تُہند دَستِیاب والیوم"
 
-msgid "You cannot disable the user you are currently logged in as."
-msgstr "توہیہ ہیکو نہ معزور کریتہ یوزر توہیہ چھو لاگڈ اِن یِتھ پٹھ"
+msgid ""
+"You can connect a specified external network to the router. The external "
+"network is regarded as a default route of the router and the router acts as "
+"a gateway for external connectivity."
+msgstr ""
+"توہیہٕ چھو جوڈیتھ اَکئس ؤضاحت کئرمِت نیبرِم  نیٹ وئرک پئٹھ راوٹر سیتھ ۔    "
+"نیبرِم  نیٹ وئرک چُھ مُقرر یئوان کئرنہٖ ڈیفالٹ روٹ راوٹُرک  تہٕ راوٹر کئرہ کئم گیٹ "
+"وے پئٹھ نیبرِم کئنیکشن خآطرہ"
+
+msgid "You can connect a specified subnet to the router."
+msgstr "توہیہٕ ہیکئو جوڈیتھ اَکھ ؤضاحت کئورمُت سب نیٹ بیکئس راوٹرس خآطرہ"
+
+msgid ""
+"You can create a port for the network. If you specify device ID to be "
+"attached, the device specified will be attached to the port created."
+msgstr ""
+"توہیہ ہیکو   بَناویتھ اَکھ پورٹ نیٹ ورک خآطرہ اگر توہیہ  وَضاحت کریو ٲلہ ID "
+"جوڈنہ خآطرہ،  ٲلہ  وَضاحت کریتھ یہ جوڈنہ بَناومِت پورٹ سیتھ"
+
+msgid ""
+"You can customize your instance after it has launched using the options "
+"available here."
+msgstr ""
+"توہیہ ہیکو کسٹمآیز کریتھ تُہند اِنسٹنس لانچ کرنہ پَتھ اِستعمال کریتھ یِم آپشنز"
+
+msgid ""
+"You can specify the desired rule template or use custom rules, the options "
+"are Custom TCP Rule, Custom UDP Rule, or Custom ICMP Rule."
+msgstr ""
+" توہیہ ہیکیو وَضاحت کریتھ اَکھ خواہش رول ٹیمپلیٹ یا اِستعمال  کریو قسٹم رول، "
+"آپشنز چھ   قسٹمTCP رول ،  قسٹمUDP رول ، یا ICMP"
 
 msgid ""
 "You cannot revoke your administrative privileges from the domain you are "
@@ -6605,8 +6438,70 @@ msgstr ""
 msgid "You may have mistyped the address or the page may have moved."
 msgstr "توہِیہٕ آسہٕ غَلط ٹآئپ کئورمُت ایڈریس یا پیج آسہٕ کونہٕ حِلاومُت"
 
-msgid "You must select a datastore type and version."
-msgstr "توہیہ پزیو ژارُن ڈیتآ سِٹور قِسم تہ ورجن"
+msgid "You may optionally set a password on the rebuilt instance."
+msgstr "توہیہ ہیکو آپضنلی سیٹ کریتھ اَکھ پآس ورڈ ریبیلٹ اِنسٹنس پیٹھ"
+
+msgid "You may update IKE Policy details here."
+msgstr "توہِیہٕ ہیکئو  اَپڈیٹ کئریتھIKE  سیک پآلیسی  تَفصیل یَتینئس"
+
+msgid "You may update IPSec Policy details here."
+msgstr "توہِیہٕ ہیکئو  اَپڈیٹ کئریتھIP سیک پآلیسی  تَفصیل یَتینئس"
+
+msgid "You may update IPSec Site Connection details here."
+msgstr "توہِیہٕ ہیکئو  اَپڈیٹ کئریتھIP سیک سآئٹ کئنیکشن  تَفصیل یَتینئس"
+
+msgid ""
+"You may update VIP attributes here: edit name, description, pool, session "
+"persistence, connection limit  or admin state."
+msgstr ""
+"توہیہٕ ہیکئو اَپڈیٹ کئریتھ VIPایٹرِبیوٹز یَتئنس: شیریئو نآو، تَفصیل،پول، سیشن "
+"پرسِسٹئنس، کئنیکشن خد یا ایڈمِن سِٹیٹ"
+
+msgid "You may update VPN Service details here."
+msgstr "توہِیہٕ ہیکئو  اَپڈیٹ کئریتھ VPNسئروِس تَفصیل یَتینئس"
+
+msgid "You may update firewall details here."
+msgstr "توہیہ پزیو اَپڈیٹ کرون فٲیر وال تَفصیل یَتینس "
+
+msgid ""
+"You may update health monitor attributes here: edit delay, timeout, max "
+"retries  or admin state."
+msgstr ""
+"توہیہٕ ہیکئو اَپڈیٹ کئریتھ صحت مآنیٹر ایٹرِبیوٹز یَتئنس: شیریئو دیری،ٹٲئم آوٹ،"
+"زیادہ خوتہٕ زیادہ کوشئش،  یا ایڈمِن سِٹیٹ"
+
+msgid ""
+"You may update member attributes here: edit pool, weight or admin state."
+msgstr ""
+"توہیہٕ ہیکئو اَپڈیٹ کئریتھ میمبرایٹرِبیوٹز یَتئنس: شیریئو پول، وَزن، یا ایڈمِن سِٹیٹ"
+
+msgid ""
+"You may update policy details here. Use 'Insert Rule' or 'Remove Rule' links "
+"instead to insert or remove a rule"
+msgstr ""
+"توہیہ پزیو اَپڈیٹ کرون پآلیسی تَفصیل یَتینس  اِستعمال کریو 'Insert Rule'  "
+"یا'Remove Rule'  لِنکس بَجآے تراوُن یا کعڈُن اَکھ رول"
+
+msgid ""
+"You may update pool attributes here: edit name, description, load balancing "
+"method or admin state."
+msgstr ""
+"توہیہٕ ہیکئو اَپڈیٹ کئریتھ پول ایٹرِبیوٹز یَتئنس: شیریئو نآو، تَفصیل،لوڈ بیلئنسِنگ "
+"طَریقہٕ  یا ایڈمِن سِٹیٹ"
+
+msgid "You may update rule details here."
+msgstr "توہیہ پزیو اَپڈیٹ کرون رول  تَفصیل یَتینس "
+
+msgid "You may update the editable properties of your network here."
+msgstr "توہیہ  ہیکو   اَپڈیٹ  کریتھ شیرن واجین خَصوصیت تُہندِس نیٹ ورکس پیٹہ یَتینس"
+
+msgid "You may update the editable properties of your port here."
+msgstr "توہیہٕ ہیکئو اَپڈیٹ کئریتھ شیرنہٕ واجین خَصوصیت تُہندٕ پورٹِچ یَتینس"
+
+msgid "You may update the editable properties of your router here."
+msgstr ""
+"توہیہٕ ہیکئو اَپڈیٹ کئریتھ  توہیہٕ ہیکئو اَپڈیٹ کئریتھ شیرنہٕ واجین خَصوصیت تُہندٕ "
+"راوٹرِک یَتینس"
 
 msgid "You must select a snapshot."
 msgstr "توہیہٕ پئزیئو ژارُن اَکھ سِنیپ شآٹس"
@@ -6620,16 +6515,20 @@ msgstr "توہیہٕ پئزیئو ژارُن اَکھ شکل"
 msgid "You must set volume size"
 msgstr "توہیہٕ پئزیئو  والیوم سآئز سیٹ کئرون"
 
-msgid "You must specify a password if you create a user."
-msgstr ""
-" توئیہ پئزیو وَضاحت کئرون کم از کم اَکھ پٲس ورڈ اگر   توئیہ  بَنایئو اَکھ یوزر"
-
 msgid "You must specify a template via one of the available sources."
 msgstr "توہیہٕ پئزیو وَضاحت کئرُن اَکھ ٹیمپلیٹ اَکہٕ دَستِیاب ضریعہٕ سیتھ"
 
-msgid "You must specify at least one database if you create a user."
+msgid ""
+"You must specify the source of the traffic to be allowed via this rule. You "
+"may do so either in the form of an IP address block (CIDR) or via a source "
+"group (Security Group). Selecting a security group as the source will allow "
+"any other instance in that security group access to any other instance via "
+"this rule."
 msgstr ""
-"توئیہ پئزیو وَضاحت کئرون کم از کم اَکھ ڈیٹا بیس اگر   توئیہ  بَنایئو اَکھ یوزر"
+"  گئژہ وَضاحت کئرون توہیہ  ضریہ  ٹریفِک چُھ یُس اِجازت دِیہ رول ضریاہ۔ توہیہ ہیکیو "
+"کریتھIP نیب بُلاکس(CIDR)   سورس گروپ ضریعہ شکلہ مَنز یا  (حِفاظتی گروپ).  اَکھ  "
+"حِفاظتی گروپ  ژارُن سورس پیٹھ دِیہ اِجازت کونہ تہ اِنسٹنس پیٹھ تَتھ  حِفاظتی گروپ "
+"ایکسس خآطرہ کونہ تہ اِنسٹنس پیٹھ یَمہ رول ضریاہ"
 
 #, python-format
 msgid "Your image %s has been queued for creation."

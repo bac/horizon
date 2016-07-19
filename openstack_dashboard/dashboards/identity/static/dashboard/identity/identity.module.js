@@ -18,24 +18,27 @@
   'use strict';
 
   /**
-   * @ngdoc hz.dashboard.identity
+   * @ngdoc horizon.dashboard.identity
    * @ngModule
    *
    * @description
    * Dashboard module to host various identity panels.
    */
   angular
-    .module('hz.dashboard.identity', [
-      'hz.dashboard.identity.users',
-      'hz.dashboard.identity.projects'
+    .module('horizon.dashboard.identity', [
+      'horizon.dashboard.identity.users',
+      'horizon.dashboard.identity.projects'
     ])
     .config(config);
 
-  config.$inject = ['$provide', '$windowProvider'];
+  config.$inject = [
+    '$provide',
+    '$windowProvider'
+  ];
 
   function config($provide, $windowProvider) {
     var path = $windowProvider.$get().STATIC_URL + 'dashboard/identity/';
-    $provide.constant('hz.dashboard.identity.basePath', path);
+    $provide.constant('horizon.dashboard.identity.basePath', path);
   }
 
 })();

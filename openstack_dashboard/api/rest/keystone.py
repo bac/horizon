@@ -14,13 +14,13 @@
 """API over the keystone service.
 """
 
+from django.conf import settings
 import django.http
 from django.views import generic
 
 from openstack_dashboard import api
-from openstack_dashboard.api.rest import utils as rest_utils
-
 from openstack_dashboard.api.rest import urls
+from openstack_dashboard.api.rest import utils as rest_utils
 
 
 @urls.register
@@ -81,14 +81,13 @@ class Users(generic.View):
 
         This action returns the new user object on success.
         """
-        # not sure why email is forced to None, but other code does it
         domain = api.keystone.get_default_domain(request)
         new_user = api.keystone.user_create(
             request,
             name=request.DATA['name'],
             email=request.DATA.get('email') or None,
             password=request.DATA.get('password'),
-            project=request.DATA.get('project_id'),
+            project=request.DATA.get('project_id') or None,
             enabled=True,
             domain=domain.id
         )
@@ -412,13 +411,16 @@ class Projects(generic.View):
         if len(filters) == 0:
             filters = None
 
+        paginate = request.GET.get('paginate') == 'true'
+        admin = False if request.GET.get('admin') == 'false' else True
+
         result, has_more = api.keystone.tenant_list(
             request,
-            paginate=request.GET.get('paginate', False),
+            paginate=paginate,
             marker=request.GET.get('marker'),
             domain=request.GET.get('domain_id'),
             user=request.GET.get('user_id'),
-            admin=request.GET.get('admin', True),
+            admin=admin,
             filters=filters
         )
         # return (list of results, has_more_data)
@@ -561,4 +563,27 @@ class UserSession(generic.View):
     def get(self, request):
         """Get the current user session.
         """
-        return {k: getattr(request.user, k, None) for k in self.allowed_fields}
+        res = {k: getattr(request.user, k, None) for k in self.allowed_fields}
+        if getattr(settings, 'ENABLE_CLIENT_TOKEN', True):
+            res['token'] = request.user.token.id
+        return res
+
+
+@urls.register
+class Services(generic.View):
+    """API for keystone services.
+    """
+    url_regex = r'keystone/services/$'
+
+    @rest_utils.ajax()
+    def get(self, request):
+        """Get a list of keystone services.
+        """
+        region = request.user.services_region
+        services = []
+        for i, service in enumerate(request.user.service_catalog):
+            services.append(
+                dict(api.keystone.Service(service, region).to_dict(), id=i)
+            )
+
+        return {'items': services}
