@@ -124,8 +124,8 @@ class ComputeHostTable(tables.DataTable):
                                u"Down")),
     )
 
-    host = tables.Column('host', verbose_name=_('Host'))
-    zone = tables.Column('zone', verbose_name=_('Zone'))
+    host = tables.WrappingColumn('host', verbose_name=_('Host'))
+    zone = tables.Column('zone', verbose_name=_('Availability zone'))
     status = tables.Column('status',
                            status=True,
                            status_choices=STATUS_CHOICES,
@@ -137,7 +137,7 @@ class ComputeHostTable(tables.DataTable):
                           display_choices=STATUS_DISPLAY_CHOICES,
                           verbose_name=_('State'))
     updated_at = tables.Column('updated_at',
-                               verbose_name=_('Updated At'),
+                               verbose_name=_('Time since update'),
                                filters=(utils_filters.parse_isotime,
                                         filters.timesince))
 

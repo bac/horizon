@@ -61,12 +61,12 @@
     it('has the correct number of column headers', function() {
       var $element = digestMarkup($scope, $compile, markup);
       expect($element).toBeDefined();
-      expect($element.find('thead tr:eq(0) th').length).toBe(5);
+      expect($element.find('thead tr:nth-child(2) th').length).toBe(5);
     });
 
     it('displays selectAll checkbox when config selectAll set to True', function() {
       var $element = digestMarkup($scope, $compile, markup);
-      expect($element.find('thead tr:eq(0) th:first input').attr(
+      expect($element.find('thead tr:nth-child(2) th:first input').attr(
         'hz-select-all')).toBe('items');
     });
 
@@ -82,12 +82,12 @@
         ]
       };
       var $element = digestMarkup($scope, $compile, markup);
-      expect($element.find('thead tr:eq(0) th:first').hasClass('ng-hide')).toBe(true);
+      expect($element.find('thead tr:nth-child(2) th:first').hasClass('ng-hide')).toBe(true);
     });
 
     it('displays expander when config expand set to True', function() {
       var $element = digestMarkup($scope, $compile, markup);
-      expect($element.find('thead tr:eq(0) th:eq(1)').hasClass('expander')).toBe(true);
+      expect($element.find('thead tr:nth-child(2) th:eq(1)').hasClass('expander')).toBe(true);
     });
 
     it('does not display expander when config expand set to False', function() {
@@ -102,7 +102,7 @@
         ]
       };
       var $element = digestMarkup($scope, $compile, markup);
-      expect($element.find('thead tr:eq(0) th:eq(1)').hasClass('ng-hide')).toBe(true);
+      expect($element.find('thead tr:nth-child(2) th:eq(1)').hasClass('ng-hide')).toBe(true);
     });
 
     it('has the correct responsive priority classes', function() {
@@ -121,6 +121,19 @@
       expect($element.find('tbody tr:eq(2) td:eq(2)').text()).toContain('snake');
       expect($element.find('tbody tr:eq(2) td:eq(3)').text()).toContain('reptile');
       expect($element.find('tbody tr:eq(2) td:eq(4)').text()).toContain('mice');
+    });
+
+    it('displays the default no items message if noItemsMessage is not set', function() {
+      $scope.safeTableData = [];
+      var $element = digestMarkup($scope, $compile, markup);
+      expect($element.find('tbody td.no-rows-help').text()).toBe('No items to display.');
+    });
+
+    it('displays a custom no items message if noItemsMessage is provided', function() {
+      $scope.safeTableData = [];
+      $scope.config.noItemsMessage = 'A sample message';
+      var $element = digestMarkup($scope, $compile, markup);
+      expect($element.find('tbody td.no-rows-help').text()).toBe('A sample message');
     });
 
     it('has no search or action buttons if none configured', function() {

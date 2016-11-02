@@ -384,6 +384,12 @@
         "method": "get",
         "path": "/api/keystone/services/",
         "error": "Unable to fetch the services."
+      },
+      {
+        "func": "getGroups",
+        "method": "get",
+        "path": "/api/keystone/groups/",
+        "error": "Unable to fetch the groups."
       }
     ];
 
@@ -395,6 +401,47 @@
       });
     });
 
+    describe('Keystone API Helpers', function () {
+      var deferred, $timeout;
+
+      beforeEach(inject(function (_$q_, _$timeout_) {
+        deferred = _$q_.defer();
+        $timeout = _$timeout_;
+      }));
+
+      describe('getProjectName', function () {
+
+        var project = {
+          id: 'projectID',
+          name: 'projectName'
+        };
+
+        it("it returns the project name when it exists", function () {
+          deferred.resolve({data: project});
+          spyOn(service, 'getProject').and.returnValue(deferred.promise);
+          service.getProjectName(project.id).then(expectName);
+          $timeout.flush();
+          expect(service.getProject).toHaveBeenCalledWith(project.id);
+        });
+
+        it("it returns the project id when name doesn't exist", function () {
+          deferred.resolve({data: {id: project.id}});
+          spyOn(service, 'getProject').and.returnValue(deferred.promise);
+          service.getProjectName(project.id).then(expectID);
+          $timeout.flush();
+          expect(service.getProject).toHaveBeenCalledWith(project.id);
+        });
+
+        function expectName(name) {
+          expect(name).toBe(project.name);
+        }
+
+        function expectID(name) {
+          expect(name).toBe(project.id);
+        }
+      });
+
+    });
   });
 
 })();

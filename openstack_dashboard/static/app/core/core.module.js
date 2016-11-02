@@ -31,7 +31,9 @@
    */
   angular
     .module('horizon.app.core', [
+      'horizon.app.core.conf',
       'horizon.app.core.cloud-services',
+      'horizon.app.core.flavors',
       'horizon.app.core.images',
       'horizon.app.core.metadata',
       'horizon.app.core.openstack-service-api',
@@ -51,7 +53,7 @@
     var path = $windowProvider.$get().STATIC_URL + 'app/core/';
     $provide.constant('horizon.app.core.basePath', path);
     $routeProvider
-      .when('/project/ngdetails/:type/:path', {
+      .when('/project/ngdetails/:type/:path*', {
         templateUrl: $windowProvider.$get().STATIC_URL +
           'framework/widgets/details/routed-details-view.html'
       });

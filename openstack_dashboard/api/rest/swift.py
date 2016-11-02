@@ -17,6 +17,7 @@ import os
 
 from django import forms
 from django.http import StreamingHttpResponse
+from django.utils.http import urlunquote
 from django.views.decorators.csrf import csrf_exempt
 from django.views import generic
 import six
@@ -120,6 +121,8 @@ class Objects(generic.View):
         :return:
         """
         path = request.GET.get('path')
+        if path is not None:
+            path = urlunquote(path)
 
         objects = api.swift.swift_get_objects(
             request,
@@ -154,7 +157,7 @@ class Object(generic.View):
     # note: not an AJAX request - the body will be raw file content
     @csrf_exempt
     def post(self, request, container, object_name):
-        """Create a new object or pseudo-folder
+        """Create or replace an object or pseudo-folder
 
         :param request:
         :param container:
@@ -176,23 +179,19 @@ class Object(generic.View):
 
         data = form.clean()
 
-        try:
-            if object_name[-1] == '/':
-                result = api.swift.swift_create_pseudo_folder(
-                    request,
-                    container,
-                    object_name
-                )
-            else:
-                result = api.swift.swift_upload_object(
-                    request,
-                    container,
-                    object_name,
-                    data['file']
-                )
-        except exceptions.AlreadyExists as e:
-            # 409 Conflict
-            return rest_utils.JSONResponse(str(e), 409)
+        if object_name[-1] == '/':
+            result = api.swift.swift_create_pseudo_folder(
+                request,
+                container,
+                object_name
+            )
+        else:
+            result = api.swift.swift_upload_object(
+                request,
+                container,
+                object_name,
+                data['file']
+            )
 
         return rest_utils.CreatedResponse(
             u'/api/swift/containers/%s/object/%s' % (container, result.name)

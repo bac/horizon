@@ -11,13 +11,12 @@
 # under the License.
 
 import os
+import tempfile
 
 from django.utils.translation import pgettext_lazy
 from horizon.test.settings import *  # noqa
 from horizon.utils import secret_key
 from openstack_dashboard import exceptions
-from openstack_dashboard.static_settings import find_static_files  # noqa
-from openstack_dashboard.static_settings import get_staticfiles_dirs  # noqa
 
 from horizon.utils.escape import monkeypatch_escape
 
@@ -25,7 +24,7 @@ from horizon.utils.escape import monkeypatch_escape
 # enabling in our test setup to find any issues it might cause
 monkeypatch_escape()
 
-STATICFILES_DIRS = get_staticfiles_dirs()
+from openstack_dashboard.utils import settings as settings_utils
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_PATH = os.path.abspath(os.path.join(TEST_DIR, ".."))
@@ -36,10 +35,15 @@ STATIC_URL = '/static/'
 WEBROOT = '/'
 
 SECRET_KEY = secret_key.generate_or_read_from_file(
-    os.path.join(TEST_DIR, '.secret_key_store'))
+    os.path.join(tempfile.gettempdir(), '.secret_key_store'))
 ROOT_URLCONF = 'openstack_dashboard.test.urls'
-TEMPLATE_DIRS = (
-    os.path.join(TEST_DIR, 'templates'),
+
+TEMPLATES[0]['DIRS'] = [
+    os.path.join(TEST_DIR, 'templates')
+]
+
+TEMPLATES[0]['OPTIONS']['context_processors'].append(
+    'openstack_dashboard.context_processors.openstack'
 )
 
 CUSTOM_THEME_PATH = 'themes/default'
@@ -59,10 +63,6 @@ AVAILABLE_THEMES = [
 
 # Theme Static Directory
 THEME_COLLECTION_DIR = 'themes'
-
-TEMPLATE_CONTEXT_PROCESSORS += (
-    'openstack_dashboard.context_processors.openstack',
-)
 
 COMPRESS_OFFLINE = False
 
@@ -98,14 +98,26 @@ HORIZON_CONFIG = {
     'js_files': [],
 }
 
+ANGULAR_FEATURES = {
+    'images_panel': False,  # Use the legacy panel so unit tests are still run
+    'flavors_panel': False,
+}
+
+STATICFILES_DIRS = settings_utils.get_xstatic_dirs(
+    settings_utils.BASE_XSTATIC_MODULES, HORIZON_CONFIG
+)
+
 # Load the pluggable dashboard settings
+import openstack_dashboard.contrib.developer.enabled
 import openstack_dashboard.enabled
-from openstack_dashboard.utils import settings
+import openstack_dashboard.local.enabled
 
 INSTALLED_APPS = list(INSTALLED_APPS)  # Make sure it's mutable
-settings.update_dashboards(
+settings_utils.update_dashboards(
     [
         openstack_dashboard.enabled,
+        openstack_dashboard.local.enabled,
+        openstack_dashboard.contrib.developer.enabled
     ],
     HORIZON_CONFIG,
     INSTALLED_APPS,
@@ -115,13 +127,14 @@ settings.update_dashboards(
 # the stacks MappingsTests are updated with the new URL path.
 HORIZON_CONFIG['swift_panel'] = 'legacy'
 
-find_static_files(HORIZON_CONFIG, AVAILABLE_THEMES,
-                  THEME_COLLECTION_DIR, ROOT_PATH)
+settings_utils.find_static_files(HORIZON_CONFIG, AVAILABLE_THEMES,
+                                 THEME_COLLECTION_DIR, ROOT_PATH)
 
-# Set to True to allow users to upload images to glance via Horizon server.
-# When enabled, a file form field will appear on the create image form.
-# See documentation for deployment considerations.
-HORIZON_IMAGES_ALLOW_UPLOAD = True
+# Set to 'legacy' or 'direct' to allow users to upload images to glance via
+# Horizon server. When enabled, a file form field will appear on the create
+# image form. If set to 'off', there will be no file form field on the create
+# image form. See documentation for deployment considerations.
+HORIZON_IMAGES_UPLOAD_MODE = 'legacy'
 
 AVAILABLE_REGIONS = [
     ('http://localhost:5000/v2.0', 'local'),
@@ -129,7 +142,8 @@ AVAILABLE_REGIONS = [
 ]
 
 OPENSTACK_API_VERSIONS = {
-    "identity": 3
+    "identity": 3,
+    "image": 2
 }
 
 OPENSTACK_KEYSTONE_URL = "http://localhost:5000/v2.0"
@@ -181,6 +195,7 @@ OPENSTACK_IMAGE_BACKEND = {
         ('ami', 'AMI - Amazon Machine Image'),
         ('ari', 'ARI - Amazon Ramdisk Image'),
         ('iso', 'ISO - Optical Disk Image'),
+        ('ploop', 'PLOOP - Virtuozzo/Parallels Loopback Disk'),
         ('qcow2', 'QCOW2 - QEMU Emulator'),
         ('raw', 'Raw'),
         ('vdi', 'VDI'),
@@ -257,3 +272,5 @@ REST_API_SETTING_2 = 'bar'
 REST_API_SECURITY = 'SECURITY'
 REST_API_REQUIRED_SETTINGS = ['REST_API_SETTING_1']
 REST_API_ADDITIONAL_SETTINGS = ['REST_API_SETTING_2']
+
+ALLOWED_PRIVATE_SUBNET_CIDR = {'ipv4': [], 'ipv6': []}

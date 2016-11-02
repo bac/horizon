@@ -21,11 +21,12 @@
     .factory('horizon.app.core.openstack-service-api.keystone', keystoneAPI);
 
   keystoneAPI.$inject = [
+    '$q',
     'horizon.framework.util.http.service',
     'horizon.framework.widgets.toast.service'
   ];
 
-  function keystoneAPI(apiService, toastService) {
+  function keystoneAPI($q, apiService, toastService) {
     var service = {
       getVersion: getVersion,
       getUsers: getUsers,
@@ -51,11 +52,13 @@
       createProject: createProject,
       deleteProjects: deleteProjects,
       getProject: getProject,
+      getProjectName: getProjectName,
       editProject: editProject,
       deleteProject: deleteProject,
       grantRole: grantRole,
       serviceCatalog: serviceCatalog,
-      getServices: getServices
+      getServices: getServices,
+      getGroups: getGroups
     };
 
     return service;
@@ -97,6 +100,13 @@
       return apiService.get('/api/keystone/services/')
         .error(function () {
           toastService.add('error', gettext('Unable to fetch the services.'));
+        });
+    }
+
+    function getGroups() {
+      return apiService.get('/api/keystone/groups/')
+        .error(function () {
+          toastService.add('error', gettext('Unable to fetch the groups.'));
         });
     }
 
@@ -275,6 +285,31 @@
         .error(function () {
           toastService.add('error', gettext('Unable to retrieve the project.'));
         });
+    }
+
+    /**
+     * @name getProjectName
+     * @description
+     * Returns the requested project name or id if the project doesn't have a name.
+     * @param {string} projectId
+     * The project to get
+     * @returns {string} The result of the API call
+     */
+    function getProjectName(projectId) {
+      var deferred = $q.defer();
+
+      service.getProject(projectId)
+        .then(onSuccess, onFailure);
+
+      function onSuccess(response) {
+        deferred.resolve(response.data.name || response.data.id);
+      }
+
+      function onFailure(message) {
+        deferred.reject(message);
+      }
+
+      return deferred.promise;
     }
 
     function editProject(updatedProject) {

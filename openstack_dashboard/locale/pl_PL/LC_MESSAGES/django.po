@@ -3,13 +3,13 @@
 # Łukasz Jernas <deejay1@srem.org>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: horizon 10.0.0.0b3.dev24\n"
+"Project-Id-Version: horizon 10.0.0.0rc2.dev184\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-07-18 05:22+0000\n"
+"POT-Creation-Date: 2016-10-31 22:11+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-04-09 08:09+0000\n"
+"PO-Revision-Date: 2016-10-13 04:26+0000\n"
 "Last-Translator: Łukasz Jernas <deejay1@srem.org>\n"
 "Language-Team: Polish (Poland)\n"
 "Language: pl-PL\n"
@@ -40,6 +40,10 @@ msgstr ""
 "„Brak” oznacza, że nie przypisano żadnej specyfikacji QoS. Podobnie "
 "ustawienie specyfikacji QoS na „Brak” spowoduje usunięcie obecnego "
 "powiązania."
+
+#, python-format
+msgid "%(cidr)s %(pool_name)s"
+msgstr "%(cidr)s %(pool_name)s"
 
 #, python-format
 msgid "%(field_name)s: Invalid IP address (value=%(ip)s)"
@@ -173,15 +177,6 @@ msgstr "Lokalny plik metadanych, który ma zostać przesłany"
 msgid "A local template to upload."
 msgstr "Lokalny plik z szablonem do wysłania."
 
-msgid ""
-"A more specific rule affects a portion of this traffic so a rule cannot be "
-"automatically generated to control the behavior of the entire source/"
-"destination combination."
-msgstr ""
-"Bardziej szczegółowa reguła dotyczy części ruchu, w związku z czym nie można "
-"automatycznie wygenerować reguły kontrolującej zachowanie wszystkich "
-"kombinacji źródeł/celi."
-
 msgid "A new uploaded file will replace the content of the current object"
 msgstr "Przesłany plik zastąpi zawartość bieżącego obiektu"
 
@@ -212,12 +207,12 @@ msgid "ALLOW %(ethertype)s %(proto_port)s %(direction)s %(remote)s"
 msgstr "POZWÓL %(ethertype)s %(proto_port)s %(direction)s %(remote)s"
 
 #, python-format
-msgid "ALLOW %(from)s:%(to)s/%(ip_protocol)s from %(cidr)s"
-msgstr "ZEZWÓL %(from)s:%(to)s/%(ip_protocol)s z %(cidr)s"
+msgid "ALLOW %(range)s/%(ip_protocol)s from %(cidr)s"
+msgstr "ZEZWÓL %(range)s/%(ip_protocol)s z %(cidr)s"
 
 #, python-format
-msgid "ALLOW %(from)s:%(to)s/%(ip_protocol)s from %(group)s"
-msgstr "ZEZWÓL %(from)s:%(to)s/%(ip_protocol)s z %(group)s"
+msgid "ALLOW %(range)s/%(ip_protocol)s from %(group)s"
+msgstr "ZEZWÓL %(range)s/%(ip_protocol)s z %(group)s"
 
 msgid "AMI - Amazon Machine Image"
 msgstr "AMI - Amazon Machine Image"
@@ -233,9 +228,6 @@ msgstr "Adres API"
 
 msgid "ARI - Amazon Ramdisk Image"
 msgstr "ARI - Amazon Ramdisk Image"
-
-msgid "AWS compatible"
-msgstr "Kompatybilne z AWS"
 
 msgid "Accept Transfer"
 msgstr "Przyjmij przeniesienie"
@@ -260,9 +252,6 @@ msgstr "Log akcji"
 
 msgid "Action for the firewall rule"
 msgstr "Akcja dla reguły zapory ogniowej"
-
-msgid "Action:"
-msgstr "Czynność:"
 
 msgctxt "Current status of a Firewall"
 msgid "Active"
@@ -383,9 +372,6 @@ msgstr "Dodaj router"
 msgid "Add Router Route"
 msgstr "Dodanie trasy routera"
 
-msgid "Add Router Rule"
-msgstr "Dodaj regułę routera"
-
 msgid "Add Router to Firewall"
 msgstr "Dodaj router do zapory ogniowej"
 
@@ -453,9 +439,8 @@ msgstr ""
 "Dodanie członków do wybranej puli.\n"
 "\n"
 "Należy wybrać jedną lub więcej instancji, które mają zostać dodane do puli "
-"jako członkowie.\n"
-"Wymagane są również waga i numer portu, na którym pracują wybrani "
-"członkowie, np. 80.\n"
+"jako członkowie. Wymagane są również waga i numer portu, na którym pracują "
+"wybrani członkowie, np. 80.\n"
 "\n"
 "Tylko jeden port może być powiązany z każdą instancją."
 
@@ -521,16 +506,12 @@ msgstr "Dodano monitor"
 msgid "Added pool \"%s\"."
 msgstr "Dodano pulę „%s”."
 
-msgid "Additional routes"
-msgstr "Dodatkowe trasy"
-
 msgid ""
 "Additional routes announced to the hosts. Each entry is: destination_cidr,"
 "nexthop (e.g., 192.168.200.0/24,10.56.1.254) and one entry per line."
 msgstr ""
 "Dodatkowe routery rozgłaszane do hostów. Każdy wpis powinien być w osobnej "
-"linii w postaci:\n"
-"docelowy_cidr,nexthop (np. 192.168.200.0/24,10.56.1.254)."
+"linii w postaci: docelowy_cidr,nexthop (np. 192.168.200.0/24,10.56.1.254)."
 
 msgid ""
 "Additionally, some resource types may require a prefix to be used when "
@@ -561,6 +542,9 @@ msgstr "Stan administracyjny"
 
 msgid "Admin State Up"
 msgstr "Stan administracyjny"
+
+msgid "Admin:"
+msgstr "Administracujne:"
 
 msgid ""
 "Administrator Note: Use the following CLI command to import the default "
@@ -650,6 +634,10 @@ msgstr "Przydzielono"
 #, python-format
 msgid "Allocated Floating IP %(ip)s."
 msgstr "Przydzielono pływający adres IP %(ip)s."
+
+#, python-format
+msgid "Allocated floating IP %(ip)s."
+msgstr "Przyznane pływające adresy IP %(ip)s."
 
 msgid "Allocation Pools"
 msgstr "Pule przydziałów"
@@ -803,10 +791,12 @@ msgid ""
 "Automatic: The entire disk is a single partition and automatically resizes. "
 "Manual: Results in faster build times but requires manual partitioning."
 msgstr ""
-"Automatyczne: Cały dysk jest jedną partycją i zmienia rozmiar "
-"automatycznie.\n"
+"Automatyczne: Cały dysk jest jedną partycją i zmienia rozmiar automatycznie. "
 "Ręczne: Pozwala na krótsze czasy budowania, jednakże wymaga ręcznego "
 "partycjonowania."
+
+msgid "Automatically schedule new host."
+msgstr "Automatycznie przypisz nowy serwer."
 
 msgid "Availability Zone"
 msgstr "Strefa dostępności"
@@ -816,6 +806,9 @@ msgstr "Nazwa strefy dostępności"
 
 msgid "Availability Zones"
 msgstr "Strefy dostępności"
+
+msgid "Availability zone"
+msgstr "Strefa dostępności"
 
 msgid "Available"
 msgstr "Dostępne"
@@ -881,6 +874,9 @@ msgstr "Tworzenie kopii zapasowej"
 msgid "Backup Name"
 msgstr "Nazwa kopii zapasowej"
 
+msgid "Backup Size (GiB)"
+msgstr "Rozmiar kopii zapasowej (GiB)"
+
 msgid "Backups"
 msgstr "Kopie zapasowe"
 
@@ -927,6 +923,9 @@ msgstr "Uruchom z migawki wolumenu (tworzy nowy wolumen)"
 
 msgid "Bootable"
 msgstr "Uruchamialny"
+
+msgid "Bootstrap Theme Preview"
+msgstr "Podgląd motywu Bootstrap"
 
 msgctxt "Current status of a Network"
 msgid "Build"
@@ -1090,10 +1089,9 @@ msgid ""
 "insert immediately before, or the rule to insert immediately after. If both "
 "are specified, the prior takes precedence."
 msgstr ""
-"Pozwala na wybór reguły do wstawienia.\n"
-"Należy podać regułę przed którą należy wstawić obecną, lub regułę za którą "
-"należy ją wstawić. Podanie obu, spowoduje, iż pierwsza z nich otrzyma "
-"pierwszeństwo."
+"Pozwala na wybór reguły do wstawienia. Należy podać regułę przed którą "
+"należy wstawić obecną, lub regułę za którą należy ją wstawić. Podanie obu, "
+"spowoduje, iż pierwsza z nich otrzyma pierwszeństwo."
 
 msgid "Choose the rule you want to remove."
 msgstr "Pozwala wybrać regułę do usunięcia."
@@ -1140,9 +1138,6 @@ msgstr "Zimna migracja"
 
 msgid "Comma-separated key=value pairs"
 msgstr "Rozdzielone przecinkami pary klucz=wartość"
-
-msgid "Component"
-msgstr "Komponent"
 
 msgid "Compute"
 msgstr "Obliczenia"
@@ -1195,9 +1190,6 @@ msgstr "Potwierdź lub anuluj zmianę rozmiaru/migrację"
 msgctxt "Task status of an Instance"
 msgid "Confirming Resize or Migrate"
 msgstr "Potwierdź zmianę rozmiaru lub migrację"
-
-msgid "Conflicting Rule"
-msgstr "Konfliktująca reguła"
 
 msgid "Connection Limit"
 msgstr "Limit połączeń"
@@ -1339,17 +1331,6 @@ msgstr "Utwórz grupę"
 
 msgid "Create Host Aggregate"
 msgstr "Utwórz agregat hostów"
-
-msgid ""
-"Create IPSec Site Connection for current project.\n"
-"\n"
-"Assign a name and description for the IPSec Site Connection. All fields in "
-"this tab are required."
-msgstr ""
-"Pozwala utworzyć połączenie tunelowe IPSec dla bieżącego projektu.\n"
-"\n"
-"Należy podać nazwę i opis połączenia IPSec. Wszystkie pola w tej zakładce są "
-"wymagane."
 
 msgid "Create Image"
 msgstr "Utwórz obraz"
@@ -1638,6 +1619,17 @@ msgstr "Bieżący host"
 msgid "Current password"
 msgstr "Bieżące hasło"
 
+msgid ""
+"Currently only images available via an HTTP/HTTPS URL are supported. The "
+"image location must be accessible to the Image Service."
+msgstr ""
+"Obecnie wspierane są obrazy dostępne poprzez adresy URL HTTP/HTTPS. "
+"Położenie obrazu musi być dostępna dla usługi obrazów."
+
+msgctxt "Custom style theme"
+msgid "Custom"
+msgstr "Własne"
+
 msgid "Custom ICMP Rule"
 msgstr "Własna reguła ICMP"
 
@@ -1663,9 +1655,6 @@ msgstr "ODRZUĆ"
 msgid "DHCP Agents"
 msgstr "Agenci DHCP"
 
-msgid "DHCP Enable"
-msgstr "DHCP Włączone"
-
 msgid "DHCPv6 stateful: Address discovered from OpenStack DHCP"
 msgstr "DHCPv6 stateful: Adres jest wykrywany z serwera DHCP OpenStack"
 
@@ -1678,9 +1667,6 @@ msgstr ""
 
 msgid "DNS Name Servers"
 msgstr "Serwery DNS"
-
-msgid "DNS name server"
-msgstr "Serwer nazw DNS"
 
 msgid "DOWN"
 msgstr "DOWN"
@@ -1735,8 +1721,18 @@ msgstr "Limit czasu wykrywania martwych partnerów (DPD)"
 msgid "Decrypt Password"
 msgstr "Odszyfruj hasło"
 
+msgctxt "Default style theme"
+msgid "Default"
+msgstr "Domyślnie"
+
 msgid "Default Quotas"
 msgstr "Domyślne limity"
+
+msgid "Default quotas updated for Cinder."
+msgstr "Zaktualizowano domyślne limity dla Cinder."
+
+msgid "Default quotas updated for Nova."
+msgstr "Zaktualizowano domyślne limity dla Nova."
 
 msgid "Default quotas updated."
 msgstr "Zaktualizowano domyślne limity."
@@ -1926,12 +1922,6 @@ msgid_plural "Delete Routers"
 msgstr[0] "Usuń router"
 msgstr[1] "Usuń routery"
 msgstr[2] "Usuń routery"
-
-msgid "Delete Router Rule"
-msgid_plural "Delete Router Rules"
-msgstr[0] "Usuń regułę routera"
-msgstr[1] "Usuń reguły routera"
-msgstr[2] "Usuń reguły routera"
 
 msgid "Delete Rule"
 msgid_plural "Delete Rules"
@@ -2125,12 +2115,6 @@ msgstr[0] "Usunięto router"
 msgstr[1] "Usunięto routery"
 msgstr[2] "Usunięto routery"
 
-msgid "Deleted Router Rule"
-msgid_plural "Deleted Router Rules"
-msgstr[0] "Usunięto regułę routera"
-msgstr[1] "Usunięto reguły routera"
-msgstr[2] "Usunięto reguły routera"
-
 msgid "Deleted Rule"
 msgid_plural "Deleted Rules"
 msgstr[0] "Usunięto regułę"
@@ -2199,9 +2183,6 @@ msgstr "Usuwanie"
 msgid "Deleting VIP %s from this pool cannot be undone."
 msgstr "Usunięcie VIP %s z tej puli nie może być cofnięte."
 
-msgid "Deny"
-msgstr "Zabroń"
-
 msgid "Description"
 msgstr "Opis"
 
@@ -2246,9 +2227,6 @@ msgstr ""
 "Port docelowy (liczba całkowita z przedziału [1, 65535] lub zakres w "
 "formacie a:b)"
 
-msgid "Destination:"
-msgstr "Cel:"
-
 msgid "Detach Interface"
 msgstr "Odłącz interfejs"
 
@@ -2280,6 +2258,9 @@ msgstr[2] "Odłączanie wolumenów"
 
 msgid "Details"
 msgstr "Szczegóły"
+
+msgid "Developer"
+msgstr "Deweloper"
 
 msgid "Device"
 msgstr "Urządzenie"
@@ -2567,8 +2548,17 @@ msgstr "Edytuj instancję"
 msgid "Edit Member"
 msgstr "Edytuj członka"
 
+msgid "Edit Metadata Namespace"
+msgstr "Edycja metadanych przestrzeni nazw"
+
 msgid "Edit Monitor"
 msgstr "Edytuj monitor"
+
+msgid "Edit Namespace"
+msgstr "Edycja przestrzeni nazw"
+
+msgid "Edit Namespace Attributes"
+msgstr "Edycja atrybutów przestrzeni nazw"
 
 msgid "Edit Network"
 msgstr "Edytuj sieć"
@@ -2590,6 +2580,9 @@ msgstr "Edytuj port"
 
 msgid "Edit Project"
 msgstr "Edytuj projekt"
+
+msgid "Edit Public/Protected attributes for the namespace."
+msgstr "Edycja publicznych/chronionych atrybutów przestrzeni nazw."
 
 msgid "Edit QoS Spec Consumer"
 msgstr "Edycja konsumenta specyfikacji QoS"
@@ -2738,6 +2731,9 @@ msgstr "Szyfrowanie"
 msgid "Encryption algorithm"
 msgstr "Algorytm szyfrowania"
 
+msgid "Endpoints"
+msgstr "Adresy"
+
 msgid "Energy (Kwapi)"
 msgstr "Energia (Kwapi)"
 
@@ -2864,6 +2860,9 @@ msgstr "Nie można pobrać powiązań typów zasobów."
 
 msgid "Error updating QoS Spec association."
 msgstr "Nie można zaktualizować powiązania specyfikacji QoS."
+
+msgid "Error updating attributes for namespace."
+msgstr "Nie można zaktualizować atrybutów przestrzeni nazw."
 
 #, python-format
 msgid "Error updating resource types for namespace %s."
@@ -2993,10 +2992,6 @@ msgstr "Nie można dodać agenta %(agent_name)s dla sieci %(network)s."
 #, python-format
 msgid "Failed to add route : %s"
 msgstr "Nie można dodać trasy: %s"
-
-#, python-format
-msgid "Failed to add router rule %s"
-msgstr "Nie można dodać reguły routera %s"
 
 #, python-format
 msgid "Failed to add router(s) to firewall %(name)s: %(reason)s"
@@ -3300,6 +3295,9 @@ msgstr "Reguły zapory ogniowej"
 msgid "Firewalls"
 msgstr "Zapory ogniowe"
 
+msgid "Fixed IP Address"
+msgstr "Stały adres IP"
+
 msgid "Fixed IPs"
 msgstr "Stałe adresy IP"
 
@@ -3342,6 +3340,9 @@ msgstr "Informacje o odmianie"
 msgid "Flavor Name"
 msgstr "Nazwa odmiany"
 
+msgid "Flavor name cannot be empty."
+msgstr "Nazwa odmiany nie może być pusta."
+
 msgid "Flavors"
 msgstr "Odmiany"
 
@@ -3354,6 +3355,15 @@ msgstr ""
 
 msgid "Floating IP"
 msgstr "Pływające IP"
+
+msgid "Floating IP Address (optional)"
+msgstr "Pływający adres IP (opcjonalne)"
+
+msgid "Floating IP Details"
+msgstr "Szczegóły pływającego adresu IP"
+
+msgid "Floating IP address"
+msgstr "Pływający adres IP"
 
 msgid "Floating IP:"
 msgstr "Pływający adres IP:"
@@ -3398,6 +3408,9 @@ msgstr "Format"
 msgid "Format ="
 msgstr "Format ="
 
+msgid "Free IPs"
+msgstr "Wolne adresy IP"
+
 msgid "From"
 msgstr "Od"
 
@@ -3406,6 +3419,9 @@ msgstr "Od portu"
 
 msgid "From here you can add a DHCP agent for the network."
 msgstr "Tutaj możesz dodać agenta DHCP do sieci."
+
+msgid "From here you can allocate a floating IP to a specific project."
+msgstr "Pozwala na przypisanie pływającego adresu IP dla konkretnego projektu."
 
 msgid "From here you can create a snapshot of a volume."
 msgstr "Pozwala na utworzenie migawki wolumenu."
@@ -3436,6 +3452,12 @@ msgstr "Adres IP bramy oraz wersja protokołu IP są niespójne."
 
 msgid "Gateway interface is added"
 msgstr "Dodano interfejs bramy"
+
+msgid "Geneve"
+msgstr "Geneve"
+
+msgid "GiB"
+msgstr "GiB"
 
 msgid "Glance"
 msgstr "Glance"
@@ -3657,15 +3679,9 @@ msgid ""
 msgstr ""
 "Adres IP bramki (np. 192.168.0.254). Domyślną wartością jest pierwszy adres "
 "IP sieci (np. 192.168.0.1 dla 192.168.0.0/24, 2001:DB8::1 dla 2001:"
-"DB8::/48).\n"
-"Należy pozostawić puste, by skorzystać z domyślnej wartości. Jeśli nie ma "
-"być używana bramka, należy zaznaczy pole wyboru \"Wyłącz bramkę\" poniżej."
-
-msgid "IP allocation pool"
-msgstr "Pula alokacji adresów IP"
-
-msgid "IP version"
-msgstr "Wersja IP"
+"DB8::/48). Należy pozostawić puste, by skorzystać z domyślnej wartości. "
+"Jeśli nie ma być używana bramka, należy zaznaczy pole wyboru \"Wyłącz bramkę"
+"\" poniżej."
 
 msgid "IPMI"
 msgstr "IPMI"
@@ -3699,17 +3715,11 @@ msgstr "Połączenia tunelowe IPSec"
 msgid "IPv4"
 msgstr "IPv4"
 
-msgid "IPv4 Address ="
-msgstr "Adres IPv4 ="
-
 msgid "IPv4:"
 msgstr "IPv4:"
 
 msgid "IPv6"
 msgstr "IPv6"
-
-msgid "IPv6 Address ="
-msgstr "Adres IPv6 ="
 
 msgid "IPv6 Address Configuration Mode"
 msgstr "Tryb konfiguracji adresu IPv6"
@@ -3820,9 +3830,6 @@ msgstr "Zaktualizowano obraz."
 msgid "Images"
 msgstr "Obrazy"
 
-msgid "Implementation"
-msgstr "Implementacja"
-
 msgid "Import Key Pair"
 msgstr "Importuj parę kluczy"
 
@@ -3890,9 +3897,6 @@ msgstr "Bajtów wstrzykniętych plików"
 msgid "Injected Files"
 msgstr "Wstrzyknięte pliki"
 
-msgid "Input must be in CIDR format"
-msgstr "Dane muszą być w formie CIDR"
-
 msgid "Insert Rule"
 msgstr "Dodaj regułę"
 
@@ -3944,6 +3948,9 @@ msgstr "Instancja, która ma zostać powiązana"
 msgid "Instances"
 msgstr "Instancje"
 
+msgid "Insufficient privilege level to retrieve image list."
+msgstr "Brak uprawnień do pobrania listy obrazów."
+
 msgid "Insufficient privilege level to view domain information."
 msgstr "Brak uprawnień do przeglądania informacji o domenie."
 
@@ -3970,6 +3977,9 @@ msgstr "Interfejsy"
 
 msgid "Internal Interface"
 msgstr "Wewnętrzny interfejs"
+
+msgid "Internal:"
+msgstr "Wewnętrzne\""
 
 msgid "Invalid date format: Using today as default."
 msgstr "Błędny format daty: ustawiono dzień dzisiejszy jako domyślny."
@@ -4024,13 +4034,6 @@ msgstr ""
 
 msgid "Key Size (bits)"
 msgstr "Rozmiar klucza (w bitach)"
-
-msgid ""
-"Key pair name may only contain letters, numbers, underscores, spaces and "
-"hyphens."
-msgstr ""
-"Nazwa pary kluczy może składać się jedynie z liter, cyfr, podkreśleń, spacji "
-"oraz myślników."
 
 msgid "Key pair to use for authentication."
 msgstr "Para kluczy, która będzie użyta do autentykacji."
@@ -4302,6 +4305,13 @@ msgstr "Ręczne"
 msgid "Mapped Fixed IP Address"
 msgstr "Mapowano stały adres IP"
 
+msgid "Mapped IP Address"
+msgstr "Zmapowany adres IP"
+
+msgctxt "Google's Material Design style theme"
+msgid "Material"
+msgstr "Material"
+
 msgid "Max Retries"
 msgstr "Maks. powtórzeń"
 
@@ -4310,6 +4320,9 @@ msgstr "Maks. powtórzeń (1-10)"
 
 msgid "Max."
 msgstr "maks."
+
+msgid "Max. Size (MB) ="
+msgstr "Maks. rozmiar (MB) ="
 
 msgid "Maximum Transmission Unit size for the connection"
 msgstr "Rozmiar Maximum Transmission Unit dla połączenia"
@@ -4364,10 +4377,15 @@ msgstr "Miernik"
 msgid "Metric:"
 msgstr "Metryka:"
 
+msgid "MidoNet"
+msgstr "MidoNet"
+
+msgid "MidoNet Uplink"
+msgstr "Uplink MidoNet"
+
 msgid "Migrate"
 msgstr "Migruj"
 
-#, fuzzy
 msgid "Migrate Host"
 msgstr "Migruj serwer"
 
@@ -4413,6 +4431,9 @@ msgstr "Min. RAM"
 
 msgid "Min."
 msgstr "min."
+
+msgid "Min. Size (MB) ="
+msgstr "Min. rozmiar (MB) ="
 
 msgid "Minimum Disk (GB)"
 msgstr "Minimalny dysk (GB)"
@@ -4502,6 +4523,9 @@ msgstr "n.d."
 msgid "Name"
 msgstr "Nazwa"
 
+msgid "Name ="
+msgstr "Nazwa ="
+
 msgid ""
 "Name may only contain letters, numbers, underscores, periods and hyphens."
 msgstr ""
@@ -4543,6 +4567,9 @@ msgstr "Przegląd przestrzeni nazw"
 
 msgid "Namespace Resource Type Associations"
 msgstr "Powiązania typów zasobów przestrzeni nazw"
+
+msgid "Namespace successfully updated."
+msgstr "Zaktualizowano przestrzeń nazw."
 
 msgid "Namespaces"
 msgstr "Przestrzenie nazw"
@@ -4675,9 +4702,6 @@ msgstr ""
 "Adres IP następnego przeskoku musi być częścią jednej z podsieci do której "
 "są dołączone interfejsy routera."
 
-msgid "Next Hops"
-msgstr "Następne przeskoki"
-
 msgid "No"
 msgstr "Nie"
 
@@ -4696,6 +4720,9 @@ msgstr "Brak trwałości sesji"
 msgctxt "Power state of an Instance"
 msgid "No State"
 msgstr "Bez stanu"
+
+msgid "No associated fixed IP"
+msgstr "Nie przypisano stałego adresu IP"
 
 msgid "No associations defined."
 msgstr "Nie zdefiniowane powiązań."
@@ -4720,6 +4747,9 @@ msgstr "Nie alokowano pływających adresów IP"
 
 msgid "No floating IP pools available"
 msgstr "Brak dostępnych pul pływających adresów IP"
+
+msgid "No floating IP pools with IPv4 subnet available"
+msgstr "Brak pól pływających adresów IP dla dostępnych podsieci IPv4"
 
 msgid "No floating IPs to disassociate."
 msgstr "Brak pływających adresów IP do odwiązania."
@@ -4772,6 +4802,9 @@ msgstr "Brak innych typów wolumenów"
 msgid "No ports available"
 msgstr "Brak dostępnych portów"
 
+msgid "No project available"
+msgstr "Brak dostępnych projektów"
+
 msgid "No projects found."
 msgstr "Nie znaleziono projektów."
 
@@ -4780,6 +4813,9 @@ msgstr "Nie wybrano projektów. Dowolny projekt może korzystać z tej odmiany."
 
 msgid "No provider is available"
 msgstr "Brak dostępnych dostawców"
+
+msgid "No router"
+msgstr "Brak routera"
 
 msgid "No rules defined."
 msgstr "Nie zdefiniowano reguł."
@@ -4989,9 +5025,6 @@ msgstr "Otwarty port/zakres portów:"
 msgid "Optional Parameters"
 msgstr "Dodatkowe parametry"
 
-msgid "Optional: Next Hop Addresses (comma delimited)"
-msgstr "Opcjonalnie: adresy następnych przeskoków (oddzielone przecinkami)"
-
 msgid "Optionally, you may choose to create a new volume."
 msgstr "Dodatkowo pozwala na utworzenie nowego wolumenu."
 
@@ -5155,6 +5188,9 @@ msgctxt "Current status of a Pool"
 msgid "Pending Update"
 msgstr "Oczekuje na aktualizację"
 
+msgid "Per Volume Size (GiB)"
+msgstr "Rozmiar per wolumen (GiB)"
+
 msgid "Perfect Forward Secrecy"
 msgstr "Perfect Forward Secrecy"
 
@@ -5163,9 +5199,6 @@ msgstr "Okres"
 
 msgid "Period:"
 msgstr "Okres:"
-
-msgid "Permit"
-msgstr "Zezwól"
 
 msgid "Physical Network"
 msgstr "Fizyczna sieć"
@@ -5432,6 +5465,9 @@ msgstr "Klucz publiczny"
 msgid "Public URL"
 msgstr "Publiczny adres URL"
 
+msgid "Public:"
+msgstr "Publiczne:"
+
 msgid "QCOW2 - QEMU Emulator"
 msgstr "QCOW2 - QEMU Emulator"
 
@@ -5483,6 +5519,12 @@ msgstr "RAM (używane)"
 #, python-format
 msgid "RAM(Available: %(avail)s, Requested: %(req)s)"
 msgstr "RAM (Dostępna: %(avail)s, Żądana: %(req)s)"
+
+msgid "RX/TX Factor"
+msgstr "Współczynnik RX/TX"
+
+msgid "RX/TX factor"
+msgstr "Współczynnik RX/TX"
 
 msgid "Ramdisk"
 msgstr "Ramdysk"
@@ -5553,6 +5595,9 @@ msgstr "Przebudowanie"
 #, python-format
 msgid "Rebuilding instance %s."
 msgstr "Przebudowywanie instancji %s."
+
+msgid "Region"
+msgstr "Region"
 
 msgid "Regions:"
 msgstr "Regiony:"
@@ -5650,9 +5695,6 @@ msgctxt "Task status of an Instance"
 msgid "Rescuing"
 msgstr "Ratowanie"
 
-msgid "Reset to Default"
-msgstr "Przywróć domyślne"
-
 msgid "Resize"
 msgstr "Zmień rozmiar"
 
@@ -5686,6 +5728,9 @@ msgstr "Metadane zasobu"
 
 msgid "Resource Types"
 msgstr "Typy zasobów"
+
+msgid "Resource Types ="
+msgstr "Typy zasobów ="
 
 msgid "Resource Usage"
 msgstr "Wykorzystanie zasobów"
@@ -5866,20 +5911,8 @@ msgstr "ID routera"
 msgid "Router Name"
 msgstr "Nazwa routera"
 
-msgid "Router Rule Grid"
-msgstr "Siatka reguł routera"
-
-msgid "Router Rules"
-msgstr "Zasady routera"
-
-msgid "Router Rules Grid"
-msgstr "Siatka reguł routera"
-
 msgid "Router Type"
 msgstr "Typ routera"
-
-msgid "Router rule added"
-msgstr "Dodano regułę rutera"
 
 #, python-format
 msgid "Router(s)  was successfully removed from firewall %(firewall)s."
@@ -5892,12 +5925,9 @@ msgstr "Dodano router(y) do zapory ogniowej %(firewall)s."
 msgid "Routers"
 msgstr "Routery"
 
-msgid ""
-"Routing rules to apply to router. Rules are matched by most specific source "
-"first and then by most specific destination."
-msgstr ""
-"Reguły mające zastosowanie dla routera. Reguły są dopasowywane w kolejności "
-"najdokładniejszego źródła, a następnie najdokładniejszego celu."
+#, python-format
+msgid "Routers on %(host)s"
+msgstr "Routery na %(host)s"
 
 msgid "Rule"
 msgstr "Reguła "
@@ -5913,9 +5943,6 @@ msgstr "Usunięto regułę %(rule)s z zasady %(policy)s."
 #, python-format
 msgid "Rule %s was successfully updated."
 msgstr "Zaktualizowano regułę %s"
-
-msgid "Rule Conflict"
-msgstr "Konflikt reguł"
 
 msgid "Rule:"
 msgstr "Reguła:"
@@ -6065,6 +6092,9 @@ msgstr "Reguły grup zabezpieczeń"
 msgid "Security Groups"
 msgstr "Grupy zabezpieczeń"
 
+msgid "Security group rule already exists."
+msgstr "Reguła grupy zabezpieczeń istnieje."
+
 msgid ""
 "Security groups are sets of IP filter rules that are applied to the network "
 "settings for the VM. After the security group is created, you can add rules "
@@ -6198,6 +6228,9 @@ msgstr "Wybierz profil"
 msgid "Select a project"
 msgstr "Wybierz projekt"
 
+msgid "Select a subnet"
+msgstr "Wybór podsieci"
+
 msgid "Select a target host"
 msgstr "Wybierz host docelowy"
 
@@ -6300,11 +6333,27 @@ msgstr "Grupy serwerów"
 msgid "Server error"
 msgstr "Błąd serwera"
 
+msgid "Servers"
+msgstr "Serwery"
+
 msgid "Service"
 msgstr "Usługa"
 
+msgid "Service Cinder is disabled."
+msgstr "Usługa Cinder jest wyłączona."
+
 msgid "Service Endpoint"
 msgstr "Adres usługi"
+
+msgid "Service Neutron is disabled or quotas extension not available."
+msgstr ""
+"Usługa Neutron jest wyłączona lub brak dostępnego rozszerzenia limitów."
+
+msgid "Service Neutron is disabled."
+msgstr "Usługa Neutron jest wyłączona."
+
+msgid "Service Nova is disabled."
+msgstr "Usługa Nova jest wyłączona."
 
 msgid "Services"
 msgstr "Usługi"
@@ -6496,12 +6545,6 @@ msgstr[2] "Miękko uruchomiono ponownie instancje"
 msgid "Something went wrong!"
 msgstr "Coś poszło nie tak!"
 
-msgid "Source"
-msgstr "Źródło"
-
-msgid "Source CIDR"
-msgstr "Źródłowy CIDR"
-
 msgid "Source IP"
 msgstr "IP źródłowe"
 
@@ -6528,9 +6571,6 @@ msgid "Source port (integer in [1, 65535] or range in a:b)"
 msgstr ""
 "Port źródłowy (liczba całkowita z przedziału [1, 65535] lub zakres w "
 "formacie a:b)"
-
-msgid "Source:"
-msgstr "Źródło:"
 
 msgctxt "Task status of an Instance"
 msgid "Spawning"
@@ -6560,6 +6600,9 @@ msgstr ""
 
 msgid "Specify \"Network Address\""
 msgstr "Nalezy podać „adres sieci”"
+
+msgid "Specify IP address or subnet"
+msgstr "Należy podać adres IP lub podsieć"
 
 msgid "Specify VIP"
 msgstr "Podaj VIP"
@@ -6725,17 +6768,6 @@ msgstr "Nazwa podsieci"
 
 msgid "Subnet list can not be retrieved."
 msgstr "Nie można pobrać listy podsieci."
-
-#, python-format
-msgid "Subnet: %(dest_subnetname)s"
-msgstr "Podsieć: %(dest_subnetname)s"
-
-#, python-format
-msgid "Subnet: %(row_source_subnetname)s"
-msgstr "Podsieć: %(row_source_subnetname)s"
-
-msgid "Subnetpool"
-msgstr "Pula podsieci"
 
 msgid "Subnets"
 msgstr "Podsieci"
@@ -7051,6 +7083,14 @@ msgstr ""
 "implementacje mogą pracować na różnych serwerach."
 
 msgid ""
+"The IP address of the new floating IP (e.g. 202.2.3.4). You need to specify "
+"an explicit address which is under the public network CIDR (e.g. "
+"202.2.3.0/24)."
+msgstr ""
+"Nowy pływający adres IP (np. 202.2.3.4). Należy podać konkretny adres, który "
+"znajduje się w publicznej adresacji CIRD *np. 202.2.3.0/24)."
+
+msgid ""
 "The Image Location field MUST be a valid and direct URL to the image binary. "
 "URLs that redirect or serve error pages will result in unusable images."
 msgstr ""
@@ -7122,6 +7162,9 @@ msgstr ""
 "Odmiana „%(flavor)s” jest za mała dla żądanego obrazu.\n"
 "Minimalne wymagania: %(min_ram)s MB RAM oraz %(min_disk)s GB głównego dysku."
 
+msgid "The instance is preparing the live migration to a new host."
+msgstr "Instancja przygotowuje się do migracji na nowy serwer."
+
 msgid "The instance password encrypted with your public key."
 msgstr "Hasło instancji zaszyfrowane kluczem publicznym."
 
@@ -7171,12 +7214,6 @@ msgid ""
 "The name of the physical network over which the virtual network is "
 "implemented."
 msgstr "Nazwa fizycznej sieci, na której zaimplementowana jest sieć wirtualna."
-
-msgid ""
-"The next hop addresses can be used to override the router used by the client."
-msgstr ""
-"Adresy kolejnych przeskoków mogą być wykorzystane by nadpisać router używany "
-"przez klienta."
 
 msgid "The page you were looking for doesn't exist"
 msgstr "Poszukiwana strona nie została znaleziona"
@@ -7267,6 +7304,9 @@ msgstr ""
 msgid "The volume size cannot be less than the image size (%s)"
 msgstr "Rozmiar wolumenu nie może być mniejszy niż rozmiar obrazu (%s)"
 
+msgid "Theme Preview"
+msgstr "Podgląd motywu"
+
 msgid "There are no meters defined yet."
 msgstr "Nie zdefiniowano metryk."
 
@@ -7317,9 +7357,6 @@ msgid ""
 msgstr ""
 "Wymagane dla czynności przeprowadzanych podczas całego cyklu życia stosu"
 
-msgid "This name is already taken."
-msgstr "Nazwa jest już zajęta."
-
 msgid ""
 "This volume is currently attached to an instance. In some cases, creating a "
 "snapshot from an attached volume can result in a corrupted snapshot."
@@ -7327,6 +7364,10 @@ msgstr ""
 "Wolumen jest obecnie dołączony do instancji. W niektórych przypadkach "
 "utworzenie migawki dołączonego wolumenu może spowodować powstanie "
 "nieprawidłowej migawki."
+
+msgid "This volume type is used by one or more volumes."
+msgstr ""
+"Ten typ wolumenu jest wykorzystywany przez jeden, lub więcej, wolumenów."
 
 msgid "Time"
 msgstr "Czas"
@@ -7342,6 +7383,9 @@ msgstr "Czas od utworzenia"
 
 msgid "Time since created (Seconds)"
 msgstr "Czas od utworzenia (w sekundach)"
+
+msgid "Time since update"
+msgstr "Czas od ostatniej aktualizacji"
 
 msgid "Timeout"
 msgstr "Limit czasu"
@@ -7372,6 +7416,10 @@ msgid "To exit the fullscreen mode, click the browser's back button."
 msgstr ""
 "Aby wyjść z trybu pełnoekranowego, należy skorzystać z przycisku wstecz "
 "przeglądarki."
+
+msgid "To specify a subnet or a fixed IP, select any options."
+msgstr ""
+"W celu podania stałego adresu IP lub podsieci, należy wybrać dowolną z opcji."
 
 msgid ""
 "To specify an allowed IP range, select &quot;CIDR&quot;. To allow access "
@@ -7416,6 +7464,13 @@ msgstr "Łącznie RAM"
 
 msgid "Total Size of Volumes and Snapshots (GB)"
 msgstr "Całkowity rozmiar wolumenów i migawek (GB)"
+
+msgid "Total Size of Volumes and Snapshots (GiB)"
+msgstr "Całkowity rozmiar wolumenów i migawek (GiB)"
+
+#, python-format
+msgid "Total Size of Volumes and Snapshots (GiB) of Type %(type)s"
+msgstr "Całkowity rozmiar wolumenów i migawek (GiB) typu %(type)s"
 
 msgid "Total VCPU Usage (Hours):"
 msgstr "Łączne wykorzystanie VCPU (godziny):"
@@ -7548,6 +7603,9 @@ msgid "Unable to add user to primary project."
 msgstr "Nie można dodać użytkownika do głównego projektu."
 
 msgid "Unable to allocate Floating IP."
+msgstr "Nie można przydzielić pływającego adresu IP."
+
+msgid "Unable to allocate floating IP."
 msgstr "Nie można przydzielić pływającego adresu IP."
 
 #, python-format
@@ -7718,9 +7776,6 @@ msgstr "Nie można usunąć puli. %s"
 #, python-format
 msgid "Unable to delete router \"%s\""
 msgstr "Nie można usunąć routera „%s”"
-
-msgid "Unable to delete router rule."
-msgstr "Nie można usunąć reguły routera."
 
 #, python-format
 msgid "Unable to delete rule. %s"
@@ -7930,6 +7985,9 @@ msgstr ""
 msgid "Unable to retrieve IP addresses from Neutron."
 msgstr "Nie można pobrać adresu IP z Neutron."
 
+msgid "Unable to retrieve IP availability."
+msgstr "Nie można pobrać informacji o dostępności adresów IP."
+
 msgid "Unable to retrieve IPSec Policies list."
 msgstr "Nie można pobrać listy zasad IPSec."
 
@@ -8027,6 +8085,10 @@ msgid "Unable to retrieve default quota values."
 msgstr "Nie można pobrać domyślnych wartości limitów."
 
 #, python-format
+msgid "Unable to retrieve details for %(resource)s \"%(resource_id)s\"."
+msgstr "Nie można pobrać szczegółów dla %(resource)s „%(resource_id)s”."
+
+#, python-format
 msgid "Unable to retrieve details for instance \"%s\"."
 msgstr "Nie można pobrać szczegółów dla instancji „%s”."
 
@@ -8093,6 +8155,9 @@ msgstr "Nie można pobrać odmian."
 
 msgid "Unable to retrieve floating IP addresses."
 msgstr "Nie można pobrać pływających adresów IP."
+
+msgid "Unable to retrieve floating IP list."
+msgstr "Nie można pobrać listy pływających adresów IP."
 
 msgid "Unable to retrieve floating IP pools."
 msgstr "Nie można pobrać pul pływających adresów IP."
@@ -8388,6 +8453,9 @@ msgstr "Nie można pobrać limitów projektu."
 msgid "Unable to retrieve the aggregate to be updated"
 msgstr "Nie można pobrać agregatu do aktualizacji"
 
+msgid "Unable to retrieve the project information of the image."
+msgstr "Nie można pobrać informacji o projekcie z obrazu."
+
 msgid "Unable to retrieve the specified pool."
 msgstr "Nie można pobrać podanej puli."
 
@@ -8525,6 +8593,12 @@ msgstr "Nie można przestać zarządzać wolumenem."
 msgid "Unable to update container access."
 msgstr "Nie można zmienić uprawnień dostępu kontenera."
 
+msgid "Unable to update default quotas for Cinder."
+msgstr "Nie można zaktualizować domyślnych limitów dla Cinder."
+
+msgid "Unable to update default quotas for Nova."
+msgstr "Nie można zaktualizować domyślnych limitów dla Nova."
+
 msgid "Unable to update default quotas."
 msgstr "Nie można zaktualizować domyślnych limitów."
 
@@ -8549,6 +8623,9 @@ msgstr "Nie można zaktualizować grupy zabezpieczeń: %s"
 msgid "Unable to update subnet \"%s\"."
 msgstr "Nie można zaktualizować podsieci „%s”."
 
+msgid "Unable to update subnets with availability."
+msgstr "Nie można pobrać informacji o dostępności podsieci."
+
 msgid "Unable to update the aggregate."
 msgstr "Nie można zaktualizować agregatu."
 
@@ -8560,9 +8637,6 @@ msgstr "Nie można zaktualizować hasła użytkownika."
 
 msgid "Unable to update the user."
 msgstr "Nie można zaktualizować użytkownika."
-
-msgid "Unable to update the volume type."
-msgstr "Nie można zaktualizować typu wolumenu."
 
 msgid "Unable to update volume snapshot status."
 msgstr "Nie można zaktualizować stanu migawki wolumenu."
@@ -8598,6 +8672,9 @@ msgstr "Nieznana instancja"
 
 msgid "Unknown instance (None)"
 msgstr "Nieznana instancja (None)"
+
+msgid "Unknown resource type for detail API."
+msgstr "Nieznany typ zasobu dla API szczegółów."
 
 msgid "Unlock Instance"
 msgid_plural "Unlock Instances"
@@ -8649,6 +8726,9 @@ msgstr[2] "Zdjęto instancje z półki"
 msgctxt "Task status of an Instance"
 msgid "Unshelving"
 msgstr "Przywracanie z półki"
+
+msgid "Unspecified"
+msgstr "Nie podano"
 
 msgid "Up"
 msgstr "Podniesiono"
@@ -8719,6 +8799,9 @@ msgstr "Aktualizuj stan migawki wolumenu"
 
 msgid "Update Volume Status"
 msgstr "Aktualizuj stan wolumenu"
+
+msgid "Update a Metadata Namespace"
+msgstr "Aktualizacja przestrzeni nazw metadanych"
 
 msgid ""
 "Update a stack with the provided values. Please note that any encrypted "
@@ -8853,6 +8936,9 @@ msgstr "Wykorzystaj migawkę jako źródło"
 #, python-format
 msgid "Used <span> %(used)s </span> of <span> %(available)s </span>"
 msgstr "Wykorzystano <span> %(used)s </span> z <span> %(available)s </span>"
+
+msgid "Used IPs"
+msgstr "Wykorzystane adresy IP"
 
 msgid "Used in Policy"
 msgstr "Wykorzystywana w zasadach"
@@ -8994,6 +9080,10 @@ msgstr "Wartość (śr.)"
 msgid "Value:"
 msgstr "Wartość:"
 
+#, python-format
+msgid "Version: %(version_info)s"
+msgstr "Wersja: %(version_info)s"
+
 msgid "View Container"
 msgstr "Zobacz kontener"
 
@@ -9011,6 +9101,9 @@ msgstr "Wyświetl pełny log"
 
 msgid "View Log"
 msgstr "Zobacz logi"
+
+msgid "View Routers"
+msgstr "Wyświetl routery"
 
 msgid "View Usage"
 msgstr "Wyświetl wykorzystanie"
@@ -9074,6 +9167,10 @@ msgstr "Szczegóły migawki wolumenu"
 
 msgid "Volume Snapshots"
 msgstr "Migawki wolumenu"
+
+#, python-format
+msgid "Volume Snapshots of Type %(type)s"
+msgstr "Migawki wolumenów typu %(type)s"
 
 msgid "Volume Source"
 msgstr "Źródło wolumenu"
@@ -9169,6 +9266,10 @@ msgstr "Wolumeny"
 
 msgid "Volumes Attached"
 msgstr "Dołączone wolumeny"
+
+#, python-format
+msgid "Volumes of Type %(type)s"
+msgstr "Wolumeny typu %(type)s"
 
 msgid "Weight"
 msgstr "Waga"
@@ -9392,6 +9493,9 @@ msgstr "wyłączone"
 msgid "dm-crypt"
 msgstr "dm-crypt"
 
+msgid "down"
+msgstr "w dół"
+
 msgid "environment"
 msgstr "środowisko"
 
@@ -9415,6 +9519,9 @@ msgstr "hold"
 
 msgid "instance"
 msgstr "instancja"
+
+msgid "no"
+msgstr "nie"
 
 msgid "pseudo-folder"
 msgstr "pseudokatalog"
@@ -9449,8 +9556,14 @@ msgstr "niezdefiniowane"
 msgid "unknown IP address"
 msgstr "nieznany adres IP"
 
+msgid "up"
+msgstr "w górę"
+
 msgid "v1"
 msgstr "v1"
 
 msgid "v2"
 msgstr "v2"
+
+msgid "yes"
+msgstr "tak"

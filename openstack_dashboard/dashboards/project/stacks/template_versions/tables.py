@@ -32,7 +32,10 @@ class TemplateVersionsTable(tables.DataTable):
 
     class Meta(object):
         name = "template_versions"
+        table_actions = (tables.FilterAction,)
         verbose_name = _("Template Versions")
+        table_actions = (tables.FilterAction,)
+        multi_select = False
 
 
 class TemplateFunctionsTable(tables.DataTable):
@@ -45,3 +48,5 @@ class TemplateFunctionsTable(tables.DataTable):
     class Meta(object):
         name = "template_functions"
         verbose_name = _("Template Functions")
+        table_actions = (tables.FilterAction,)
+        multi_select = False

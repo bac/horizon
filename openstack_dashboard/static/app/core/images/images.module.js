@@ -36,118 +36,82 @@
     .constant('horizon.app.core.images.validationRules', validationRules())
     .constant('horizon.app.core.images.imageFormats', imageFormats())
     .constant('horizon.app.core.images.resourceType', 'OS::Glance::Image')
+    .constant('horizon.app.core.images.statuses', {
+      'active': gettext('Active'),
+      'saving': gettext('Saving'),
+      'queued': gettext('Queued'),
+      'pending_delete': gettext('Pending Delete'),
+      'killed': gettext('Killed'),
+      'deleted': gettext('Deleted')
+    })
+    .constant('horizon.app.core.images.transitional-statuses', [
+      "saving",
+      "queued",
+      "pending_delete"
+    ])
     .run(run)
     .config(config);
 
   run.$inject = [
     'horizon.framework.conf.resource-type-registry.service',
-    'horizon.app.core.openstack-service-api.glance',
     'horizon.app.core.images.basePath',
-    'horizon.app.core.images.resourceType'
+    'horizon.app.core.images.service',
+    'horizon.app.core.images.statuses',
+    'horizon.app.core.images.resourceType',
+    'horizon.framework.util.filters.$memoize',
+    'horizon.app.core.openstack-service-api.keystone'
   ];
 
-  function run(registry, glance, basePath, imageResourceType) {
+  function run(registry,
+               basePath,
+               imagesService,
+               statuses,
+               imageResourceType,
+               $memoize,
+               keystone) {
     registry.getResourceType(imageResourceType)
       .setNames(gettext('Image'), gettext('Images'))
       .setSummaryTemplateUrl(basePath + 'details/drawer.html')
-      .setProperty('checksum', {
-        label: gettext('Checksum')
-      })
-      .setProperty('container_format', {
-        label: gettext('Container Format')
-      })
-      .setProperty('created_at', {
-        label: gettext('Created At')
-      })
-      .setProperty('disk_format', {
-        label: gettext('Disk Format')
-      })
-      .setProperty('id', {
-        label: gettext('ID')
-      })
-      .setProperty('type', {
-        label: gettext('Type')
-      })
-      .setProperty('members', {
-        label: gettext('Members')
-      })
-      .setProperty('min_disk', {
-        label: gettext('Min. Disk')
-      })
-      .setProperty('min_ram', {
-        label: gettext('Min. RAM')
-      })
-      .setProperty('name', {
-        label: gettext('Name')
-      })
-      .setProperty('owner', {
-        label: gettext('Owner')
-      })
-      .setProperty('protected', {
-        label: gettext('Protected')
-      })
-      .setProperty('size', {
-        label: gettext('Size')
-      })
-      .setProperty('status', {
-        label: gettext('Status')
-      })
-      .setProperty('tags', {
-        label: gettext('Tags')
-      })
-      .setProperty('updated_at', {
-        label: gettext('Updated At')
-      })
-      .setProperty('virtual_size', {
-        label: gettext('Virtual Size')
-      })
-      .setProperty('visibility', {
-        label: gettext('Visibility')
-      })
-      .setProperty('description', {
-        label: gettext('Description')
-      })
-      .setProperty('architecture', {
-        label: gettext('Architecture')
-      })
-      .setProperty('kernel_id', {
-        label: gettext('Kernel ID')
-      })
-      .setProperty('ramdisk_id', {
-        label: gettext('Ramdisk ID')
-      })
-      .setListFunction(listFunction)
+      .setItemInTransitionFunction(imagesService.isInTransition)
+      .setProperties(imageProperties(imagesService, statuses))
+      .setListFunction(imagesService.getImagesPromise)
       .tableColumns
+      .append({
+        id: 'owner',
+        priority: 1,
+        filters: [$memoize(keystone.getProjectName)],
+        policies: [{rules: [['identity', 'identity:get_project']]}]
+      })
       .append({
         id: 'name',
         priority: 1,
         sortDefault: true,
-        urlFunction: urlFunction
+        urlFunction: imagesService.getDetailsPath
       })
       .append({
         id: 'type',
-        priority: 1,
-        filters: ['imageType']
+        priority: 1
       })
       .append({
         id: 'status',
         priority: 1,
-        filters: ['imageStatus']
+        itemInTransitionFunction: imagesService.isInTransition
+      })
+      .append({
+        id: 'visibility',
+        priority: 1
       })
       .append({
         id: 'protected',
-        priority: 1,
-        filters: ['yesno']
+        priority: 1
       })
       .append({
         id: 'disk_format',
-        priority: 2,
-        filters: ['noValue', 'uppercase']
+        priority: 2
       })
       .append({
         id: 'size',
-        priority: 2,
-        filters: ['bytes']
+        priority: 2
       });
 
     registry.getResourceType(imageResourceType).filterFacets
@@ -174,6 +138,18 @@
         ]
       })
       .append({
+        label: gettext('Visibility'),
+        name: 'visibility',
+        isServer: false,
+        singleton: true,
+        options: [
+          {label: gettext('Public'), key: 'public'},
+          {label: gettext('Private'), key: 'private'},
+          {label: gettext('Shared With Project'), key: 'shared'},
+          {label: gettext('Unknown'), key: 'unknown'}
+        ]
+      })
+      .append({
         label: gettext('Protected'),
         name: 'protected',
         isServer: true,
@@ -195,6 +171,7 @@
           {label: gettext('Docker'), key: 'docker'},
           {label: gettext('ISO'), key: 'iso'},
           {label: gettext('OVA'), key: 'ova'},
+          {label: gettext('PLOOP'), key: 'ploop'},
           {label: gettext('QCOW2'), key: 'qcow2'},
           {label: gettext('Raw'), key: 'raw'},
           {label: gettext('VDI'), key: 'vdi'},
@@ -214,23 +191,6 @@
         isServer: true,
         singleton: true
       });
-
-    function listFunction(params) {
-      return glance.getImages(params).then(modifyResponse);
-
-      function modifyResponse(response) {
-        return {data: {items: response.data.items.map(addTrackBy)}};
-
-        function addTrackBy(image) {
-          image.trackBy = image.id + image.updated_at;
-          return image;
-        }
-      }
-    }
-
-    function urlFunction(item) {
-      return 'project/ngdetails/OS::Glance::Image/' + item.id;
-    }
   }
 
   /**
@@ -254,6 +214,7 @@
     return {
       iso: gettext('ISO - Optical Disk Image'),
       ova: gettext('OVA - Open Virtual Appliance'),
+      ploop: gettext('PLOOP - Virtuozzo/Parallels Loopback Disk'),
       qcow2: gettext('QCOW2 - QEMU Emulator'),
       raw: gettext('Raw'),
       vdi: gettext('VDI - Virtual Disk Image'),
@@ -267,6 +228,38 @@
   }
 
   /**
+   * @name imageProperties
+   * @description resource properties for image module
+   */
+  function imageProperties(imagesService, statuses) {
+    return {
+      id: gettext('ID'),
+      checksum: gettext('Checksum'),
+      members: gettext('Members'),
+      min_disk: gettext('Min. Disk'),
+      min_ram: gettext('Min. RAM'),
+      name: gettext('Name'),
+      owner: gettext('Owner'),
+      tags: gettext('Tags'),
+      updated_at: gettext('Updated At'),
+      virtual_size: gettext('Virtual Size'),
+      visibility: gettext('Visibility'),
+      description: gettext('Description'),
+      architecture: gettext('Architecture'),
+      kernel_id: gettext('Kernel ID'),
+      ramdisk_id: gettext('Ramdisk ID'),
+      created_at: gettext('Created At'),
+      container_format: { label: gettext('Container Format'), filters: ['uppercase'] },
+      disk_format: { label: gettext('Disk Format'), filters: ['noValue', 'uppercase'] },
+      is_public: { label: gettext('Is Public'), filters: ['yesno'] },
+      type: { label: gettext('Type'), filters: [imagesService.imageType] },
+      'protected': { label: gettext('Protected'), filters: ['yesno'] },
+      size: { label: gettext('Size'), filters: ['bytes'] },
+      status: { label: gettext('Status'), values: statuses }
+    };
+  }
+
+  /**
    * @ngdoc value
    * @name horizon.app.core.images.events
    * @description a list of events for images
@@ -276,7 +269,8 @@
     return {
       VOLUME_CHANGED: 'horizon.app.core.images.VOLUME_CHANGED',
       IMAGE_CHANGED: 'horizon.app.core.images.IMAGE_CHANGED',
-      IMAGE_METADATA_CHANGED: 'horizon.app.core.images.IMAGE_METADATA_CHANGED'
+      IMAGE_METADATA_CHANGED: 'horizon.app.core.images.IMAGE_METADATA_CHANGED',
+      IMAGE_UPLOAD_PROGRESS: 'horizon.app.core.images.IMAGE_UPLOAD_PROGRESS'
     };
   }
 
@@ -298,9 +292,25 @@
     var path = $windowProvider.$get().STATIC_URL + 'app/core/images/';
     $provide.constant('horizon.app.core.images.basePath', path);
 
-    $routeProvider.when('/project/ngimages/', {
+    $routeProvider.when('/project/images/:id', {
+      redirectTo: goToAngularDetails
+    });
+
+    $routeProvider.when('/admin/images/:id/detail', {
+      redirectTo: goToAngularDetails
+    });
+
+    $routeProvider.when('/project/images', {
       templateUrl: path + 'panel.html'
     });
+
+    $routeProvider.when('/admin/images', {
+      templateUrl: path + 'admin-panel.html'
+    });
+
+    function goToAngularDetails(params) {
+      return 'project/ngdetails/OS::Glance::Image/' + params.id;
+    }
   }
 
 })();

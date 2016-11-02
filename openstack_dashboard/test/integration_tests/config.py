@@ -57,6 +57,9 @@ IdentityGroup = [
 ]
 
 ImageGroup = [
+    cfg.StrOpt('panel_type',
+               default='legacy',
+               help='type/version of images panel'),
     cfg.StrOpt('http_image',
                default='http://download.cirros-cloud.net/0.3.1/'
                        'cirros-0.3.1-x86_64-uec.tar.gz',
@@ -97,6 +100,12 @@ SeleniumGroup = [
     cfg.BoolOpt('maximize_browser',
                 default=True,
                 help="Is the browser size maximized for each test?"),
+]
+
+FlavorsGroup = [
+    cfg.StrOpt('panel_type',
+               default='legacy',
+               help='type/version of flavors panel'),
 ]
 
 ScenarioGroup = [
@@ -160,6 +169,7 @@ def get_config():
     cfg.CONF.register_opts(NetworkGroup, group="network")
     cfg.CONF.register_opts(AvailableServiceGroup, group="service_available")
     cfg.CONF.register_opts(SeleniumGroup, group="selenium")
+    cfg.CONF.register_opts(FlavorsGroup, group="flavors")
     cfg.CONF.register_opts(ImageGroup, group="image")
     cfg.CONF.register_opts(ScenarioGroup, group="scenario")
     cfg.CONF.register_opts(InstancesGroup, group="launch_instances")

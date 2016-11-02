@@ -14,7 +14,6 @@
 
 from collections import defaultdict
 
-from django.conf import settings
 from django import shortcuts
 
 from horizon import views
@@ -33,9 +32,6 @@ class MultiTableMixin(object):
         self._tables = {}
         self._data_methods = defaultdict(list)
         self.get_data_methods(self.table_classes, self._data_methods)
-        self.admin_filter_first = getattr(settings,
-                                          'ADMIN_FILTER_DATA_FIRST',
-                                          False)
 
     def _get_data_dict(self):
         if not self._data:
@@ -285,6 +281,30 @@ class DataTableView(MultiTableView):
         if self.handle_server_filter(request):
             return shortcuts.redirect(self.get_table().get_absolute_url())
         return self.get(request, *args, **kwargs)
+
+    def get_filters(self, filters=None, filters_map=None):
+        """Converts a string given by the user into a valid api filter value.
+
+        :filters: Default filter values.
+            {'filter1': filter_value, 'filter2': filter_value}
+        :filters_map: mapping between user input and valid api filter values.
+            {'filter_name':{_("true_value"):True, _("false_value"):False}
+        """
+        filters = filters or {}
+        filters_map = filters_map or {}
+        filter_action = self.table._meta._filter_action
+        if filter_action:
+            filter_field = self.table.get_filter_field()
+            if filter_action.is_api_filter(filter_field):
+                filter_string = self.table.get_filter_string().strip()
+                if filter_field and filter_string:
+                    filter_map = filters_map.get(filter_field, {})
+                    # We use the filter_string given by the user and
+                    # look for valid values in the filter_map that's why
+                    # we apply lower()
+                    filters[filter_field] = filter_map.get(
+                        filter_string.lower(), filter_string)
+        return filters
 
 
 class MixedDataTableView(DataTableView):

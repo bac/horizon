@@ -6,20 +6,21 @@
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 # Alberto Laporte <alberto.riveralaporte@rackspace.com>, 2016. #zanata
 # Alberto Molina Coballes <alb.molina@gmail.com>, 2016. #zanata
+# Eddie Ramirez <djedi.r@gmail.com>, 2016. #zanata
 # Eduardo Gonzalez Gutierrez <dabarren@gmail.com>, 2016. #zanata
 # OpenStack Infra <zanata@openstack.org>, 2016. #zanata
 # Pablo Caruana <pcaruana@redhat.com>, 2016. #zanata
 # Pablo Iranzo Gómez <Pablo.Iranzo@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: horizon 10.0.0.0b3.dev24\n"
+"Project-Id-Version: horizon 10.0.0.0rc2.dev184\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-07-18 05:22+0000\n"
+"POT-Creation-Date: 2016-10-31 22:11+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-07-15 09:33+0000\n"
-"Last-Translator: Pablo Caruana <pcaruana@redhat.com>\n"
+"PO-Revision-Date: 2016-11-01 04:30+0000\n"
+"Last-Translator: Eddie Ramirez <djedi.r@gmail.com>\n"
 "Language-Team: Spanish\n"
 "Language: es\n"
 "X-Generator: Zanata 3.7.3\n"
@@ -222,15 +223,6 @@ msgstr ""
 "es simplemente una lista de reglas. Los únicos objetos de identidad de la "
 "API que aceptan correlaciones son: usuario y grupo."
 
-msgid ""
-"A more specific rule affects a portion of this traffic so a rule cannot be "
-"automatically generated to control the behavior of the entire source/"
-"destination combination."
-msgstr ""
-"Una regla más específica afecta a una porción de su tráfico por lo que una "
-"regla no se puede generar automáticamente para controlar el comportamiento "
-"entero de la combinación origen/destino."
-
 msgid "A new uploaded file will replace the content of the current object"
 msgstr "Un nuevo fichero cargado sustituirá el contenido del objeto actual"
 
@@ -254,6 +246,9 @@ msgstr ""
 "Una instantánea es una imagen que conserva el estado del disco de una "
 "instancia en ejecución."
 
+msgid "A valid MAC Address"
+msgstr "Una dirección MAC válida"
+
 #, python-format
 msgid ""
 "A volume of %(req)iGiB cannot be created as you only have %(avail)iGiB of "
@@ -276,14 +271,6 @@ msgstr "PERMITIR"
 msgid "ALLOW %(ethertype)s %(proto_port)s %(direction)s %(remote)s"
 msgstr "PERMITIR %(ethertype)s %(proto_port)s %(direction)s %(remote)s"
 
-#, python-format
-msgid "ALLOW %(from)s:%(to)s/%(ip_protocol)s from %(cidr)s"
-msgstr "PERMITIR %(from)s:%(to)s/%(ip_protocol)s desde %(cidr)s"
-
-#, python-format
-msgid "ALLOW %(from)s:%(to)s/%(ip_protocol)s from %(group)s"
-msgstr "PERMITIR%(from)s:%(to)s/%(ip_protocol)s desde %(group)s"
-
 msgid "AMI - Amazon Machine Image"
 msgstr "AMI - Amazon Machine Image"
 
@@ -298,9 +285,6 @@ msgstr "Endpoints de API"
 
 msgid "ARI - Amazon Ramdisk Image"
 msgstr "ARI - Amazon Ramdisk Image"
-
-msgid "AWS compatible"
-msgstr "Compatible con AWS"
 
 msgid "Accept Transfer"
 msgstr "Aceptar Transferencia"
@@ -325,9 +309,6 @@ msgstr "Registro de acciones"
 
 msgid "Action for the firewall rule"
 msgstr "Acción para la regla del cortafuegos"
-
-msgid "Action:"
-msgstr "Acción:"
 
 msgctxt "Current status of a Firewall"
 msgid "Active"
@@ -450,9 +431,6 @@ msgstr "Añadir Router"
 
 msgid "Add Router Route"
 msgstr "Añadir ruta del router"
-
-msgid "Add Router Rule"
-msgstr "Añadir regla de router"
 
 msgid "Add Router to Firewall"
 msgstr "Añadir router al Cortafuegos"
@@ -586,9 +564,6 @@ msgstr "Monitor agregado"
 msgid "Added pool \"%s\"."
 msgstr "Pool \"%s\" añadido."
 
-msgid "Additional routes"
-msgstr "Rutas adicionales"
-
 msgid ""
 "Additional routes announced to the hosts. Each entry is: destination_cidr,"
 "nexthop (e.g., 192.168.200.0/24,10.56.1.254) and one entry per line."
@@ -626,9 +601,6 @@ msgstr "Estado de administración"
 
 msgid "Admin State Up"
 msgstr "Estado de administrador activo"
-
-msgid "Admin URL:"
-msgstr "URL Administración"
 
 msgid ""
 "Administrator Note: Use the following CLI command to import the default "
@@ -911,6 +883,10 @@ msgstr "Zonas de Disponibilidad"
 msgid "Availability zone"
 msgstr "Zona de disponibilidad"
 
+msgid "Available"
+msgstr "Disponible"
+
+msgctxt "Current status of Consistency Group"
 msgid "Available"
 msgstr "Disponible"
 
@@ -1270,9 +1246,6 @@ msgstr ""
 msgid "Comma-separated key=value pairs"
 msgstr "Pares clave=valor separados por coma"
 
-msgid "Component"
-msgstr "Componente"
-
 msgid "Compute"
 msgstr "Compute"
 
@@ -1324,9 +1297,6 @@ msgstr "Confirmar o revertir redimensionar/migrar"
 msgctxt "Task status of an Instance"
 msgid "Confirming Resize or Migrate"
 msgstr "Confirmando redimensionar o migrar"
-
-msgid "Conflicting Rule"
-msgstr "Regla incompatible"
 
 msgid "Connection Limit"
 msgstr "Límite de conexiones"
@@ -1475,17 +1445,6 @@ msgstr "Crear grupo"
 msgid "Create Host Aggregate"
 msgstr "Crear agregado de hosts"
 
-msgid ""
-"Create IPSec Site Connection for current project.\n"
-"\n"
-"Assign a name and description for the IPSec Site Connection. All fields in "
-"this tab are required."
-msgstr ""
-"Crear conexión sitio a sitio IPSec para proyecto actual.\n"
-"\n"
-"Asignar nombre y descripción para conexión de sitio IPSec. Todos los campos "
-"en esta pestaña son obligatorios."
-
 msgid "Create Image"
 msgstr "Crear imagen"
 
@@ -1555,27 +1514,6 @@ msgstr "Crear Transferencia"
 
 msgid "Create User"
 msgstr "Crear usuario"
-
-msgid ""
-"Create VPN Service for current project.\n"
-"\n"
-"The VPN service is attached to a router and references to a single subnet to "
-"push to a remote site.\n"
-"Specify a name, description, router, and subnet for the VPN Service. Admin "
-"State is UP (True) by default.\n"
-"\n"
-"The router, subnet and admin state fields are required, all others are "
-"optional."
-msgstr ""
-"Crear un servicio VPN en el proyecto actual.\n"
-"\n"
-"El servicio VPN se asocia a un router y tomará como referencia una subred "
-"para enviar al sitio remoto.\n"
-"Especifique un nombre, descripción, router y subred para el servicio VPN. El "
-"estado de administración es ACTIVADO (Verdadero) por defecto.\n"
-"\n"
-"Son obligatorios los campos router, subred y estado de administración, el "
-"resto son opcionales."
 
 msgid "Create Volume"
 msgstr "Crear volumen"
@@ -1935,9 +1873,6 @@ msgstr "DENEGAR"
 msgid "DHCP Agents"
 msgstr "Agentes DHCP"
 
-msgid "DHCP Enable"
-msgstr "Habilitar DHCP"
-
 msgid "DHCPv6 stateful: Address discovered from OpenStack DHCP"
 msgstr ""
 "Cortafuegos con estado DHCPv6: Dirección encontrada desde OpenStack DHCP"
@@ -1949,11 +1884,11 @@ msgstr ""
 "Cortafuegos sin estado DHCPv6: Dirección encontrada desde el Router "
 "OpenStack e información adicional desde OpenStack DHCP"
 
+msgid "DNS Name"
+msgstr "Nombre DNS"
+
 msgid "DNS Name Servers"
 msgstr "Servidores DNS"
-
-msgid "DNS name server"
-msgstr "servidor DNS"
 
 msgid "DOWN"
 msgstr "ABAJO"
@@ -2203,11 +2138,6 @@ msgid_plural "Delete Routers"
 msgstr[0] "Eliminar Router"
 msgstr[1] "Eliminar Routers"
 
-msgid "Delete Router Rule"
-msgid_plural "Delete Router Rules"
-msgstr[0] "Eliminar la Regla de Router"
-msgstr[1] "Eliminar las Reglas de Router"
-
 msgid "Delete Rule"
 msgid_plural "Delete Rules"
 msgstr[0] "Eliminar Regla"
@@ -2217,6 +2147,11 @@ msgid "Delete Security Group"
 msgid_plural "Delete Security Groups"
 msgstr[0] "Eliminar Grupo de Seguridad"
 msgstr[1] "Eliminar Grupos de Seguridad"
+
+msgid "Delete Snapshot"
+msgid_plural "Delete Snapshots"
+msgstr[0] "Eliminar instantánea"
+msgstr[1] "Eliminar instantáneas"
 
 msgid "Delete Spec"
 msgid_plural "Delete Specs"
@@ -2268,6 +2203,9 @@ msgstr[1] "Eliminar tipos de volumen"
 
 msgid "Delete Volume on Instance Delete"
 msgstr "Eliminar volumen al eliminar la instancia"
+
+msgid "Delete Volumes"
+msgstr "Eliminar volumenes"
 
 #, python-format
 msgid "Delete the created network \"%s\" due to subnet creation failure."
@@ -2393,11 +2331,6 @@ msgid_plural "Deleted Routers"
 msgstr[0] "Router Eliminado"
 msgstr[1] "Routers Eliminados"
 
-msgid "Deleted Router Rule"
-msgid_plural "Deleted Router Rules"
-msgstr[0] "Reglas de Router Eliminada"
-msgstr[1] "Reglas de Router Eliminadas"
-
 msgid "Deleted Rule"
 msgid_plural "Deleted Rules"
 msgstr[0] "Regla Eliminada"
@@ -2467,11 +2400,11 @@ msgstr "Borrando"
 msgid "Deleting VIP %s from this pool cannot be undone."
 msgstr "Eliminar VIP %s de esta pool no se puede deshacer."
 
-msgid "Deny"
-msgstr "Denegar"
-
 msgid "Description"
 msgstr "Descripción "
+
+msgid "Description is required."
+msgstr "Se necesita descripción"
 
 msgid "Description:"
 msgstr "Descripción:"
@@ -2511,9 +2444,6 @@ msgstr "Nombre del objeto de destino"
 
 msgid "Destination port (integer in [1, 65535] or range in a:b)"
 msgstr "Puerto destino (entero en [1, 65535] o rango en a:b)"
-
-msgid "Destination:"
-msgstr "Destino:"
 
 msgid "Detach Interface"
 msgstr "Desconectar interfaz"
@@ -3092,6 +3022,10 @@ msgstr ""
 msgid "Error"
 msgstr "Error"
 
+msgctxt "Current status of Consistency Group"
+msgid "Error"
+msgstr "Error"
+
 msgctxt "Current status of a Firewall"
 msgid "Error"
 msgstr "Error"
@@ -3311,10 +3245,6 @@ msgstr "Fallo al añadir el agente %(agent_name)s para la red %(network)s."
 #, python-format
 msgid "Failed to add route : %s"
 msgstr "Ha ocurrido un error al añadir la ruta : %s"
-
-#, python-format
-msgid "Failed to add router rule %s"
-msgstr "Ha ocurrido un error al añadir la regla de router %s"
 
 #, python-format
 msgid "Failed to add router(s) to firewall %(name)s: %(reason)s"
@@ -3910,6 +3840,9 @@ msgstr "Ayuda"
 msgid "High Availability Mode"
 msgstr "Modo alta disponibilidad"
 
+msgid "High Availability Status"
+msgstr "Estado de alta disponibilidad"
+
 msgid "Home"
 msgstr "Página de inicio"
 
@@ -4011,6 +3944,9 @@ msgstr "Dirección IP"
 msgid "IP Address (optional)"
 msgstr "Dirección IP (opcional)"
 
+msgid "IP Address or CIDR"
+msgstr "Dirección IP o CIDR"
+
 msgid "IP Addresses"
 msgstr "Direcciones IP"
 
@@ -4056,12 +3992,6 @@ msgstr ""
 "por defecto, déjalo en blanco. Si no deseas utilizar una pasarela, consulta "
 "'Desactivar pasarela' a ​​continuación."
 
-msgid "IP allocation pool"
-msgstr "Pool de asignación IP"
-
-msgid "IP version"
-msgstr "Versión IP"
-
 msgid "IPMI"
 msgstr "IPMI"
 
@@ -4094,17 +4024,11 @@ msgstr "Conexiones sitio a sitio IPSec"
 msgid "IPv4"
 msgstr "IPv4"
 
-msgid "IPv4 Address ="
-msgstr "Dirección IPv4 ="
-
 msgid "IPv4:"
 msgstr "IPv4:"
 
 msgid "IPv6"
 msgstr "IPv6"
-
-msgid "IPv6 Address ="
-msgstr "Dirección IPv6 ="
 
 msgid "IPv6 Address Configuration Mode"
 msgstr "Modo de Configuracion de direcciones IPv6"
@@ -4250,9 +4174,6 @@ msgstr ""
 "Las imágenes se puede proporcionar mediante una URL HTTP/HTTPS o subir desde "
 "un fichero local del sistema."
 
-msgid "Implementation"
-msgstr "Implementación"
-
 msgid "Import Key Pair"
 msgstr "Importar par de claves"
 
@@ -4327,9 +4248,6 @@ msgstr "Bytes de ruta de ficheros inyectados"
 msgid "Injected Files"
 msgstr "Archivos inyectados"
 
-msgid "Input must be in CIDR format"
-msgstr "La entrada debe estar en formato CIDR"
-
 msgid "Insert Rule"
 msgstr "Insertar regla"
 
@@ -4362,9 +4280,6 @@ msgstr "ID de la instancia"
 
 msgid "Instance Name"
 msgstr "Nombre de la instancia"
-
-msgid "Instance Name ="
-msgstr "Nombre de instancia = "
 
 msgid "Instance Overview"
 msgstr "Vista general de instancias"
@@ -4424,9 +4339,6 @@ msgstr "Interfaces"
 msgid "Internal Interface"
 msgstr "Interfaz interna"
 
-msgid "Internal URL:"
-msgstr "URL Interna"
-
 msgid "Invalid date format: Using today as default."
 msgstr "Formato de fecha no válido: se usará la de hoy como predeterminada."
 
@@ -4482,13 +4394,6 @@ msgstr ""
 msgid "Key Size (bits)"
 msgstr "Tamaño de clave (bits)"
 
-msgid ""
-"Key pair name may only contain letters, numbers, underscores, spaces and "
-"hyphens."
-msgstr ""
-"El nombre del par de claves sólo puede incluir letras, números, guiones "
-"bajos, espacio y guiones."
-
 msgid "Key pair to use for authentication."
 msgstr "Pareja de claves a utilizar para la autentificación."
 
@@ -4510,6 +4415,9 @@ msgstr "Terminado forzosamente"
 
 msgid "Kwapi"
 msgstr "Kwapi"
+
+msgid "L3 Agent"
+msgstr "Agente L3"
 
 msgid "LB Method"
 msgstr "Método LB"
@@ -4764,6 +4672,9 @@ msgstr "Gestionar volumen"
 msgid "Manage Volume Attachments"
 msgstr "Administrar asociaciones de volumen"
 
+msgid "Manage Volumes"
+msgstr "Gestionar volúmenes"
+
 msgid "Manage a Volume"
 msgstr "Administrar un Volumen"
 
@@ -4993,6 +4904,10 @@ msgstr "Modificar nombre y descripción de un volumen."
 msgid "Modify the name and description of a snapshot."
 msgstr "Modificar el nombre y descripción de una instantánea."
 
+msgid "Modify the name and description of a volume consistency group."
+msgstr ""
+"Modificar el nombre y la descripción de un grupo de consistencia de volumen."
+
 msgid "Modify volume type name, description, and public status."
 msgstr "Modificar el tipo de volumen, nombre, descripción y estado público."
 
@@ -5209,9 +5124,6 @@ msgstr ""
 "El próximo salto IP debe hacer parte de una de las subredes a la cual están "
 "conectadas las interfaces del router"
 
-msgid "Next Hops"
-msgstr "Siguientes saltos"
-
 msgid "No"
 msgstr "No"
 
@@ -5230,6 +5142,9 @@ msgstr "Sesión no persistente"
 msgctxt "Power state of an Instance"
 msgid "No State"
 msgstr "Sin estado"
+
+msgid "No assigned volumes"
+msgstr "No hay volúmenes asignados"
 
 msgid "No associations defined."
 msgstr "No se definieron asociaciones."
@@ -5376,6 +5291,12 @@ msgstr "No hay volúmenes asociados"
 
 msgid "No volumes available"
 msgstr "No hay volúmenes disponibles"
+
+msgid "No volumes found."
+msgstr "No se han encontrado volúmenes."
+
+msgid "No volumes selected."
+msgstr "No se han seleccionado volúmenes."
 
 msgid "Non admin users are not allowed to make images public."
 msgstr ""
@@ -5540,9 +5461,6 @@ msgstr "Puerto abierto/Rango de puertos"
 
 msgid "Optional Parameters"
 msgstr "Parámetros opcionales"
-
-msgid "Optional: Next Hop Addresses (comma delimited)"
-msgstr "Opcional: Direcciones de los próximos saltos (separados por coma)"
 
 msgid "Optionally, you may choose to create a new volume."
 msgstr "Opcionalmente, puede seleccionar crear un nuevo volumen."
@@ -5717,9 +5635,6 @@ msgstr "Período"
 msgid "Period:"
 msgstr "Periodo:"
 
-msgid "Permit"
-msgstr "Permitir"
-
 msgid "Physical Network"
 msgstr "Red física"
 
@@ -5795,6 +5710,9 @@ msgstr "ID puerto"
 
 msgid "Port Range"
 msgstr "Rango de puertos"
+
+msgid "Port Security Enabled"
+msgstr "Seguridad de puerto habilitada"
 
 #, python-format
 msgid "Port cleanup failed for these port-ids (%s)."
@@ -6010,9 +5928,6 @@ msgstr "Clave pública"
 
 msgid "Public URL"
 msgstr "URL pública"
-
-msgid "Public URL:"
-msgstr "URL Pública"
 
 msgid "QCOW2 - QEMU Emulator"
 msgstr "QCOW2 - Emulador QEMU"
@@ -6330,9 +6245,6 @@ msgctxt "Task status of an Instance"
 msgid "Rescuing"
 msgstr "Rescatando"
 
-msgid "Reset to Default"
-msgstr "Restablecer el valor por defecto"
-
 msgid "Resize"
 msgstr "Redimensionar"
 
@@ -6549,20 +6461,8 @@ msgstr "ID de router"
 msgid "Router Name"
 msgstr "Nombre del router"
 
-msgid "Router Rule Grid"
-msgstr "Cuadro de regla de router"
-
-msgid "Router Rules"
-msgstr "Reglas de router"
-
-msgid "Router Rules Grid"
-msgstr "Cuadro de reglas de router"
-
 msgid "Router Type"
 msgstr "Tipo de enrutador"
-
-msgid "Router rule added"
-msgstr "Regla de router añadida"
 
 #, python-format
 msgid "Router(s)  was successfully removed from firewall %(firewall)s."
@@ -6583,14 +6483,6 @@ msgstr "Routers"
 msgid "Routers on %(host)s"
 msgstr "Enrutadores en %(host)s"
 
-msgid ""
-"Routing rules to apply to router. Rules are matched by most specific source "
-"first and then by most specific destination."
-msgstr ""
-"Reglas de encaminamiento para aplicar a un router. Las reglas se aplican "
-"primero en función del origen más específico y después por el destino más "
-"específico."
-
 msgid "Rule"
 msgstr "Regla"
 
@@ -6607,9 +6499,6 @@ msgstr ""
 #, python-format
 msgid "Rule %s was successfully updated."
 msgstr "La regla %s se ha actualizado correctamente."
-
-msgid "Rule Conflict"
-msgstr "Conflicto en las reglas"
 
 msgid "Rule:"
 msgstr "Regla:"
@@ -6990,6 +6879,9 @@ msgstr "Hosts seleccionados"
 msgid "Selected networks"
 msgstr "Redes seleccionadas"
 
+msgid "Selected volumes"
+msgstr "Los volúmenes seleccionados"
+
 msgid "Sensor Current Reading"
 msgstr "Lectura actual del sensor"
 
@@ -7176,6 +7068,9 @@ msgstr ""
 "Se permite el uso de la barra invertida. El Object Store la trata como una "
 "seudo-carpeta."
 
+msgid "Small"
+msgstr "Pequeño"
+
 msgid "Snapshot"
 msgstr "Instantánea"
 
@@ -7208,6 +7103,12 @@ msgstr "Nombre de la instantánea"
 msgid "Snapshot source must be specified"
 msgstr "El recurso de la instantánea debe ser especificado"
 
+msgid ""
+"Snapshots can only be created for Consistency Groups that contain volumes."
+msgstr ""
+"Las instantáneas solo se pueden crear para grupos de consistencia que "
+"contienen volúmenes"
+
 msgctxt "Task status of an Instance"
 msgid "Snapshotting"
 msgstr "Realizar instantáneas"
@@ -7232,12 +7133,6 @@ msgstr[1] "Instancias de Reiniciado Suave"
 
 msgid "Something went wrong!"
 msgstr "¡Algo ha ido mal!"
-
-msgid "Source"
-msgstr "Origen"
-
-msgid "Source CIDR"
-msgstr "CIDR origen"
 
 msgid "Source IP"
 msgstr "IP origen"
@@ -7270,9 +7165,6 @@ msgid ""
 msgstr ""
 "La dirección de red de origen/destino y la versión de IP no concuerdan. Haga "
 "que concuerden."
-
-msgid "Source:"
-msgstr "Fuente:"
 
 msgctxt "Task status of an Instance"
 msgid "Spawning"
@@ -7461,6 +7353,9 @@ msgctxt "Current status of an Instance"
 msgid "Stopped"
 msgstr "Parada"
 
+msgid "Submit"
+msgstr "Enviar"
+
 msgid "Subnet"
 msgstr "Subred"
 
@@ -7483,17 +7378,6 @@ msgstr "Nombre de subred"
 
 msgid "Subnet list can not be retrieved."
 msgstr "No ha sido posible obtener la lista de subredes."
-
-#, python-format
-msgid "Subnet: %(dest_subnetname)s"
-msgstr "Subred: %(dest_subnetname)s"
-
-#, python-format
-msgid "Subnet: %(row_source_subnetname)s"
-msgstr "Subred: %(row_source_subnetname)s"
-
-msgid "Subnetpool"
-msgstr "Pool de Subred"
 
 msgid "Subnets"
 msgstr "Subredes"
@@ -7728,6 +7612,9 @@ msgstr "Plantilla de datos"
 msgid "Template File"
 msgstr "Fichero de plantilla"
 
+msgid "Template Functions"
+msgstr "Plantilla de funciones"
+
 msgid "Template Source"
 msgstr "Origen de la plantilla"
 
@@ -7740,6 +7627,12 @@ msgid ""
 msgstr ""
 "El indicador de arranque estipula que este volumen puede utilizarse para "
 "ejecutar una instancia."
+
+msgid ""
+"The \"Volume Type\" selected must be different from the current volume type."
+msgstr ""
+"El \"Tipo de volumen\" seleccionado debe ser diferente al tipo de volumen "
+"actual."
 
 msgid "The \"from\" port number is invalid."
 msgstr "El puerto \"desde\" no es válido."
@@ -7848,9 +7741,6 @@ msgstr ""
 "El destinatario necesita el ID de Transferencia y la Clave de Autorización "
 "para aceptar la transferencia. Por favor capture el ID de Transferencia y la "
 "Clave de Autorización y proporciónelos a su destinatario de transferencia."
-
-msgid "The User Name field cannot be empty."
-msgstr "El nuevo nombre no puede estar  vacío."
 
 msgid "The VNIC type that is bound to the neutron port"
 msgstr "El tipo VNIC que está unido al puerto de neutrones"
@@ -7966,12 +7856,6 @@ msgid ""
 "The name of the physical network over which the virtual network is "
 "implemented."
 msgstr "El nombre de la red física sobre la que se implementa la red virtual."
-
-msgid ""
-"The next hop addresses can be used to override the router used by the client."
-msgstr ""
-"Las direcciones del siguiente salto se pueden utilizar para ignorar el "
-"router usado por el cliente."
 
 msgid "The page you were looking for doesn't exist"
 msgstr "La página que está buscando no existe"
@@ -8098,6 +7982,9 @@ msgstr ""
 msgid "Theme Preview"
 msgstr "Previsualización del tema"
 
+msgid "Themes:"
+msgstr "Temas:"
+
 msgid "There are no meters defined yet."
 msgstr "No hay medidores definidos todavía."
 
@@ -8155,9 +8042,6 @@ msgid ""
 msgstr ""
 "Esto es indispensable para operaciones que se ejecuten durante el ciclo de "
 "vida de la pila."
-
-msgid "This name is already taken."
-msgstr "Este nombre ya está en uso."
 
 msgid "This panel needs JavaScript support."
 msgstr "Este panel necesita soporte javascript."
@@ -8615,9 +8499,6 @@ msgstr "No ha sido posible eliminar el pool. %s"
 #, python-format
 msgid "Unable to delete router \"%s\""
 msgstr "No ha sido posible borrar el router \"%s\""
-
-msgid "Unable to delete router rule."
-msgstr "No ha sido posible borrar la regla del router."
 
 #, python-format
 msgid "Unable to delete rule. %s"
@@ -9585,9 +9466,6 @@ msgstr "No ha sido posible actualizar la contraseña de usuario."
 msgid "Unable to update the user."
 msgstr "No ha sido posible actualizar el usuario."
 
-msgid "Unable to update the volume type."
-msgstr "No se puede actualizar el tipo volumen."
-
 msgid "Unable to update volume snapshot status."
 msgstr "No ha sido posible actualizar el estado de la snapshot del volumen."
 
@@ -10273,6 +10151,9 @@ msgstr "El tamaño del volumen debe ser mayor que 0"
 
 msgid "Volume source must be specified"
 msgstr "El recurso del volumen debe ser especificado"
+
+msgid "Volume transfer name cannot be empty."
+msgstr "El nombre de volumen de transferencia no puede estar vacio. "
 
 msgid ""
 "Volume type is a type or label that can be selected at volume creation time "

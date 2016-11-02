@@ -15,7 +15,6 @@
 
 import re
 
-from django.utils.translation import trim_whitespace
 from six.moves import html_parser
 
 
@@ -53,7 +52,9 @@ class AngularGettextHTMLParser(html_parser.HTMLParser):
 
     def __init__(self):
         try:
-            super(AngularGettextHTMLParser, self).__init__()
+            super(AngularGettextHTMLParser, self).__init__(
+                convert_charrefs=False
+            )
         except TypeError:
             # handle HTMLParser not being a type on Python 2
             html_parser.HTMLParser.__init__(self)
@@ -127,12 +128,12 @@ class AngularGettextHTMLParser(html_parser.HTMLParser):
                 return
             if self.plural_form:
                 messages = (
-                    trim_whitespace(self.data.strip()),
-                    trim_whitespace(self.plural_form)
+                    self.data.strip(),
+                    self.plural_form
                 )
                 func_name = u'ngettext'
             else:
-                messages = trim_whitespace(self.data.strip())
+                messages = self.data.strip()
                 func_name = u'gettext'
             self.strings.append(
                 (self.line, func_name, messages, self.comments)

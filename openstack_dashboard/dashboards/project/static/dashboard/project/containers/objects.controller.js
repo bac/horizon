@@ -34,14 +34,20 @@
     'horizon.dashboard.project.containers.containerRoute',
     'horizon.dashboard.project.containers.objects-batch-actions',
     'horizon.dashboard.project.containers.objects-row-actions',
+    'horizon.framework.widgets.table.events',
     '$q',
     '$routeParams',
     '$scope'
   ];
 
-  function ObjectsController(containersModel, containerRoute, batchActions,
-                             rowActions, $q, $routeParams, $scope)
-  {
+  function ObjectsController(containersModel,
+                             containerRoute,
+                             batchActions,
+                             rowActions,
+                             hzTableEvents,
+                             $q,
+                             $routeParams,
+                             $scope) {
     var ctrl = this;
 
     ctrl.rowActions = rowActions;
@@ -125,7 +131,7 @@
         return;
       }
       if (result.deleted.length > 0) {
-        $scope.$broadcast('hzTable:clearSelected');
+        $scope.$broadcast(hzTableEvents.CLEAR_SELECTIONS);
         ctrl.model.updateContainer();
         ctrl.model.selectContainer(
           ctrl.model.container.name,

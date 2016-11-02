@@ -180,7 +180,6 @@ class AddRule(forms.SelfHandlingForm):
                                      utils_validators.validate_port_range])
 
     icmp_type = forms.IntegerField(label=_("Type"),
-                                   required=True,
                                    help_text=_("Enter a value for ICMP type "
                                                "in the range (-1: 255)"),
                                    widget=forms.TextInput(attrs={
@@ -192,7 +191,6 @@ class AddRule(forms.SelfHandlingForm):
                                        validate_icmp_type_range])
 
     icmp_code = forms.IntegerField(label=_("Code"),
-                                   required=True,
                                    help_text=_("Enter a value for ICMP code "
                                                "in the range (-1: 255)"),
                                    widget=forms.TextInput(attrs={
@@ -284,6 +282,13 @@ class AddRule(forms.SelfHandlingForm):
             # ip_protocol field is to specify arbitrary protocol number
             # and it is available only for neutron security group.
             self.fields['ip_protocol'].widget = forms.HiddenInput()
+
+        if not getattr(settings, 'OPENSTACK_NEUTRON_NETWORK',
+                       {}).get('enable_ipv6', True):
+            self.fields['cidr'].version = forms.IPv4
+            self.fields['ethertype'].widget = forms.TextInput(
+                attrs={'readonly': 'readonly'})
+            self.fields['ethertype'].initial = 'IPv4'
 
     def _update_and_pop_error(self, cleaned_data, key, value):
         cleaned_data[key] = value
